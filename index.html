@@ -345,6 +345,7 @@ sun.shadow.mapSize.set(4096, 4096); Object.assign(sun.shadow.camera, { left: -30
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.6; sun.target.position.set(178, 0, 0); scene.add(sun, sun.target);
 
 const gStruct = new THREE.Group(), gCtx = new THREE.Group(); scene.add(gStruct, gCtx);
+const gLabels = new THREE.Group(); scene.add(gLabels);
 
 /* ---------- procedural textures ---------- */
 function cnv(w, h, f) { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); return c; }
@@ -921,7 +922,7 @@ function deckPoly(P, y = 3.9, t = .6) {   // steel deck plate from a plan polygo
   const [p0, p1] = MARINE.arrow.map(([x, z]) => new THREE.Vector3(x, yW + 1.2, z));
   o.add(member(p0, p1, .25, M.yellow));
   [[p0, p1], [p1, p0]].forEach(([a, b]) => { const c = mesh(new THREE.ConeGeometry(.9, 3, 10), M.yellow); c.position.copy(a).lerp(b, 3 / a.distanceTo(b) / 2); c.lookAt(a); c.rotateX(Math.PI / 2); o.add(c); });
-  const lbl = label(L2('ร่องน้ำเดินเรือ ≥ 100 m', 'Navigation channel ≥ 100 m'), new THREE.Vector3((p0.x + p1.x) / 2, yW + 9, (p0.z + p1.z) / 2), '#2fd37a'); lbl.scale.multiplyScalar(2); o.add(lbl);
+  const lbl = label(L2('ร่องน้ำเดินเรือ ≥ 100 m', 'Navigation channel ≥ 100 m'), new THREE.Vector3((p0.x + p1.x) / 2, yW + 9, (p0.z + p1.z) / 2), '#2fd37a'); lbl.scale.multiplyScalar(1.4); gLabels.add(lbl);
   addEl({ id: 'NAV-CH', name: L2('ร่องน้ำเดินเรือปลอดภัยระหว่างก่อสร้าง (กว้างขั้นต่ำ 100 m) + ทุ่นไฟ/ทุ่นกั้นเขตงาน', 'Construction-stage safety navigation channel (min. 100 m) + lit buoys / work-zone booms'), cat: 'nav', grp: L2('ร่องน้ำเดินเรือ (ระหว่างก่อสร้าง)', 'Navigation channel (construction)'), obj: o, temp: true, noShadow: true,
     start: '2023-12-15', finish: '2023-12-31', rmS: '2026-04-30', rmE: '2026-05-05', src: L2('ตามแผนผังร่องน้ำเดินเรือ (กรมเจ้าท่า) – ช่วงเวลาโดยประมาณ', 'Per the navigation channel plan (Marine Department) – period assumed'), dwg: 'Navigation Channel Plan (Presentation KK-C2 R9 p.124)' });
 }
@@ -1136,7 +1137,6 @@ function label(txt, pos, col = '#f0b429') {
   const c = cnv(cw, 96, (g, w, h) => { g.fillStyle = 'rgba(10,16,28,.78)'; g.beginPath(); g.roundRect(8, 8, w - 16, h - 16, 18); g.fill(); g.strokeStyle = col; g.lineWidth = 4; g.stroke(); g.fillStyle = '#fff'; g.font = 'bold 44px IBM Plex Sans Thai, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, w / 2, h / 2 + 2); });
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false, transparent: true })); s.position.copy(pos); s.scale.set(5.25 * cw / 96, 5.25, 1); s.renderOrder = 10; return s;
 }
-const gLabels = new THREE.Group(); scene.add(gLabels);
 [['P1', 0, 30], ['P2', 120, 70], ['P3', 285, 50], ['P4', PIER.P4, 30]].forEach(([t, s, y]) => { const p = W(s, 0, y); gLabels.add(label(t, p)); });
 gLabels.add(label('165 m', W(202, 0, 24), '#22b8cf'), label('120 m', W(60, 0, 22), '#22b8cf'), label('71.8 m', W(321, 0, 20), '#22b8cf'));
 // Parliament (สัปปายะสภาสถาน) massing – height map sampled from the project federated model "20260723_Kiek Kai Bridge 1_2&3"
@@ -1805,6 +1805,7 @@ slider.value = t2v(NOW);
 applyTheme(params.get('theme') || 'day');
 const v0 = params.get('view'); if (v0 && VIEWS[v0]) { camera.position.set(...VIEWS[v0][0]); controls.target.set(...VIEWS[v0][1]); $('view').value = v0; } else { camera.position.set(...VIEWS.overview[0]); }
 if (params.get('ui') === '0') document.body.classList.add('noui');
+if (params.get('labels') === '0') gLabels.visible = false;
 if (params.get('tour')) { const u = +params.get('tour'); const p = tour.posC.getPoint(u), tg = tour.tgtC.getPoint(Math.min(1, u + .004)); controls.enabled = false; camera.position.copy(p); camera.lookAt(tg); controls.target.copy(tg); hud.style.display = 'block'; capEl.style.display = 'block'; const i = Math.round(u * (TOUR.length - 1)); capEl.innerHTML = `${TOUR[i][2]}<small>${TOUR[i][3]}</small>`; tour.bat = 100 - u * 70; hudUpdate(12); }
 renderTab(); refresh();
 loop();
