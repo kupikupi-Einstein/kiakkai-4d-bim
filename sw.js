@@ -1,6 +1,6 @@
 // Service worker – offline cache for the 4D BIM web app
 // App shell: network-first (always picks up a new deploy); CDN libraries & fonts: cache-first.
-const VERSION = 'kk4d-v7-20261013';
+const VERSION = 'kk4d-v8-20261013';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-32.png', './sample/schedule_R2.json'];
 
 self.addEventListener('install', e => {

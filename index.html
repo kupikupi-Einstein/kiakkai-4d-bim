@@ -151,6 +151,7 @@ body.hideL #left{display:none!important} body.hideR #right{display:none!importan
     <button id="btnShot" title="บันทึกภาพหน้าจอ PNG">📷</button>
     <button id="btnGlb" title="Export โมเดล 3D เป็น GLB">⬇ GLB</button>
     <button id="btnImport" title="อัปโหลดแผนงาน (PDF / MS Project XML / CSV / JSON) เพื่ออัปเดต 4D">📂<span class="lbl"> อัปเดตแผน</span></button>
+    <button id="btnLbl" class="on" title="เปิด/ปิดข้อความกำกับโมเดล (กด L)">🏷<span class="lbl"> ป้าย</span></button>
     <button id="btnL" class="on" title="เปิด/ปิดแผงข้อมูลด้านซ้าย (กด [)">◧</button>
     <button id="btnR" class="on" title="เปิด/ปิดแผงข้อมูลด้านขวา (กด ])">◨</button>
     <button id="btnUI" title="ซ่อน UI (กด H)">⤢</button>
@@ -346,6 +347,14 @@ sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.6; sun.target.position.set(
 
 const gStruct = new THREE.Group(), gCtx = new THREE.Group(); scene.add(gStruct, gCtx);
 const gLabels = new THREE.Group(); scene.add(gLabels);
+// ---- model annotations: master on/off + per-label on/off (remembered per browser); ?labels=0 hides all for this view
+const LABELS = [];
+const LBL = { all: true, off: [] };
+try { Object.assign(LBL, JSON.parse(localStorage.getItem('kk4d.labels') || '{}')); } catch (e) { }
+if (new URLSearchParams(location.search).get('labels') === '0') LBL.all = false;
+{ const lo = new URLSearchParams(location.search).get('lbloff'); if (lo) LBL.off = lo.split(','); }
+const saveLBL = () => { try { localStorage.setItem('kk4d.labels', JSON.stringify(LBL)); } catch (e) { } };
+function applyLabels() { for (const l of LABELS) l.s.visible = LBL.all && !LBL.off.includes(l.key) && (!l.el || l.el.obj.visible); const b = document.getElementById('btnLbl'); if (b) b.classList.toggle('on', LBL.all); }
 
 /* ---------- procedural textures ---------- */
 function cnv(w, h, f) { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); return c; }
@@ -922,9 +931,10 @@ function deckPoly(P, y = 3.9, t = .6) {   // steel deck plate from a plan polygo
   const [p0, p1] = MARINE.arrow.map(([x, z]) => new THREE.Vector3(x, yW + 1.2, z));
   o.add(member(p0, p1, .25, M.yellow));
   [[p0, p1], [p1, p0]].forEach(([a, b]) => { const c = mesh(new THREE.ConeGeometry(.9, 3, 10), M.yellow); c.position.copy(a).lerp(b, 3 / a.distanceTo(b) / 2); c.lookAt(a); c.rotateX(Math.PI / 2); o.add(c); });
-  const lbl = label(L2('ร่องน้ำเดินเรือ ≥ 100 m', 'Navigation channel ≥ 100 m'), new THREE.Vector3((p0.x + p1.x) / 2, yW + 9, (p0.z + p1.z) / 2), '#2fd37a'); lbl.scale.multiplyScalar(1.4); gLabels.add(lbl);
-  addEl({ id: 'NAV-CH', name: L2('ร่องน้ำเดินเรือปลอดภัยระหว่างก่อสร้าง (กว้างขั้นต่ำ 100 m) + ทุ่นไฟ/ทุ่นกั้นเขตงาน', 'Construction-stage safety navigation channel (min. 100 m) + lit buoys / work-zone booms'), cat: 'nav', grp: L2('ร่องน้ำเดินเรือ (ระหว่างก่อสร้าง)', 'Navigation channel (construction)'), obj: o, temp: true, noShadow: true,
+  const lbl = label(L2('ร่องน้ำเดินเรือ ≥ 100 m', 'Navigation channel ≥ 100 m'), new THREE.Vector3((p0.x + p1.x) / 2, yW + 9, (p0.z + p1.z) / 2), '#2fd37a', 'nav', 'temp'); o.userData.navLabel = lbl; lbl.scale.multiplyScalar(1.4); gLabels.add(lbl);
+  const navEl = addEl({ id: 'NAV-CH', name: L2('ร่องน้ำเดินเรือปลอดภัยระหว่างก่อสร้าง (กว้างขั้นต่ำ 100 m) + ทุ่นไฟ/ทุ่นกั้นเขตงาน', 'Construction-stage safety navigation channel (min. 100 m) + lit buoys / work-zone booms'), cat: 'nav', grp: L2('ร่องน้ำเดินเรือ (ระหว่างก่อสร้าง)', 'Navigation channel (construction)'), obj: o, temp: true, noShadow: true,
     start: '2023-12-15', finish: '2023-12-31', rmS: '2026-04-30', rmE: '2026-05-05', src: L2('ตามแผนผังร่องน้ำเดินเรือ (กรมเจ้าท่า) – ช่วงเวลาโดยประมาณ', 'Per the navigation channel plan (Marine Department) – period assumed'), dwg: 'Navigation Channel Plan (Presentation KK-C2 R9 p.124)' });
+  LABELS.find(l => l.key === 'nav').el = navEl;
 }
 // cofferdams
 [['P2', PIER.P2, 38, 20, '2024-04-15', '2024-05-01', '2024-08-01', '2024-08-15'], ['P3', PIER.P3, 30, 17, '2024-05-01', '2024-05-15', '2024-08-16', '2024-08-31']].forEach(([t, x, l, w, a, b, rs, re]) => {
@@ -1017,7 +1027,7 @@ function updateCranes(t, dt) {
 }
 function refresh() {
   for (const e of ELS) applyLook(e, NOW);
-  updateFT(NOW); updateUI();
+  updateFT(NOW); applyLabels(); updateUI();
 }
 
 /* =====================================================================
@@ -1132,13 +1142,14 @@ function updateCars(dt) {
   cars.instanceMatrix.needsUpdate = true;
 }
 // labels
-function label(txt, pos, col = '#f0b429') {
+function label(txt, pos, col = '#f0b429', key = txt, grp = 'struct') {
   const mc = document.createElement('canvas').getContext('2d'); mc.font = 'bold 44px IBM Plex Sans Thai, sans-serif'; const cw = Math.max(256, Math.ceil(mc.measureText(txt).width) + 64);
   const c = cnv(cw, 96, (g, w, h) => { g.fillStyle = 'rgba(10,16,28,.78)'; g.beginPath(); g.roundRect(8, 8, w - 16, h - 16, 18); g.fill(); g.strokeStyle = col; g.lineWidth = 4; g.stroke(); g.fillStyle = '#fff'; g.font = 'bold 44px IBM Plex Sans Thai, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, w / 2, h / 2 + 2); });
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false, transparent: true })); s.position.copy(pos); s.scale.set(5.25 * cw / 96, 5.25, 1); s.renderOrder = 10; return s;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false, transparent: true })); s.position.copy(pos); s.scale.set(5.25 * cw / 96, 5.25, 1); s.renderOrder = 10; s.userData.noPick = true;
+  LABELS.push({ key, txt, grp, s, col }); return s;
 }
-[['P1', 0, 30], ['P2', 120, 70], ['P3', 285, 50], ['P4', PIER.P4, 30]].forEach(([t, s, y]) => { const p = W(s, 0, y); gLabels.add(label(t, p)); });
-gLabels.add(label('165 m', W(202, 0, 24), '#22b8cf'), label('120 m', W(60, 0, 22), '#22b8cf'), label('71.8 m', W(321, 0, 20), '#22b8cf'));
+[['P1', 0, 30], ['P2', 120, 70], ['P3', 285, 50], ['P4', PIER.P4, 30]].forEach(([t, s, y]) => { const p = W(s, 0, y); gLabels.add(label(t, p, '#f0b429', t, 'pier')); });
+gLabels.add(label('120 m', W(60, 0, 22), '#22b8cf', 'span1', 'span'), label('165 m', W(202, 0, 24), '#22b8cf', 'span2', 'span'), label('71.8 m', W(321, 0, 20), '#22b8cf', 'span3', 'span'));
 // Parliament (สัปปายะสภาสถาน) massing – height map sampled from the project federated model "20260723_Kiek Kai Bridge 1_2&3"
 // (Autodesk Viewer, element Parliament_R24). OBB centre (-221.2,-134.5) model-m, axis 61°, 4 m cells (104 x 64), level = 2 m, RLE: c{n}
 const PARL_HM = { cx: -221.2, cy: -134.5, ang: 61, L: 412.9, B: 253.5, nu: 104, nw: 64, cell: 4, dz: 2,
@@ -1173,7 +1184,7 @@ const unRLE = s => s.replace(/(.)\{(\d+)\}/g, (m, c, n) => c.repeat(+n));
   const prof = [[0, 9.8], [2, 10.3], [4, 10.5], [6, 10.5], [8, 10.2], [9.9, 9.6], [10, 7.6], [12, 7.4], [14, 7.6], [16, 7.6], [18, 7.3], [20, 6.8], [22, 5.1], [24, 4.5], [26, 3.5], [28, 3.2], [30, 2.1], [32, 1.9], [34, 1.5], [36, 1.1], [38, .9], [40, .6], [42, .4], [44, .3], [46, .2], [50, 0]];
   const lat = mesh(new THREE.LatheGeometry(prof.map(([y, r]) => new THREE.Vector2(r, y)), 40), M.gold); lat.position.y = 20; gq.add(lat);
   gq.position.set(chx, base, chz); gq.rotation.y = modelRot(PARL_HM.ang); gq.traverse(o => { if (o.isMesh) o.castShadow = true; }); gLand.add(gq);
-  const lbl = label(L2('รัฐสภา', 'Parliament'), new THREE.Vector3(chx, base + 80, chz), '#e9c54a'); lbl.scale.multiplyScalar(1.6); gLabels.add(lbl);
+  const lbl = label(L2('รัฐสภา', 'Parliament'), new THREE.Vector3(chx, base + 80, chz), '#e9c54a', 'parl', 'land'); lbl.scale.multiplyScalar(1.6); gLabels.add(lbl);
 })();
 // พระอุโบสถวัดจุฬามณี (model: โบส์_r1, 38.1 x 25.0 m, H 26 m, axis 73°)
 const [TPX, TPZ] = fromModel(-219.1, 203.6);
@@ -1204,7 +1215,7 @@ const TEMPLE = { x: TPX, z: TPZ };
   });
   [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { const sm = mesh(new THREE.LatheGeometry([[0, 0], [.8, 0], [.8, .6], [.6, 1.0], [.6, 1.8], [.35, 2.6], [.1, 3.6], [0, 4]].map(([r, y]) => new THREE.Vector2(r, y)), 12), M.white); sm.position.set(a * (L0 / 2 + 3), BANK_Y, b * (B0 / 2 + 3)); g.add(sm); }); // ใบเสมา
   g.position.set(TEMPLE.x, 0, TEMPLE.z); g.rotation.y = modelRot(73); gLand.add(g);
-  const lbl = label(L2('วัดจุฬามณี', 'Wat Chulamani'), new THREE.Vector3(TEMPLE.x, BANK_Y + 34, TEMPLE.z), '#e9c54a'); lbl.scale.multiplyScalar(1.6); gLabels.add(lbl);
+  const lbl = label(L2('วัดจุฬามณี', 'Wat Chulamani'), new THREE.Vector3(TEMPLE.x, BANK_Y + 34, TEMPLE.z), '#e9c54a', 'temple', 'land'); lbl.scale.multiplyScalar(1.6); gLabels.add(lbl);
 })();
 // ท่าเทียบเรือ / ศาลาริมน้ำ (model: อาคารท่าเทียบเรือ, ~32 x 29 m on piles, spire top +21.4 m above ground, axis 70°)
 (function pierPavilion() {
@@ -1565,6 +1576,12 @@ if (LANG === 'en') {
   setT('#mReset', '↺ Use default programme (R.2)'); setT('#mReset', 'Return to the Programme R.2 built into the app', 'title'); setT('#mExport', '⬇ current schedule.json'); setT('#mApply', '✔ Apply to the model');
 }
 
+// ---- annotation toggles
+function setAllLabels(v) { LBL.all = v; saveLBL(); applyLabels(); if (tab === 'model') renderTab(); }
+$('btnLbl').onclick = () => setAllLabels(!LBL.all);
+addEventListener('keydown', e => { if (e.target.closest && e.target.closest('input,select,textarea')) return; if (e.code === 'KeyL' && !fly.on) setAllLabels(!LBL.all); });
+if (LANG === 'en') { $('btnLbl').innerHTML = '🏷<span class="lbl"> Labels</span>'; $('btnLbl').title = 'Show / hide model annotations (L)'; }
+
 // ---- left / right panel toggles (remembered per browser)
 const UIKEY = 'kk4d.ui';
 function setPanel(side, show) { document.body.classList.toggle(side === 'L' ? 'hideL' : 'hideR', !show); $('btn' + side).classList.toggle('on', show); try { const u = JSON.parse(localStorage.getItem(UIKEY) || '{}'); u[side] = show; localStorage.setItem(UIKEY, JSON.stringify(u)); } catch (e) { } }
@@ -1627,7 +1644,7 @@ $('btnGlb').onclick = () => {
   ex.parse(root, glb => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' })); a.download = `KiakKai_BIM_${fmtISO(NOW)}.glb`; a.click(); }, err => alert(err), { binary: true });
 };
 // tabs
-let tab = 'gantt';
+let tab = new URLSearchParams(location.search).get('tab') || 'gantt';
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => { tab = b.dataset.tab; document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b)); renderTab(); });
 const GROUPS = []; { const m = new Map(); for (const e of ELS) { if (!m.has(e.grp)) { const g = { n: e.grp, a: Infinity, b: 0, as: false, els: [] }; m.set(e.grp, g); GROUPS.push(g); } const g = m.get(e.grp); g.a = Math.min(g.a, e.start); g.b = Math.max(g.b, e.temp ? (e.rmE || e.finish) : e.finish); g.els.push(e); if (/Assumed/.test(e.src) && !/Programme/.test(e.src)) g.as = true; } GROUPS.sort((x, y) => x.a - y.a); }
 function renderTab() {
@@ -1645,11 +1662,23 @@ function renderTab() {
     tb.querySelectorAll('.ms-step').forEach(r => r.onclick = () => setNow(STEPS[+r.dataset.i].t0 + 5 * DAY));
   } else if (tab === 'model') {
     const grps = {}; for (const k in CATS) (grps[CATS[k].grp] ||= []).push(k);
-    tb.innerHTML = Object.entries(grps).map(([g, ks]) => `<h3>${g}</h3>` + ks.map(k => { const n = ELS.filter(e => e.cat === k).length; return `<div class="cat"><i style="background:${CATS[k].c}"></i><label><input type="checkbox" data-k="${k}" ${catHidden[k] ? '' : 'checked'}> ${CATS[k].th}</label><span class="mut">${n}</span></div>`; }).join('')).join('') +
-      `<h3>${L2('บริบท', 'Context')}</h3><div class="cat"><label><input type="checkbox" id="chkLbl" checked> ${L2('ป้ายชื่อตอม่อ/ช่วงสะพาน', 'Pier / span labels')}</label></div><div class="cat"><label><input type="checkbox" id="chkCity" ${city.visible ? 'checked' : ''}> ${L2('อาคาร/เมือง', 'City buildings')}</label></div>
+    tb.innerHTML = `<h3>${L2('ข้อความกำกับโมเดล', 'Model annotations')}</h3>
+      <div class="cat"><label><input type="checkbox" id="chkLblAll" ${LBL.all ? 'checked' : ''}> <b>${L2('แสดงข้อความกำกับ (ทั้งหมด)', 'Show annotations (all)')}</b></label><span class="mut">L</span></div>
+      <div style="display:flex;gap:6px;margin:4px 0 6px"><button id="lblOn">${L2('เลือกทั้งหมด', 'Select all')}</button><button id="lblNone">${L2('ไม่เลือกเลย', 'Select none')}</button></div>
+      ${[['pier', L2('ตอม่อ', 'Piers')], ['span', L2('ช่วงสะพาน', 'Spans')], ['land', L2('สถานที่สำคัญ', 'Landmarks')], ['temp', L2('งานชั่วคราว', 'Temporary works')]].map(([g, gn]) => {
+        const ls = LABELS.filter(l => l.grp === g); if (!ls.length) return '';
+        return `<div class="mut" style="font-size:11px;margin-top:4px">${gn}</div>` + ls.map(l => `<div class="cat" style="padding-left:10px"><i style="background:${l.col}"></i><label style="${LBL.all ? '' : 'opacity:.45'}"><input type="checkbox" data-lbl="${l.key}" ${LBL.off.includes(l.key) ? '' : 'checked'}> ${l.txt}</label><button data-fly="${l.key}" title="${L2('ไปที่จุดนี้', 'Go to this point')}" style="padding:1px 6px">◎</button></div>`).join('');
+      }).join('')}
+      ` + Object.entries(grps).map(([g, ks]) => `<h3>${g}</h3>` + ks.map(k => { const n = ELS.filter(e => e.cat === k).length; return `<div class="cat"><i style="background:${CATS[k].c}"></i><label><input type="checkbox" data-k="${k}" ${catHidden[k] ? '' : 'checked'}> ${CATS[k].th}</label><span class="mut">${n}</span></div>`; }).join('')).join('') +
+      `<h3>${L2('บริบท', 'Context')}</h3><div class="cat"><label><input type="checkbox" id="chkCity" ${city.visible ? 'checked' : ''}> ${L2('อาคาร/เมือง', 'City buildings')}</label></div>
       <p class="mut" style="font-size:11.5px">${L2('คลิกที่ชิ้นส่วนในโมเดลเพื่อดูคุณสมบัติ BIM (ID, แบบอ้างอิง, ปริมาณ, วันที่ตามแผน)', 'Click an element in the model to see its BIM properties (ID, drawing reference, quantity, planned dates)')}</p>`;
     tb.querySelectorAll('input[data-k]').forEach(c => c.onchange = () => { catHidden[c.dataset.k] = !c.checked; refresh(); });
-    $('chkLbl').onchange = e => gLabels.visible = e.target.checked; $('chkCity').onchange = e => city.visible = e.target.checked;
+    $('chkLblAll').onchange = e => setAllLabels(e.target.checked);
+    tb.querySelectorAll('input[data-lbl]').forEach(c => c.onchange = () => { const k = c.dataset.lbl; LBL.off = LBL.off.filter(x => x !== k); if (!c.checked) LBL.off.push(k); else LBL.all = true; saveLBL(); applyLabels(); renderTab(); });
+    $('lblOn').onclick = () => { LBL.off = []; LBL.all = true; saveLBL(); applyLabels(); renderTab(); };
+    $('lblNone').onclick = () => { LBL.off = LABELS.map(l => l.key); saveLBL(); applyLabels(); renderTab(); };
+    tb.querySelectorAll('button[data-fly]').forEach(b => b.onclick = () => { const l = LABELS.find(x => x.key === b.dataset.fly); const t = l.s.position.clone(); t.y = Math.max(t.y - 15, 4); const r = l.grp === 'land' ? 160 : l.grp === 'span' ? 110 : 75;
+      camAnim = { p0: camera.position.clone(), t0: controls.target.clone(), p1: t.clone().add(new THREE.Vector3(-r * .55, r * .5, r * .75)), t1: t, u: 0, dur: 1.4 }; }); $('chkCity').onchange = e => city.visible = e.target.checked;
   } else {
     tb.innerHTML = L2(`<h3>แบบที่ใช้สร้างโมเดล</h3><ul style="padding-left:16px;font-size:12px;line-height:1.55">
       <li><b>Substructure</b> – 2022.08.15 Kiak Kai Extradosed Bridge drawings.pdf (21 แผ่น: M-005–M-114)</li>
@@ -1805,8 +1834,9 @@ slider.value = t2v(NOW);
 applyTheme(params.get('theme') || 'day');
 const v0 = params.get('view'); if (v0 && VIEWS[v0]) { camera.position.set(...VIEWS[v0][0]); controls.target.set(...VIEWS[v0][1]); $('view').value = v0; } else { camera.position.set(...VIEWS.overview[0]); }
 if (params.get('ui') === '0') document.body.classList.add('noui');
-if (params.get('labels') === '0') gLabels.visible = false;
+applyLabels();
 if (params.get('tour')) { const u = +params.get('tour'); const p = tour.posC.getPoint(u), tg = tour.tgtC.getPoint(Math.min(1, u + .004)); controls.enabled = false; camera.position.copy(p); camera.lookAt(tg); controls.target.copy(tg); hud.style.display = 'block'; capEl.style.display = 'block'; const i = Math.round(u * (TOUR.length - 1)); capEl.innerHTML = `${TOUR[i][2]}<small>${TOUR[i][3]}</small>`; tour.bat = 100 - u * 70; hudUpdate(12); }
+document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
 renderTab(); refresh();
 loop();
 window.__app = { setNow, applyTheme, goView, ELS, startTour };
