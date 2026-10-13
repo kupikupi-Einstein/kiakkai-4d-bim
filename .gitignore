@@ -1,0 +1,12 @@
+# local / OS
+.DS_Store
+Thumbs.db
+*.tmp
+_site/
+__pycache__/
+*.schedule.json
+# never commit project source documents
+*.pdf
+*.mpp
+*.dwg
+*.pptx

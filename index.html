@@ -1,0 +1,1687 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiak Kai 4D BIM</title>
+<meta name="description" content="4D BIM Method Statement Simulation – Kiak Kai Extradosed Bridge (Balanced Cantilever P1–P4)">
+<meta name="theme-color" content="#0b1f33">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-32.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1220; --panel:rgba(12,18,30,.74); --panel2:rgba(20,28,44,.85); --line:rgba(255,255,255,.09);
+  --txt:#e9eef5; --mut:#93a1b5; --acc:#f0b429; --acc2:#22b8cf; --wip:#ff8a3d; --ok:#51cf66; --bad:#ff6b6b;
+}
+body[data-ui="light"]{ --panel:rgba(255,255,255,.82); --panel2:rgba(245,247,250,.92); --line:rgba(10,20,40,.10); --txt:#13202f; --mut:#55657a; --acc:#c47f00; --acc2:#0b7285; }
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans Thai',system-ui,sans-serif;font-size:13px}
+#c{position:fixed;inset:0;display:block}
+.glass{background:var(--panel);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+button{font:inherit;font-size:12px;color:var(--txt);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:5px 8px;cursor:pointer;white-space:nowrap}
+button:hover{border-color:var(--acc)} button.on{background:var(--acc);color:#111;border-color:var(--acc)}
+select,input[type=range]{accent-color:var(--acc)}
+select{font:inherit;color:var(--txt);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px}
+#top{position:fixed;left:12px;right:12px;top:12px;display:flex;align-items:center;gap:12px;padding:7px 12px;z-index:5;height:56px}
+#brand{display:flex;flex-direction:column;min-width:0;flex:1}
+#brand b{font-size:15px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#brand span{color:var(--mut);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#topbtns{margin-left:auto;display:flex;gap:5px;flex-wrap:nowrap;justify-content:flex-end;align-items:center}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button.on{background:var(--acc);color:#111}
+#left{position:fixed;left:12px;top:78px;bottom:126px;width:390px;display:flex;flex-direction:column;z-index:4}
+#tabs{display:flex;gap:4px;padding:8px 36px 0 8px}
+#tabs button{flex:1;font-size:12px;padding:6px 4px}
+#tabbody{flex:1;overflow:auto;padding:10px 12px 12px}
+#right{position:fixed;right:12px;top:78px;width:300px;max-height:calc(100% - 200px);overflow:auto;padding:12px;z-index:4}
+#bottom{position:fixed;left:12px;right:12px;bottom:12px;padding:10px 14px;z-index:5;display:flex;flex-direction:column;gap:6px}
+#tlrow{display:flex;align-items:center;gap:10px}
+#slider{flex:1}
+#tlwrap{position:relative;flex:1;height:22px}
+#tlwrap input{position:absolute;inset:0;width:100%;margin:0}
+#ticks{position:relative;height:30px;font-size:10.5px;color:var(--mut)}
+#ticks div{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+#ticks div.ms{color:var(--acc);top:15px!important}
+#dateBig{font-size:26px;font-weight:600;line-height:1.1}
+.mut{color:var(--mut)} .acc{color:var(--acc)}
+h3{margin:12px 0 6px;font-size:13px;color:var(--acc);text-transform:uppercase;letter-spacing:.6px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px}
+.kpi b{display:block;font-size:18px}
+.kpi span{font-size:11px;color:var(--mut)}
+.bar{height:6px;background:rgba(127,127,127,.25);border-radius:4px;overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc2),var(--acc))}
+#act{list-style:none;padding:0;margin:0}
+#act li{padding:6px 8px;border-left:3px solid var(--wip);background:var(--panel2);border-radius:6px;margin-bottom:5px;font-size:12px}
+#act li small{display:block;color:var(--mut)}
+.grow{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:6px;font-size:11.5px;padding:2px 0;cursor:pointer}
+.grow:hover .gl{color:var(--acc)}
+.gl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gt{position:relative;height:12px;background:rgba(127,127,127,.12);border-radius:3px}
+.gb{position:absolute;top:2px;height:8px;border-radius:3px;background:var(--acc2)}
+.gb.as{background:repeating-linear-gradient(45deg,#7c8aa0 0 4px,#5c6a80 4px 8px)}
+.gb .pg{position:absolute;left:0;top:0;bottom:0;background:var(--acc);border-radius:3px}
+#gnow{position:absolute;top:0;bottom:0;width:2px;background:var(--bad);pointer-events:none}
+.ms-step{border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:8px 10px;margin-bottom:8px;cursor:pointer}
+.ms-step.cur{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.ms-step b{display:block}
+.ms-step .d{font-size:11px;color:var(--acc2)}
+.ms-step ul{margin:5px 0 0;padding-left:16px;color:var(--mut);font-size:11.5px}
+.cat{display:flex;align-items:center;gap:8px;padding:4px 0}
+.cat i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.cat label{flex:1;cursor:pointer}
+table.cyc{width:100%;border-collapse:collapse;font-size:11.5px}
+table.cyc td{border-bottom:1px solid var(--line);padding:3px 4px}
+#props{position:fixed;right:324px;top:78px;width:300px;padding:12px;z-index:6;display:none}
+#props table{width:100%;font-size:12px;border-collapse:collapse}
+#props td{padding:3px 2px;border-bottom:1px solid var(--line);vertical-align:top}
+#props td:first-child{color:var(--mut);width:42%}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:3;display:none;font-family:ui-monospace,Consolas,monospace;color:#e9fff4;text-shadow:0 0 4px #000}
+#hud .lb{position:absolute;left:0;right:0;height:9vh;background:#000}
+#hud .tl{position:absolute;left:3%;top:12vh;font-size:13px;line-height:1.6}
+#hud .tr{position:absolute;right:3%;top:12vh;font-size:13px;line-height:1.6;text-align:right}
+#hud .bl{position:absolute;left:3%;bottom:12vh;font-size:13px}
+#hud .cross{position:absolute;left:50%;top:50%;width:140px;height:90px;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.5);border-radius:4px}
+#hud .cross:before,#hud .cross:after{content:"";position:absolute;background:rgba(255,255,255,.7)}
+#hud .cross:before{left:50%;top:30%;bottom:30%;width:1px}
+#hud .cross:after{top:50%;left:40%;right:40%;height:1px}
+#hud .rec{color:#ff4d4d}
+#caption{position:fixed;left:50%;bottom:14vh;transform:translateX(-50%);z-index:6;font-size:22px;font-weight:600;padding:10px 22px;display:none;text-align:center;max-width:86vw}
+#caption small{display:block;font-size:13px;font-weight:400;color:var(--mut)}
+#loading{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:#0b1220;color:#e9eef5;transition:opacity .6s}
+#loading .sp{width:44px;height:44px;border:3px solid rgba(255,255,255,.15);border-top-color:#f0b429;border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#help{font-size:11.5px;color:var(--mut)}
+#flyhelp{position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:6;padding:6px 14px;display:none;font-size:12px}
+body.noui #top,body.noui #left,body.noui #right,body.noui #bottom,body.noui #props{display:none!important}
+body.hideL #left{display:none!important} body.hideR #right{display:none!important}
+.pclose{position:absolute;top:6px;right:6px;z-index:2;padding:1px 7px;font-size:11px;line-height:1.4;border-radius:7px;opacity:.75}
+.pclose:hover{opacity:1}
+#modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,calc(100% - 32px));max-height:calc(100% - 60px);overflow:auto;z-index:30;padding:18px;display:none}
+#modalBack{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:29;display:none}
+#drop{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;cursor:pointer;margin:10px 0;color:var(--mut)}
+#drop.over{border-color:var(--acc);color:var(--txt)}
+#impStatus{font-size:12px;line-height:1.55;margin:8px 0;white-space:pre-wrap}
+#impStatus .ok{color:var(--ok)} #impStatus .bad{color:var(--bad)}
+.mrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}
+#schedSrc{font-size:11px;color:var(--mut);margin-top:2px}
+.pill{display:inline-block;padding:1px 7px;border-radius:9px;font-size:11px;border:1px solid var(--line)}
+.pill.wip{background:var(--wip);color:#111}.pill.done{background:var(--ok);color:#111}.pill.plan{background:#7c8aa0;color:#111}
+#mobileToggle{display:none}
+@media (max-width:1250px){ #brand span{display:none} #topbtns .lbl{display:none} }
+@media (max-width:900px){
+  #top{height:auto}
+  #left{width:auto;right:12px;top:auto;bottom:112px;height:45vh;display:none}
+  #left.show{display:flex}
+  #right{display:none}
+  #brand span{display:none}
+  #mobileToggle{display:inline-block}
+  #props{right:12px;left:12px;width:auto}
+  #top{flex-wrap:wrap}
+}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading"><div class="sp"></div><div>กำลังสร้างแบบจำลอง BIM 4D … Kiak Kai Extradosed Bridge</div></div>
+
+<div id="top" class="glass">
+  <div id="brand"><b>KIAK KAI EXTRADOSED BRIDGE · 4D BIM Method Statement Simulation</b>
+  <span>สะพานข้ามแม่น้ำเจ้าพระยา บริเวณแยกเกียกกาย (J2599) · Balanced Cantilever P1–P4 · 120 + 165 + 71.766 m</span></div>
+  <div id="topbtns">
+    <button id="mobileToggle">☰ แผง</button>
+    <div class="seg" id="themes">
+      <button data-t="day">☀ Day</button><button data-t="sunset">🌇 Sunset</button><button data-t="night">🌙 Night</button><button data-t="bim">▦ BIM 4D</button><button data-t="blue">⌗ Blueprint</button>
+    </div>
+    <select id="view" title="มุมกล้อง">
+      <option value="overview">มุมมอง: ภาพรวม</option><option value="p2">Pylon P2</option><option value="p3">Pylon P3</option><option value="ft">Form Traveller</option><option value="land">P1→P4 (รัฐสภา/วัดจุฬามณี)</option><option value="under">ใต้สะพาน</option><option value="river">ระดับแม่น้ำ</option><option value="top">มุมบน (Plan)</option>
+    </select>
+    <button id="btnTour">🚁<span class="lbl"> Drone Tour</span></button>
+    <button id="btnFly">🎮<span class="lbl"> บินโดรนเอง</span></button>
+    <button id="btnSound">🔇<span class="lbl"> เสียง</span></button>
+    <button id="btnMusic">♪<span class="lbl"> ดนตรี</span></button>
+    <button id="btnShot" title="บันทึกภาพหน้าจอ PNG">📷</button>
+    <button id="btnGlb" title="Export โมเดล 3D เป็น GLB">⬇ GLB</button>
+    <button id="btnImport" title="อัปโหลดแผนงาน (PDF / MS Project XML / CSV / JSON) เพื่ออัปเดต 4D">📂<span class="lbl"> อัปเดตแผน</span></button>
+    <button id="btnL" class="on" title="เปิด/ปิดแผงข้อมูลด้านซ้าย (กด [)">◧</button>
+    <button id="btnR" class="on" title="เปิด/ปิดแผงข้อมูลด้านขวา (กด ])">◨</button>
+    <button id="btnUI" title="ซ่อน UI (กด H)">⤢</button>
+  </div>
+</div>
+
+<div id="left" class="glass" style="position:fixed">
+  <button class="pclose" id="closeL" title="ปิดแผงซ้าย">✕</button>
+  <div id="tabs"><button data-tab="gantt" class="on">4D แผนงาน</button><button data-tab="ms">Method Statement</button><button data-tab="model">โมเดล BIM</button><button data-tab="src">ข้อมูลแบบ</button></div>
+  <div id="tabbody"></div>
+</div>
+
+<div id="right" class="glass">
+  <button class="pclose" id="closeR" title="ปิดแผงขวา">✕</button>
+  <div class="mut">วันที่จำลอง (4D)</div>
+  <div id="dateBig">—</div>
+  <div id="stepName" class="acc" style="margin-top:4px;font-weight:600"></div>
+  <div id="schedSrc"></div>
+  <div class="kpis">
+    <div class="kpi"><b id="kProg">0%</b><span>ความก้าวหน้าตามแผน</span><div class="bar"><i id="kProgBar" style="width:0"></i></div></div>
+    <div class="kpi"><b id="kSeg">0/0</b><span>Segment หล่อแล้ว</span></div>
+    <div class="kpi"><b id="kCab">0/36</b><span>Stay cable ติดตั้งแล้ว</span></div>
+    <div class="kpi"><b id="kVol">0</b><span>คอนกรีตโครงสร้าง (m³)</span></div>
+  </div>
+  <h3>S-Curve แผนงาน</h3>
+  <canvas id="scurve" width="276" height="90" style="width:100%;height:90px"></canvas>
+  <h3>กิจกรรมที่กำลังดำเนินการ</h3>
+  <ul id="act"></ul>
+</div>
+
+<div id="props" class="glass"></div>
+<div id="modalBack"></div>
+<div id="modal" class="glass">
+  <div style="display:flex;justify-content:space-between;align-items:center"><b class="acc" style="font-size:15px">📂 อัปเดตแผนงาน 4D จากไฟล์</b><button id="mClose">✕</button></div>
+  <div class="mut" style="font-size:12px;margin-top:6px">รองรับ: <b>PDF</b> ที่พิมพ์จาก MS Project (ตาราง ID / Task Name / Duration / Start / Finish) · <b>MS Project XML</b> (File ▸ Save As ▸ XML) · <b>CSV</b> (ID, Task Name, Start, Finish) · <b>JSON</b> (schedule.json จากแอปนี้หรือ tools/mpp2json.py)<br>ไฟล์ .mpp ต้องแปลงเป็น XML/PDF ก่อน (เบราว์เซอร์อ่านไฟล์ฐานข้อมูล MS Project โดยตรงไม่ได้)</div>
+  <div id="drop">ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์<br><small>.pdf · .xml · .csv · .json · (.mpp)</small></div>
+  <input type="file" id="impFile" accept=".pdf,.xml,.csv,.json,.mpp,.txt" style="display:none">
+  <div id="impStatus"></div>
+  <div class="mrow"><button id="mReset" title="กลับไปใช้ Programme R.2 ที่ฝังในแอป">↺ ใช้แผนเริ่มต้น (R.2)</button><button id="mExport">⬇ schedule.json ปัจจุบัน</button><button id="mApply" class="on" disabled>✔ นำไปใช้กับแบบจำลอง</button></div>
+</div>
+
+<div id="bottom" class="glass">
+  <div id="tlrow">
+    <button id="btnPlay">▶ เล่น 4D</button>
+    <select id="speed"><option value="2">2 วัน/วินาที</option><option value="7" selected>1 สัปดาห์/วินาที</option><option value="15">15 วัน/วินาที</option><option value="30">1 เดือน/วินาที</option></select>
+    <div id="tlwrap"><input type="range" id="slider" min="0" max="1000" value="0"></div>
+    <b id="dateSmall" style="min-width:96px;text-align:right"></b>
+  </div>
+  <div id="ticks"></div>
+</div>
+
+<div id="hud"><div class="lb" style="top:0"></div><div class="lb" style="bottom:0"></div>
+  <div class="tl" id="hudL"></div><div class="tr" id="hudR"></div><div class="bl" id="hudB"></div><div class="cross"></div></div>
+<div id="caption" class="glass"></div>
+<div id="flyhelp" class="glass">โหมดบินโดรน: W/A/S/D เคลื่อนที่ · R/F ขึ้น/ลง · ลากเมาส์เพื่อหันกล้อง · Shift เร่งความเร็ว · Esc ออก</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Sky } from 'three/addons/objects/Sky.js';
+import { Water } from 'three/addons/objects/Water.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+/* =====================================================================
+   1. PROJECT DATA  (from drawings in /Drawing, /Construction Sequence, /Planing)
+   ===================================================================== */
+const DAY = 86400000;
+const D = s => new Date(s + 'T00:00:00').getTime();
+const lerp = (a, b, t) => a + (b - a) * t, clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const T0 = D('2023-10-01'), T1 = D('2026-07-15');
+const STA0 = 1141.069;                                   // STA of P1 (M-011)
+const PIER = { P1: 0, P2: 120, P3: 285, P4: 356.766 };   // spans 120 / 165 / 71.766 m
+const station = s => { const v = STA0 + s, k = Math.floor(v / 1000); return k + '+' + (v - k * 1000).toFixed(3).padStart(7, '0'); };
+const fmtTH = t => new Date(t).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+const fmtISO = t => { const d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+
+// Vertical profile (M-011): +2.500% / LVC 200 m / -2.250%
+function profile(s) {
+  if (s < 63.931) return 11.902 + 0.025 * s;
+  if (s < 263.931) { const t = s - 63.931; return 13.5 + 0.025 * t - 0.0475 / 400 * t * t; }
+  return 13.75 - 0.0225 * (s - 263.931);
+}
+// Horizontal alignment: straight to beyond P3, then curve towards P4 (plan M-011, indicative radius)
+const CURVE_S = 224.5, R_CURVE = 554, CURVE_E = 460;   // horizontal curve to the LEFT, fitted to federated model (P3 −3.3 m, P4 −15.8 m)
+function align(s) {
+  if (s <= CURVE_S) return { x: s, z: 0, a: 0 };
+  const se = Math.min(s, CURVE_E), th = (se - CURVE_S) / R_CURVE;
+  let x = CURVE_S + R_CURVE * Math.sin(th), z = -R_CURVE * (1 - Math.cos(th));
+  if (s > CURVE_E) { x += (s - CURVE_E) * Math.cos(th); z -= (s - CURVE_E) * Math.sin(th); }
+  return { x, z, a: th };
+}
+function W(s, off, v) { const a = align(s); return new THREE.Vector3(a.x - off * Math.sin(a.a), v, a.z + off * Math.cos(a.a)); }
+
+// Girder depth (M-403…M-406): P2  H=3300+0.5335x² over 81 m ; P3  H=3300+0.9163x² over 49 m
+function depthH(s) {
+  const d2 = Math.abs(s - PIER.P2), d3 = Math.abs(s - PIER.P3);
+  if (s < 220) { if (d2 < 4) return 6.8; if (d2 < 85) return 3.3 + 3.5 * ((85 - d2) / 81) ** 2; return 3.3; }
+  if (d3 < 2) return 5.5; if (d3 < 51) return 3.3 + 2.2 * ((51 - d3) / 49) ** 2; return 3.3;
+}
+function slabHB(s) {
+  const d2 = Math.abs(s - PIER.P2), d3 = Math.abs(s - PIER.P3);
+  if (s < 220) { if (d2 < 4) return 1.0; if (d2 < 85) return 0.28 + 0.72 * ((85 - d2) / 81) ** 2; return 0.28; }
+  if (d3 < 2) return 0.75; if (d3 < 51) return 0.28 + 0.47 * ((51 - d3) / 49) ** 2; return 0.28;
+}
+// Cross-section (M-401/402): 31.30 m deck, 3-cell box, central plane stay anchorage in 2.40 m median
+// Deck width: 31.30 m, narrowing to 17.00 m from segment F1′ in side span P3–P4 (M-406 plan, Presentation p.135/147)
+const NARROW_S = 316;
+const hwAt = s => s >= NARROW_S ? 8.5 : 15.65;
+const webTop = hw => hw > 10 ? 10.0 : 6.0;
+const bw = (H, hw = 15.65) => webTop(hw) - (H - 1.1) / 3;   // outer web inclined 1:3 (M-401)
+const outerContour = (H, hw = 15.65) => { const wt = webTop(hw), b = bw(H, hw), f = -0.02 * hw; return [[-hw, f], [0, 0], [hw, f], [hw, f - .26], [wt + .3, -0.85], [wt, -1.1], [b, -H + .25], [b - .25, -H], [-b + .25, -H], [-b, -H + .25], [-wt, -1.1], [-wt - .3, -0.85], [-hw, f - .26]]; };
+const holeContours = (H, HB, hw = 15.65) => { const b = -H + HB, wt = webTop(hw), w = bw(H, hw) - .55; return [
+  [[1.2, -0.36], [wt - .65, -0.5], [w, b], [1.2, b]],
+  [[-0.7, -0.33], [0.7, -0.33], [0.7, b], [-0.7, b]],
+  [[-1.2, -0.36], [-1.2, b], [-w, b], [-(wt - .65), -0.5]]]; };
+const polyArea = p => { let a = 0; for (let i = 0; i < p.length; i++) { const [x1, y1] = p[i], [x2, y2] = p[(i + 1) % p.length]; a += x1 * y2 - x2 * y1; } return Math.abs(a / 2); };
+const sectArea = s => { const H = depthH(s), HB = slabHB(s), hw = hwAt(s); return polyArea(outerContour(H, hw)) - holeContours(H, HB, hw).reduce((a, h) => a + polyArea(h), 0); };
+
+// Segment programme (Program of Extradose at Kiak Kai Bridge R.2 – 12/12/2024)
+const SD = {
+  "A'": ['2025-03-28', '2025-04-11'], "B'": ['2025-04-12', '2025-04-26'], "C'": ['2025-04-28', '2025-05-12'], "D'": ['2025-05-13', '2025-05-27'],
+  "E'": ['2025-05-28', '2025-07-03'], "F'": ['2025-06-11', '2025-07-10'], "G'": ['2025-07-08', '2025-07-24'], "H'": ['2025-07-22', '2025-08-07'],
+  "I'": ['2025-08-05', '2025-08-21'], "J'": ['2025-08-19', '2025-09-04'], "K'": ['2025-09-02', '2025-09-18'], "L'": ['2025-09-16', '2025-10-02'],
+  "M'": ['2025-09-30', '2025-10-16'], "N'": ['2025-10-14', '2025-10-30'], "O'": ['2025-10-28', '2025-11-13'], "P'": ['2025-11-11', '2025-11-27'],
+  "Q'": ['2025-11-25', '2025-12-09'], "R'": ['2025-12-10', '2025-12-24'], "S'": ['2025-12-25', '2026-01-08'], "T'": ['2026-01-09', '2026-01-23'],
+  A: ['2025-03-29', '2025-04-12'], B: ['2025-04-14', '2025-04-28'], C: ['2025-04-29', '2025-05-13'], D: ['2025-05-14', '2025-05-28'],
+  E: ['2025-05-29', '2025-07-03'], F: ['2025-06-12', '2025-07-11'], G: ['2025-07-09', '2025-07-25'], H: ['2025-07-23', '2025-08-08'],
+  I: ['2025-08-06', '2025-08-22'], J: ['2025-08-20', '2025-09-05'], K: ['2025-09-03', '2025-09-19'], L: ['2025-09-17', '2025-10-03'],
+  M: ['2025-10-01', '2025-10-17'], N: ['2025-10-15', '2025-10-31'], O: ['2025-10-29', '2025-11-14'], P: ['2025-11-12', '2025-11-28'],
+  Q: ['2025-11-26', '2025-12-10'], R: ['2025-12-11', '2025-12-25'], S: ['2025-12-26', '2026-01-09'], T: ['2026-01-27', '2026-02-10'],
+  "A1'": ['2025-05-23', '2025-06-07'], "B1'": ['2025-06-09', '2025-08-11'], "C1'": ['2025-06-24', '2025-08-18'], "D1'": ['2025-08-15', '2025-09-02'],
+  "E1'": ['2025-08-30', '2025-10-01'], "F1'": ['2025-09-29', '2025-10-20'], "G1'": ['2025-10-14', '2025-11-04'], "H1'": ['2025-10-29', '2025-11-13'],
+  "I1'": ['2025-11-11', '2025-11-26'], "J1'": ['2025-11-24', '2025-12-09'], "K1'": ['2025-12-06', '2025-12-22'], "L1'": ['2025-12-19', '2026-01-03'],
+  "M1'": ['2026-01-01', '2026-02-16'],
+  A1: ['2025-05-24', '2025-06-07'], B1: ['2025-06-10', '2025-08-11'], C1: ['2025-06-25', '2025-08-19'], D1: ['2025-08-16', '2025-09-03'],
+  E1: ['2025-09-01', '2025-10-02'], F1: ['2025-09-30', '2025-10-17'], G1: ['2025-10-15', '2025-10-28'], H1: ['2025-10-30', '2025-11-12'],
+  I1: ['2025-11-13', '2025-11-26'], J1: ['2025-11-27', '2025-12-10'], K1: ['2025-12-11', '2025-12-24'], L1: ['2026-01-12', '2026-01-24'],
+};
+
+// ---- Active schedule: default = Programme R.2; can be replaced by uploading PDF / MS Project XML / CSV / JSON (stored in this browser)
+const iso = t => fmtISO(t);   // local-date safe
+const addD = (d, n) => iso(D(d) + n * DAY);
+const SCHED_DEFAULT = { source: 'Program of Extradose at Kiak Kai Bridge R.2 (12/12/2024)', seg: JSON.parse(JSON.stringify(SD)),
+  pylon: { P2: [['2025-04-30', '2025-05-07'], ['2025-05-08', '2025-05-16'], ['2025-05-17', '2025-05-26'], ['2025-05-27', '2025-06-04'], ['2025-06-05', '2025-06-16'], ['2025-06-17', '2025-06-27'], ['2025-06-28', '2025-07-09'], ['2025-07-10', '2025-07-21'], ['2025-07-22', '2025-07-30']],
+           P3: [['2025-06-26', '2025-07-04'], ['2025-07-05', '2025-07-13'], ['2025-07-14', '2025-07-22'], ['2025-07-23', '2025-07-31'], ['2025-08-01', '2025-08-11'], ['2025-08-12', '2025-08-26']] },
+  ft: { P2: ['2025-02-04', '2025-03-21'], P3: ['2025-04-01', '2025-05-16'] }, tc: { P2: ['2025-01-27', '2025-03-27'], P3: ['2025-03-24', '2025-05-22'] },
+  pt: { P2: '2025-01-25', P3: '2025-03-22' }, end: { P2: ['2025-10-30', '2025-12-29'], P3: ['2025-10-24', '2025-12-24'] }, sc: { P2: ['2025-10-14', '2025-10-30'], P3: ['2025-10-08', '2025-10-24'] } };
+function mergeSched(a, b) {
+  const o = JSON.parse(JSON.stringify(a));
+  for (const k of ['seg', 'ft', 'tc', 'pt', 'end', 'sc']) Object.assign(o[k], (b && b[k]) || {});
+  for (const p of ['P2', 'P3']) if (b && b.pylon && b.pylon[p] && b.pylon[p].length) o.pylon[p] = o.pylon[p].map((d, i) => b.pylon[p][i] || d);
+  o.source = (b && b.source) || o.source; o.imported = b && b.imported; return o;
+}
+let SCHED_USER = null; try { SCHED_USER = JSON.parse(localStorage.getItem('kk4d.schedule') || 'null'); } catch (e) { }
+const SCHED = mergeSched(SCHED_DEFAULT, SCHED_USER && SCHED_USER.seg ? SCHED_USER : null); SCHED.user = !!(SCHED_USER && SCHED_USER.seg);
+Object.assign(SD, SCHED.seg);
+const SRC = SCHED.user ? 'Uploaded: ' + SCHED.source : 'Programme R.2';
+
+/* =====================================================================
+   2. RENDERER / SCENE
+   ===================================================================== */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.5, 9000);
+camera.position.set(-140, 120, 260);
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(178, 12, 0); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.495; controls.maxDistance = 2500;
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.8, 0.5, 0.82);
+composer.addPass(bloom); composer.addPass(new OutputPass());
+
+const hemi = new THREE.HemisphereLight(0xdfefff, 0x5a5040, 0.6); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.castShadow = true;
+sun.shadow.mapSize.set(4096, 4096); Object.assign(sun.shadow.camera, { left: -300, right: 300, top: 300, bottom: -300, near: 10, far: 1600 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.6; sun.target.position.set(178, 0, 0); scene.add(sun, sun.target);
+
+const gStruct = new THREE.Group(), gCtx = new THREE.Group(); scene.add(gStruct, gCtx);
+
+/* ---------- procedural textures ---------- */
+function cnv(w, h, f) { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); return c; }
+const R = (seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; })(20250128);
+function texConcrete(base) {
+  const c = cnv(512, 512, (g, w, h) => {
+    g.fillStyle = base; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 9000; i++) { const v = 150 + R() * 90 | 0; g.fillStyle = `rgba(${v},${v},${v - 6},${R() * .12})`; g.fillRect(R() * w, R() * h, 1 + R() * 3, 1 + R() * 3); }
+    g.strokeStyle = 'rgba(60,60,60,.18)'; g.lineWidth = 2;
+    for (let x = 0; x <= w; x += 128) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); }
+    for (let y = 0; y <= h; y += 256) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+    for (let i = 0; i < 40; i++) { g.fillStyle = 'rgba(80,80,80,.25)'; g.beginPath(); g.arc(R() * w, R() * h, 1.5, 0, 7); g.fill(); }
+  });
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+function texLattice(col) {
+  const c = cnv(128, 128, (g, w, h) => { g.strokeStyle = col; g.lineWidth = 7; g.strokeRect(3, 3, w - 6, h - 6); g.lineWidth = 4; g.beginPath(); g.moveTo(0, 0); g.lineTo(w, h); g.moveTo(w, 0); g.lineTo(0, h); g.stroke(); });
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function texRoad() {
+  const c = cnv(256, 512, (g, w, h) => {
+    g.fillStyle = '#3b3d40'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 6000; i++) { const v = 40 + R() * 50 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(R() * w, R() * h, 1, 1); }
+    const px = m => m / 13 * w; // 13.0 m ribbon: 2.0 m pedestrian, 0.3 kerb, 3 lanes x 3.5 m
+    g.fillStyle = '#9c5b4a'; g.fillRect(0, 0, px(2.0), h);
+    for (let y = 0; y < h; y += 32) { g.fillStyle = 'rgba(0,0,0,.15)'; g.fillRect(0, y, px(2.0), 1); }
+    g.fillStyle = '#bdb8ad'; g.fillRect(px(2.0), 0, px(0.3), h);
+    g.fillStyle = '#f1f3f5'; g.fillRect(px(2.45), 0, 3, h); g.fillRect(w - px(0.25), 0, 3, h);
+    g.fillStyle = '#f1f3f5'; [2.3 + 3.5, 2.3 + 7.0].forEach(m => { for (let y = 0; y < h; y += 128) g.fillRect(px(m) - 1, y, 3, 64); });
+  });
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+function texWindows(lit) {
+  const c = cnv(256, 512, (g, w, h) => {
+    g.fillStyle = lit ? '#000' : '#c9c5bd'; g.fillRect(0, 0, w, h);
+    for (let y = 8; y < h; y += 32) for (let x = 8; x < w; x += 32) {
+      if (lit) { g.fillStyle = R() < .45 ? `rgb(255,${200 + R() * 40 | 0},${120 + R() * 60 | 0})` : '#000'; }
+      else g.fillStyle = R() < .5 ? '#40556b' : '#5a7088';
+      g.fillRect(x, y, 18, 20);
+    }
+  });
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function texWaterNormals() {
+  const N = 256, waves = []; for (let i = 0; i < 28; i++) { const fx = 1 + (R() * 14 | 0), fy = (R() * 14 | 0) - 7; waves.push([fx, fy, R() * 6.28, 1 / Math.hypot(fx, fy)]); }
+  const hgt = (x, y) => { let v = 0; for (const [fx, fy, ph, a] of waves) v += a * Math.sin(2 * Math.PI * (fx * x + fy * y) / N + ph); return v; };
+  const c = cnv(N, N, (g) => {
+    const img = g.createImageData(N, N);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const dx = (hgt(x + 1, y) - hgt(x - 1, y)) * 1.3, dy = (hgt(x, y + 1) - hgt(x, y - 1)) * 1.3, l = Math.hypot(dx, dy, 1), i = (y * N + x) * 4;
+      img.data[i] = (-dx / l * .5 + .5) * 255; img.data[i + 1] = (-dy / l * .5 + .5) * 255; img.data[i + 2] = (1 / l * .5 + .5) * 255; img.data[i + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+  });
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+}
+function texGround(a, b) {
+  const c = cnv(512, 512, (g, w, h) => { g.fillStyle = a; g.fillRect(0, 0, w, h); for (let i = 0; i < 14000; i++) { g.fillStyle = R() < .5 ? b : 'rgba(255,255,255,.05)'; g.globalAlpha = R() * .5; g.fillRect(R() * w, R() * h, 2, 2); } g.globalAlpha = 1; });
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function gradientTex(top, bot) { const c = cnv(4, 256, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, top); gr.addColorStop(1, bot); g.fillStyle = gr; g.fillRect(0, 0, w, h); }); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+
+/* ---------- materials ---------- */
+const tConc = texConcrete('#bdbab2'), tLat = texLattice('#f2b705'), tLatR = texLattice('#d9480f'), tRoad = texRoad();
+const M = {
+  conc: new THREE.MeshStandardMaterial({ color: 0xd2cec6, map: tConc, roughness: .88, side: THREE.DoubleSide }),
+  concDark: new THREE.MeshStandardMaterial({ color: 0x9d9a93, map: tConc, roughness: .9 }),
+  pylon: new THREE.MeshStandardMaterial({ color: 0xeeeae2, map: tConc, roughness: .75 }),
+  fresh: new THREE.MeshStandardMaterial({ color: 0x7f7c76, map: tConc, roughness: .55, side: THREE.DoubleSide }),
+  rebar: new THREE.MeshStandardMaterial({ color: 0xd9480f, emissive: 0x6b1d00, wireframe: true, transparent: true, opacity: .85 }),
+  wip: new THREE.MeshStandardMaterial({ color: 0xffa94d, emissive: 0x4a2000, roughness: .7, transparent: true, opacity: .9 }),
+  gold: new THREE.MeshStandardMaterial({ color: 0xd9a520, metalness: .9, roughness: .28, emissive: 0x000000 }),
+  cable: new THREE.MeshStandardMaterial({ color: 0xe9c54a, metalness: .35, roughness: .38, emissive: 0x000000 }),
+  pylonDark: new THREE.MeshStandardMaterial({ color: 0x9aa1a9, map: tConc, roughness: .7 }),
+  cableWip: new THREE.MeshStandardMaterial({ color: 0xff5a1f, emissive: 0x6a1a00, roughness: .4 }),
+  deco: new THREE.MeshStandardMaterial({ color: 0xf2c11d, metalness: .6, roughness: .3, emissive: 0x000000 }),
+  steel: new THREE.MeshStandardMaterial({ color: 0xd9480f, metalness: .4, roughness: .55 }),
+  yellow: new THREE.MeshStandardMaterial({ color: 0xf5b700, metalness: .3, roughness: .6 }),
+  timber: new THREE.MeshStandardMaterial({ color: 0x8a6a4a, roughness: .9 }),
+  latY: new THREE.MeshStandardMaterial({ map: tLat, transparent: true, alphaTest: .3, side: THREE.DoubleSide, roughness: .6 }),
+  latR: new THREE.MeshStandardMaterial({ map: tLatR, transparent: true, alphaTest: .3, side: THREE.DoubleSide, roughness: .6 }),
+  dark: new THREE.MeshStandardMaterial({ color: 0x2f3439, metalness: .5, roughness: .6 }),
+  road: new THREE.MeshStandardMaterial({ map: tRoad, roughness: .95, side: THREE.DoubleSide }),
+  barrier: new THREE.MeshStandardMaterial({ color: 0xe1ddd5, roughness: .8 }),
+  rail: new THREE.MeshStandardMaterial({ color: 0xc9a227, metalness: .8, roughness: .35 }),
+  water: new THREE.MeshStandardMaterial({ color: 0x1c7ed6, metalness: .3, roughness: .4 }),
+  elec: new THREE.MeshStandardMaterial({ color: 0xf08c00, metalness: .3, roughness: .5 }),
+  drain: new THREE.MeshStandardMaterial({ color: 0x5c636a, metalness: .3, roughness: .6 }),
+  lamp: new THREE.MeshStandardMaterial({ color: 0x868e96, metalness: .7, roughness: .4 }),
+  lampHead: new THREE.MeshStandardMaterial({ color: 0xfff3bf, emissive: 0x000000 }),
+  avi: new THREE.MeshStandardMaterial({ color: 0xff2222, emissive: 0x000000 }),
+  roofRed: new THREE.MeshStandardMaterial({ color: 0xa61e1e, roughness: .6 }),
+  white: new THREE.MeshStandardMaterial({ color: 0xf8f5ee, roughness: .7 }),
+  rock: new THREE.MeshStandardMaterial({ color: 0x6b5e4f, roughness: 1 }),
+  ballast: new THREE.MeshStandardMaterial({ color: 0x7048e8, roughness: .8 }),
+  ghost: new THREE.MeshBasicMaterial({ color: 0x4dabf7, transparent: true, opacity: .07, depthWrite: false }),
+  bimWip: new THREE.MeshLambertMaterial({ color: 0xff7f1f, emissive: 0x552200 }),
+  bimTemp: new THREE.MeshLambertMaterial({ color: 0xffd43b, transparent: true, opacity: .55 }),
+  blueFill: new THREE.MeshBasicMaterial({ color: 0x0b2a4a, transparent: true, opacity: .25, depthWrite: false }),
+};
+const L = {
+  done: new THREE.LineBasicMaterial({ color: 0x74d7ff }), wip: new THREE.LineBasicMaterial({ color: 0xffa94d }),
+  temp: new THREE.LineBasicMaterial({ color: 0xffe066, transparent: true, opacity: .6 }), plan: new THREE.LineBasicMaterial({ color: 0x2b5a85, transparent: true, opacity: .35 }),
+};
+
+/* =====================================================================
+   3. BIM ELEMENT REGISTRY + 4D LOGIC
+   ===================================================================== */
+const CATS = {
+  pile: { th: 'เสาเข็มเจาะ Ø1.80 m', grp: 'Substructure', c: '#8d99ae' },
+  cap: { th: 'ฐานราก Pile Cap', grp: 'Substructure', c: '#a5b4c4' },
+  scour: { th: 'Scour Protection', grp: 'Substructure', c: '#8c7b68' },
+  pier: { th: 'ตอม่อ Pier P1–P4', grp: 'Substructure', c: '#c3ccd6' },
+  ptable: { th: 'Pier Table / Pier Head', grp: 'Superstructure', c: '#b2f2bb' },
+  seg: { th: 'Box Girder Segment (Balanced Cantilever)', grp: 'Superstructure', c: '#d0ebff' },
+  closure: { th: 'Closure / End Span', grp: 'Superstructure', c: '#a5d8ff' },
+  ballast: { th: 'Ballast / Counterweight', grp: 'Superstructure', c: '#9775fa' },
+  pylon: { th: 'Pylon P2/P3', grp: 'Pylon & Cables', c: '#ffe8cc' },
+  stay: { th: 'Stay Cable (Extradosed)', grp: 'Pylon & Cables', c: '#ffffff' },
+  deco: { th: 'Decoration Cable', grp: 'Pylon & Cables', c: '#fcc419' },
+  ft: { th: 'Form Traveller FT1–FT4', grp: 'Temporary Works', c: '#ff6b6b' },
+  crane: { th: 'Tower Crane / Floating Crane', grp: 'Temporary Works', c: '#ffd43b' },
+  jetty: { th: 'Temporary Jetty / Cofferdam', grp: 'Temporary Works', c: '#e9c46a' },
+  shore: { th: 'Falsework / Scaffolding', grp: 'Temporary Works', c: '#ffe066' },
+  arch: { th: 'สถาปัตย์ (ศาลา/ยอดเสา)', grp: 'Architecture', c: '#e599f7' },
+  water: { th: 'ระบบประปา (ท่อ กปน. MWA)', grp: 'MEP', c: '#339af0' },
+  drain: { th: 'ระบบระบายน้ำ (Drainage)', grp: 'MEP', c: '#868e96' },
+  elec: { th: 'ไฟฟ้า/สื่อสาร/แสงสว่าง/ล่อฟ้า', grp: 'MEP', c: '#f59f00' },
+  finish: { th: 'Barrier / Railing / Wearing Surface', grp: 'Finishes', c: '#ced4da' },
+};
+const catHidden = {};
+const ELS = [], elById = {};
+function addEl(o) {
+  o.start = typeof o.start === 'string' ? D(o.start) : o.start; o.finish = typeof o.finish === 'string' ? D(o.finish) : o.finish;
+  if (o.rmS) o.rmS = typeof o.rmS === 'string' ? D(o.rmS) : o.rmS; if (o.rmE) o.rmE = typeof o.rmE === 'string' ? D(o.rmE) : o.rmE;
+  o.kind = o.kind || 'gen'; o.src = o.src || 'Programme R.2';
+  o.obj.traverse(m => { if (m.isMesh) { m.userData.el = o; m.userData.base = m.material; m.castShadow = !o.noShadow; m.receiveShadow = true; } });
+  o.obj.userData.el = o;
+  const box = new THREE.Box3().setFromObject(o.obj); o.center = box.getCenter(new THREE.Vector3()); o.box = box;
+  gStruct.add(o.obj); ELS.push(o); elById[o.id] = o; return o;
+}
+const mesh = (g, m) => new THREE.Mesh(g, m);
+
+/* ---------- geometry helpers ---------- */
+function loftDeck(s0, s1) {
+  const n = Math.max(2, Math.ceil((s1 - s0) / 1.0) + 1), rings = [], hw = hwAt((s0 + s1) / 2);
+  for (let i = 0; i < n; i++) { const s = lerp(s0, s1, i / (n - 1)), top = profile(s); rings.push({ s, c: outerContour(depthH(s), hw).map(([o, v]) => W(s, o, top + v)) }); }
+  const pos = [], uv = [], idx = [], m = rings[0].c.length;
+  for (let e = 0; e < m; e++) {
+    const e2 = (e + 1) % m, base = pos.length / 3;
+    for (let i = 0; i < n; i++) { const A = rings[i].c[e], B = rings[i].c[e2]; pos.push(A.x, A.y, A.z, B.x, B.y, B.z); uv.push(rings[i].s / 4, 0, rings[i].s / 4, A.distanceTo(B) / 4); }
+    for (let i = 0; i < n - 1; i++) { const a = base + i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+  return mergeGeometries([g, capGeom(s0, hw), capGeom(s1, hw)]);
+}
+function capGeom(s, hw) {
+  const H = depthH(s), HB = slabHB(s), top = profile(s);
+  const sh = new THREE.Shape(outerContour(H, hw).map(p => new THREE.Vector2(p[0], p[1])));
+  holeContours(H, HB, hw).forEach(h => sh.holes.push(new THREE.Path(h.map(p => new THREE.Vector2(p[0], p[1])))));
+  const g = new THREE.ShapeGeometry(sh), p = g.attributes.position, u = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) { const v = W(s, p.getX(i), top + p.getY(i)); p.setXYZ(i, v.x, v.y, v.z); u.setXY(i, u.getX(i) / 4, u.getY(i) / 4); }
+  g.computeVertexNormals(); return g;
+}
+// generic ribbon/box loft following deck: offsets o0..o1, heights v0..v1 relative to deck CL top
+function loftBox(s0, s1, o0, o1, v0, v1, step = 2, relTop = true) {
+  const n = Math.max(2, Math.ceil((s1 - s0) / step) + 1), pos = [], uv = [], idx = [];
+  const prof = [[o0, v0], [o1, v0], [o1, v1], [o0, v1]];
+  const rings = []; for (let i = 0; i < n; i++) { const s = lerp(s0, s1, i / (n - 1)), top = relTop ? profile(s) - Math.abs((o0 + o1) / 2) * 0.02 : 0; rings.push({ s, c: prof.map(([o, v]) => W(s, o, top + v)) }); }
+  for (let e = 0; e < 4; e++) { const e2 = (e + 1) % 4, base = pos.length / 3;
+    for (let i = 0; i < n; i++) { const A = rings[i].c[e], B = rings[i].c[e2]; pos.push(A.x, A.y, A.z, B.x, B.y, B.z); uv.push(rings[i].s / 6, 0, rings[i].s / 6, 1); }
+    for (let i = 0; i < n - 1; i++) { const a = base + i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+function roadRibbon(s0, s1, oIn, oOut) { // UV x = across (0 at outer pedestrian edge), y = along
+  const n = Math.max(2, Math.ceil((s1 - s0) / 2) + 1), pos = [], uv = [], idx = [];
+  for (let i = 0; i < n; i++) { const s = lerp(s0, s1, i / (n - 1)), top = profile(s);
+    const A = W(s, oOut, top - Math.abs(oOut) * 0.02 + 0.06), B = W(s, oIn, top - Math.abs(oIn) * 0.02 + 0.06);
+    pos.push(A.x, A.y, A.z, B.x, B.y, B.z); uv.push(Math.max(0, 1 - Math.abs(oOut - oIn) / 13), s / 12, 1, s / 12); }
+  for (let i = 0; i < n - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+function taper(h, Lb, Wb, Lt, Wt) {
+  const g = new THREE.BoxGeometry(1, h, 1, 1, 1, 1), p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) { const t = (p.getY(i) + h / 2) / h; p.setX(i, p.getX(i) * lerp(Lb, Lt, t)); p.setZ(i, p.getZ(i) * lerp(Wb, Wt, t)); }
+  g.translate(0, h / 2, 0); g.computeVertexNormals(); return g;
+}
+function stadium(len, wid, depth, holeIn = 0) { // long axis along local z
+  const r = wid / 2, st = len / 2 - r, sh = new THREE.Shape();
+  sh.absarc(0, st, r, 0, Math.PI, false); sh.absarc(0, -st, r, Math.PI, Math.PI * 2, false);
+  if (holeIn > 0) { const h = new THREE.Path(), r2 = r - holeIn; h.absarc(0, st, r2, 0, Math.PI, false); h.absarc(0, -st, r2, Math.PI, Math.PI * 2, false); sh.holes.push(h); }
+  const g = new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: false, curveSegments: 24 }); g.rotateX(-Math.PI / 2); return g;
+}
+function member(a, b, t, mat) { const len = a.distanceTo(b), m = mesh(new THREE.BoxGeometry(t, t, len), mat); m.position.copy(a).add(b).multiplyScalar(.5); m.lookAt(b); return m; }
+function prang(h) {
+  const pts = [[0, 0], [1.6, 0], [1.6, .6], [1.2, .8], [1.45, 1.4], [1.0, 1.7], [1.25, 2.4], [.85, 2.8], [1.0, 3.6], [.62, 4.0], [.78, 4.8], [.42, 5.3], [.55, 6.0], [.28, 6.6], [.34, 7.5], [.14, 9.5], [.05, 12], [0, 12.6]];
+  const k = h / 12.6; return new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r * k, y * k)), 24);
+}
+
+/* ---------- 3a. SUBSTRUCTURE ---------- */
+const WATER_Y = 0.7, BANK_Y = 2.5, BED_Y = -8;
+function pileSet(tag, cx, cz, pts, topY, len, d0, d1, rot = 0) {
+  const n = pts.length, dur = (D(d1) - D(d0)) / n;
+  pts.forEach(([px, pz], i) => {
+    const c = Math.cos(rot), s = Math.sin(rot), x = cx + px * c + pz * s, z = cz - px * s + pz * c;
+    const g = new THREE.CylinderGeometry(.9, .9, len, 14); g.translate(0, -len / 2, 0);
+    const o = new THREE.Group(); o.add(mesh(g, M.concDark)); o.position.set(x, topY, z);
+    addEl({ id: `PILE-${tag}-${String(i + 1).padStart(2, '0')}`, name: `Bored pile Ø1.80 m ${tag} #${i + 1}`, cat: 'pile', grp: `เสาเข็มเจาะ ${tag}`, obj: o, kind: 'grow',
+      start: D(d0) + i * dur, finish: D(d0) + (i + 1) * dur, src: 'Assumed (ก่อนแผน R.2)', dwg: tag === 'P2' || tag === 'P3' ? 'M-021' : 'M-022', qty: { L: len, vol: Math.PI * .81 * len } });
+  });
+}
+// P2 – pile cap F28 (stadium 34 x 16 m, skew 12°)
+const SKEW = THREE.MathUtils.degToRad(12);
+(function () {
+  const p2 = []; [-5.4, -1.8, 1.8, 5.4].forEach(x => [-13.2, -8.8, -4.4, 0, 4.4, 8.8, 13.2].forEach(z => p2.push([x, z])));
+  pileSet('P2', PIER.P2, 0, p2, -2.5, 48, '2024-01-08', '2024-04-20', SKEW);
+  const p3 = []; [[-9, 3], [-4.5, 4], [0, 5], [4.5, 4], [9, 3]].forEach(([z, n]) => { for (let i = 0; i < n; i++) p3.push([(i - (n - 1) / 2) * 3.0, z]); });
+  pileSet('P3', PIER.P3, 0, p3, -2.0, 46, '2024-02-01', '2024-04-30', SKEW);
+  [['P1', 0, '2024-03-01', '2024-03-20'], ['P4', PIER.P4, '2024-03-21', '2024-04-10']].forEach(([tag, s, a, b]) => {
+    const pts = []; [-8.5, 8.5].forEach(o => [[-1.95, -1.95], [1.95, -1.95], [-1.95, 1.95], [1.95, 1.95]].forEach(([dx, dz]) => pts.push([dx, o + dz])));
+    const al = align(s); pileSet(tag, al.x, al.z, pts, 0.0, 42, a, b, -al.a);
+  });
+  // pile caps
+  const capEl = (id, name, g, x, y, z, rot, a, b, dwg, vol) => { const m = mesh(g, M.concDark), o = new THREE.Group(); o.add(m); o.position.set(x, y, z); o.rotation.y = rot;
+    addEl({ id, name, cat: 'cap', grp: 'ฐานราก (Pile Cap)', obj: o, start: a, finish: b, src: 'Assumed (ก่อนแผน R.2)', dwg, qty: { vol } }); };
+  capEl('CAP-P2', 'Pile cap F28 – Pier P2 (34.0 x 16.0 x 4.0 m)', stadium(34, 16, 4), PIER.P2, -2.5, 0, SKEW, '2024-05-01', '2024-07-31', 'M-031/032/033', 2010);
+  capEl('CAP-P3', 'Pile cap F19 – Pier P3 (26.0 x 13.0 x 3.5 m)', stadium(26, 13, 3.5), PIER.P3, -2.0, 0, SKEW, '2024-05-15', '2024-08-15', 'M-041/042/043', 1110);
+  [['P1', 0, '2024-06-01', '2024-06-30'], ['P4', PIER.P4, '2024-06-15', '2024-07-15']].forEach(([tag, s, a, b]) => {
+    const al = align(s), g = new THREE.Group(); [-8.5, 8.5].forEach(o => { const m = mesh(new THREE.BoxGeometry(7.8, 2.5, 7.8), M.concDark); m.position.set(0, 1.25, o); g.add(m); });
+    g.position.set(al.x, 0.1, al.z); g.rotation.y = -al.a;
+    addEl({ id: 'CAP-' + tag, name: `Pile cap F4 x2 – End pier ${tag}`, cat: 'cap', grp: 'ฐานราก (Pile Cap)', obj: g, start: a, finish: b, src: 'Assumed (ก่อนแผน R.2)', dwg: 'M-051/052', qty: { vol: 304 } });
+  });
+  // scour protection (riprap) M-025
+  [['P2', PIER.P2, 25, 48], ['P3', PIER.P3, 20, 38]].forEach(([tag, x, w, l]) => {
+    const g = new THREE.CylinderGeometry(1, 1.15, 1.6, 40); g.scale(w / 2, 1, l / 2);
+    const pp = g.attributes.position; for (let i = 0; i < pp.count; i++) if (pp.getY(i) > 0) pp.setY(i, pp.getY(i) + (R() - .5) * .6); g.computeVertexNormals();
+    const o = new THREE.Group(); o.add(mesh(g, M.rock)); o.position.set(x, BED_Y + .6, 0); o.rotation.y = SKEW;
+    addEl({ id: 'SCOUR-' + tag, name: `Scour protection (riprap) ${tag}`, cat: 'scour', grp: 'ฐานราก (Pile Cap)', obj: o, start: tag === 'P2' ? '2024-08-01' : '2024-08-20', finish: tag === 'P2' ? '2024-09-10' : '2024-09-30', src: 'Assumed', dwg: 'M-025', noShadow: true });
+  });
+  // piers
+  const pierEl = (tag, s, g, y, a, b, dwg, vol) => { const o = new THREE.Group(); o.add(mesh(g, M.conc)); const al = align(s); o.position.set(al.x, y, al.z); o.rotation.y = -al.a;
+    addEl({ id: 'PIER-' + tag, name: `Pier ${tag}`, cat: 'pier', grp: 'ตอม่อ (Pier)', obj: o, start: a, finish: b, src: 'Assumed (ก่อนแผน R.2)', dwg, qty: { vol } }); };
+  pierEl('P2', PIER.P2, taper(profile(120) - 6.8 - 1.5 + 0.05, 8.5, 11, 12.5, 17), 1.5, '2024-08-01', '2024-09-30', 'M-150/151', 900);
+  pierEl('P3', PIER.P3, taper(profile(285) - 5.5 - 1.5 + 0.05, 7, 9.5, 10, 15), 1.5, '2024-08-16', '2024-10-15', 'M-250/251', 650);
+  [['P1', 0, '2024-07-01', '2024-08-31', 'M-101/102'], ['P4', PIER.P4, '2024-07-16', '2024-09-15', 'M-111/112']].forEach(([tag, s, a, b, dwg]) => {
+    const top = profile(s) - 3.3 - 0.4, g = new THREE.Group();
+    [-8.5, 8.5].forEach(o => { const c = mesh(taper(top - 2.6 - 2.2, 2.6, 3.2, 2.6, 3.2), M.conc); c.position.set(0, 2.6, o); g.add(c); });
+    const cb = mesh(new THREE.BoxGeometry(2.8, 2.2, 27), M.conc); cb.position.set(0, top - 1.1, 0); g.add(cb);
+    const al = align(s); g.position.set(al.x, 0, al.z); g.rotation.y = -al.a;
+    addEl({ id: 'PIER-' + tag, name: `End pier ${tag} (crossbeam + seismic buffer)`, cat: 'pier', grp: 'ตอม่อ (Pier)', obj: g, start: a, finish: b, src: 'Assumed (ก่อนแผน R.2)', dwg, qty: { vol: 260 } });
+  });
+})();
+
+/* ---------- 3b. SUPERSTRUCTURE SEGMENTS ---------- */
+const SEGS = [];
+function addDeckEl(id, name, cat, s0, s1, start, finish, grp, dwg, extra = {}) {
+  const o = new THREE.Group(); o.add(mesh(loftDeck(s0, s1), M.conc));
+  const vol = sectArea((s0 + s1) / 2) * (s1 - s0);
+  const dur = (D(finish) - D(start)) / DAY;
+  const e = addEl(Object.assign({ id, name, cat, grp, obj: o, start, finish, kind: 'seg', dwg, qty: { L: s1 - s0, vol, H: depthH((s0 + s1) / 2) }, s0, s1,
+    cast: D(start) + Math.min(10, Math.max(1, Math.round(dur * .75))) * DAY }, extra));
+  SEGS.push(e); return e;
+}
+addDeckEl('PT-P2', 'Pier Table P2 (15.0 m, H = 6.80 m)', 'ptable', 112.5, 127.5, addD(SCHED.pt.P2, -116), SCHED.pt.P2, 'Pier Table P2/P3', 'M-152/155–158', { src: SRC + ' (completion) / start assumed', cast: D(SCHED.pt.P2) - 20 * DAY });
+addDeckEl('PT-P3', 'Pier Table P3 (15.0 m, H = 5.50 m)', 'ptable', 277.5, 292.5, addD(SCHED.pt.P3, -157), SCHED.pt.P3, 'Pier Table P2/P3', 'M-252/255–258', { src: SRC + ' (completion) / start assumed', cast: D(SCHED.pt.P3) - 21 * DAY });
+const FTSEQ = { FT1: [], FT2: [], FT3: [], FT4: [] };
+function cantilever(pier, dir, names, lens, ft, grp, dwg) {
+  let d = 7.5;
+  names.forEach((n, i) => {
+    const Lg = lens[i], a = pier + dir * d, b = pier + dir * (d + Lg), [st, fi] = SD[n];
+    const e = addDeckEl('SEG-' + n, `Segment ${n} (L = ${Lg.toFixed(2)} m)`, 'seg', Math.min(a, b), Math.max(a, b), st, fi, grp, dwg, { near: a, far: b, dir, ft });
+    FTSEQ[ft].push(e); d += Lg;
+  });
+}
+const L5 = n => Array(n).fill(5);
+cantilever(PIER.P2, -1, ["A'", "B'", "C'", "D'", "E'", "F'", "G'", "H'", "I'", "J'", "K'", "L'", "M'", "N'", "O'", "P'", "Q'", "R'", "S'"], [3.5, 4, ...L5(16), 3.75], 'FT1', 'Cantilever P2 – Side span (A′–S′)', 'M-403');
+cantilever(PIER.P2, +1, ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S'], [3.5, 4, ...L5(16), 3.75], 'FT2', 'Cantilever P2 – Main span (A–S)', 'M-404');
+cantilever(PIER.P3, -1, ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'I1', 'J1', 'K1', 'L1'], [3.5, ...L5(9), 4, 3.75], 'FT3', 'Cantilever P3 – Main span (A1–L1)', 'M-405');
+cantilever(PIER.P3, +1, ["A1'", "B1'", "C1'", "D1'", "E1'", "F1'", "G1'", "H1'", "I1'", "J1'", "K1'", "L1'"], [3.5, ...L5(9), 4, 3.75], 'FT4', 'Cantilever P3 – Side span (A1′–L1′)', 'M-406');
+// closures & end spans
+const eTp = addDeckEl("SEG-T'", "Side-span closure T′ (2.50 m)", 'closure', 18.75, 21.25, ...SD["T'"], 'Closures & End spans', 'M-403 / M-913', { near: 21.25, far: 18.75, dir: -1, ft: 'FT1' }); FTSEQ.FT1.push(eTp);
+addDeckEl("END-P1", "End span U′ on scaffolding P1–P2 (18.75 m)", 'closure', 0, 18.75, ...SCHED.end.P2, 'Closures & End spans', 'M-403 / M-912');
+const eT = addDeckEl('SEG-T', 'Mid-span closure T (2.50 m)', 'closure', 218.75, 221.25, ...SD.T, 'Closures & End spans', 'M-404/405 / M-914', { near: 218.75, far: 221.25, dir: 1, ft: 'FT2' }); FTSEQ.FT2.push(eT);
+addDeckEl('END-P4', 'End span on scaffolding P3–P4 (5.52 m)', 'closure', 351.25, 356.766, ...SCHED.end.P3, 'Closures & End spans', 'M-406 / M-913');
+addDeckEl("SEG-M1'", "Final closure M1′ P3–P4 (2.50 m)", 'closure', 348.75, 351.25, ...SD["M1'"], 'Closures & End spans', 'M-406 / M-913');
+
+// ballast (counterweight) in P3 side span – inside the box (M-406 table)
+["B1'", "C1'", "D1'", "E1'", "F1'", "G1'", "H1'", "I1'", "J1'", "K1'", "L1'"].forEach((n, i) => {
+  const sg = elById['SEG-' + n], s = (sg.s0 + sg.s1) / 2, H = depthH(s), HB = slabHB(s);
+  const nar = hwAt(s) < 10, o = new THREE.Group(); [-1, 1].forEach(sd => { const dz = sd * (nar ? 3.0 : 4.5), m = mesh(new THREE.BoxGeometry(sg.s1 - sg.s0 - .6, .9, nar ? 2.6 : 4), M.ballast); m.position.z = dz; o.add(m); });
+  const p = W(s, 0, profile(s) - H + HB + .45); o.position.copy(p); o.rotation.y = -align(s).a;
+  const kN = [115, 211, 250, 657, 641, 611, 711, 702, 701, 560, 525][i];
+  addEl({ id: 'BAL-' + n, name: `Ballast segment ${n} (${kN} kN)`, cat: 'ballast', grp: 'Ballast P3 side span', obj: o, start: sg.finish + DAY, finish: sg.finish + 4 * DAY, dwg: 'M-406', src: 'Programme R.2 (Counter weight casting)', noShadow: true });
+});
+
+/* ---------- 3c. PYLONS, STAYS, DECORATION ---------- */
+// Pylon geometry – AR "แบบขยาย PYLON-1 / PYLON-2" + project federated model (King1 / AR_KING / Q2, sampled profiles)
+// P2: pedestal flare 20.6→12.4 m (h 0–4.5), shaft 10.2 / 11.6 m long × 2.4 m, cornice + gold arms ±9.8 m at h 32.4, capital/clock 4.15 m, pinnacle 12.35 m (Rmax 3.45)
+// P3: plinth 9.3 m (h 0–1.65), shaft 4.2 × 2.8 m, flared capital to 4.8 × 3.9 m, pinnacle 8.2 m (Rmax 1.93)
+const pylonTopReady = {};
+function sideProfileGeom(pts, depth) {   // closed side profile in (x along bridge, h) extruded across the bridge (depth)
+  const sh = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
+  const g = new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: false, curveSegments: 12 }); g.translate(0, 0, -depth / 2); g.computeVertexNormals(); return g;
+}
+function concaveFlare(hw0, hw1, h, n = 10) { const p = []; for (let i = 0; i <= n; i++) { const t = i / n, a = t * Math.PI / 2; p.push([hw1 + (hw0 - hw1) * (1 - Math.sin(a)), h * (1 - Math.cos(a))]); } return p; }
+function pylonPart(tag, i, deckY) {   // geometry of lift i, origin at deck level of the pylon axis
+  const g = new THREE.Group(), add = (geo, mat, y = 0) => { const m = mesh(geo, mat); m.position.y = y; g.add(m); return m; };
+  const orn = new THREE.Group(); g.userData.orn = orn; const addO = (geo, mat, y = 0) => { const m = mesh(geo, mat); m.position.y = y; orn.add(m); return m; };
+  if (tag === 'P2') {
+    const H = [0, 4.5, 9.8, 13.5, 17.5, 21.5, 25.5, 29.8, 32.7, 35.65];
+    const h0 = H[i], h1 = H[i + 1];
+    if (i === 0) { const f = concaveFlare(10.3, 6.2, 4.5); add(sideProfileGeom([...f.map(([x, y]) => [-x, y]).reverse(), ...f], 3.4), M.pylon); }
+    else if (i <= 6) {
+      const hw = h0 < 9.8 ? 5.1 : 5.8; add(taper(h1 - h0, hw * 2, 2.4, hw * 2, 2.4), M.pylon, h0);
+      const s0 = lerp(3.1, 2.5, (h0 - 4.5) / 25.3), s1 = lerp(3.1, 2.5, (h1 - 4.5) / 25.3);   // central raised panel on both faces
+      [-1, 1].forEach(sd => { const p = add(taper(h1 - h0, s0 * 2, .3, s1 * 2, .3), M.pylon, h0); p.position.z = sd * 1.33; });
+      if (i === 1) add(new THREE.BoxGeometry(10.6, .5, 2.6), M.pylon, 9.6);
+    } else if (i === 7) {   // cornice + ornamental gold arms (aluminium sculpture + flags)
+      add(taper(2.4, 11.6, 2.4, 13.8, 3.0), M.pylon, h0); add(new THREE.BoxGeometry(13.8, .5, 3.2), M.pylon, h0 + 2.65);
+      [-1, 1].forEach(sd => {
+        const arm = addO(new THREE.CylinderGeometry(.12, .12, 4.0, 8), M.gold, h0 + 2.6); arm.rotation.z = Math.PI / 2; arm.position.x = sd * 7.8;
+        const knob = addO(new THREE.SphereGeometry(.28, 12, 8), M.gold, h0 + 2.6); knob.position.x = sd * 9.8;
+        [0, .9].forEach(dx => { const fl = mesh(new THREE.ConeGeometry(.8, 1.3, 3), M.gold); fl.rotation.z = sd > 0 ? -Math.PI / 2 : Math.PI / 2; fl.position.set(sd * (8.6 + dx), h0 + 1.0, 0); orn.add(fl); });
+        const hang = addO(new THREE.CylinderGeometry(.04, .04, 1.4, 6), M.gold, h0 + 1.9); hang.position.x = sd * 9.0;
+      });
+    } else {   // capital with clocks (นาฬิกา ด้านละ 1 ชุด)
+      add(taper(2.95, 6.4, 2.7, 7.0, 3.6), M.pylon, h0); add(new THREE.BoxGeometry(7.4, .35, 4.0), M.gold, h0 + 2.95);
+      [-1, 1].forEach(sd => {
+        const face = addO(new THREE.CylinderGeometry(1.25, 1.25, .12, 40), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .4 }), h0 + 1.55); face.rotation.x = Math.PI / 2; face.position.z = sd * 1.62;
+        const rim = addO(new THREE.TorusGeometry(1.3, .1, 8, 40), M.gold, h0 + 1.55); rim.position.z = sd * 1.68;
+        const hh = addO(new THREE.BoxGeometry(.08, .75, .05), M.dark, h0 + 1.85); hh.position.z = sd * 1.7;
+        const mh = addO(new THREE.BoxGeometry(.06, 1.0, .05), M.dark, h0 + 1.55); mh.position.set(.35, h0 + 1.55, sd * 1.71); mh.rotation.z = -1.1;
+      });
+    }
+  } else {
+    const H = [0, 1.65, 5.5, 9.4, 13.3, 16.2, 19.38];
+    const h0 = H[i], h1 = H[i + 1];
+    if (i === 0) { const f = concaveFlare(4.65, 3.4, 1.65, 6); add(sideProfileGeom([...f.map(([x, y]) => [-x, y]).reverse(), ...f], 3.5), M.pylon); }
+    else if (i < 5) { add(taper(h1 - h0, 4.2, 2.8, 4.2, 2.8), M.pylon, h0);
+      [-1, 1].forEach(sd => { const o = add(new THREE.BoxGeometry(3.0, (h1 - h0) * .82, .06), M.pylonDark, h0 + (h1 - h0) / 2); o.position.z = sd * 1.42; o.scale.set(1, 1, 1); }); }
+    else { add(taper(1.25, 4.2, 2.8, 4.2, 2.8), M.pylon, h0); add(taper(h1 - h0 - 1.25, 4.2, 2.8, 4.8, 3.9), M.pylon, h0 + 1.25); add(new THREE.BoxGeometry(5.0, .3, 4.1), M.gold, h1 - .15); }
+  }
+  return g;
+}
+function pylon(tag, s, n, dates) {
+  const ornAll = [];
+  const al = align(s), out = [], deckY = profile(s), Hs = tag === 'P2' ? [0, 4.5, 9.8, 13.5, 17.5, 21.5, 25.5, 29.8, 32.7, 35.65] : [0, 1.65, 5.5, 9.4, 13.3, 16.2, 19.38];
+  for (let i = 0; i < n; i++) {
+    const o = pylonPart(tag, i, deckY); o.position.set(al.x, deckY, al.z); o.rotation.y = -al.a;
+    const nm = i === 0 ? (tag === 'P2' ? 'Kicker / pedestal' : 'Plinth') : i === n - 1 ? (tag === 'P2' ? '8th Portion – capital & clock (Crown)' : 'Capital') : `Portion ${i}`;
+    const e = addEl({ id: `PYL-${tag}-${i}`, name: `Pylon ${tag} – ${nm} (h ${Hs[i].toFixed(2)}–${Hs[i + 1].toFixed(2)} m above deck)`, cat: 'pylon', grp: `Pylon ${tag}`, obj: o, kind: 'seg', start: dates[i][0], finish: dates[i][1],
+      dwg: tag === 'P2' ? 'M-150/159 · AR PYLON-1' : 'M-250/259 · AR PYLON-2', src: dates[i][2] || 'Programme R.2', qty: { vol: (Hs[i + 1] - Hs[i]) * (tag === 'P2' ? 11 * 2.4 : 4.2 * 2.8) } });
+    e.cast = e.finish - 2 * DAY; e.y1 = deckY + Hs[i + 1]; out.push(e);
+    if (o.userData.orn.children.length) ornAll.push([o, o.userData.orn]);
+  }
+  if (ornAll.length) {   // aluminium sculpture (arms + flags) and clocks → architectural element, shown after the structure is complete
+    const so = new THREE.Group(); ornAll.forEach(([o, orn]) => { orn.position.copy(o.position); orn.rotation.copy(o.rotation); so.add(orn); });
+    addEl({ id: 'SCULP-' + tag, name: `งานประติมากรรมอลูมิเนียม (แขนประดับ + ธง) และนาฬิกา – Pylon ${tag}`, cat: 'arch', grp: 'สถาปัตยกรรม & ตกแต่ง', obj: so, start: '2026-02-20', finish: '2026-03-31', src: 'Assumed', dwg: 'AR แบบขยาย PYLON-1' });
+  }
+  pylonTopReady[tag] = out; return out;
+}
+const yP2 = profile(120), yP3 = profile(285), yP2top = yP2 + 35.65, yP3top = yP3 + 19.38;
+pylon('P2', 120, 9, SCHED.pylon.P2.map(d => [d[0], d[1], SRC]));
+pylon('P3', 285, 6, SCHED.pylon.P3.map((d, i) => [d[0], d[1], SCHED.user ? SRC : 'Programme R.2 (Pylon P3A 26/06–26/08/25) – แบ่งช่วงยกโดยประมาณ']));
+// Pinnacles (หัวเม็ด FIBERGLASS ทรงพุ่ม): radial profiles sampled from the model (0.3 m steps)
+const PIN_P2 = [2.05, 2.01, 1.63, 1.62, 1.45, 1.4, 1.49, 1.75, 1.76, 1.93, 1.9, 2.39, 2.5, 2.72, 2.86, 2.98, 3.1, 3.2, 3.28, 3.36, 3.38, 3.45, 3.45, 3.38, 3.22, 2.91, 1.87, 1.87, 1.45, 1.07, 1.1, .74, .75, .65, .52, .42, .32, .25, .18, .14, .1, .08, 0];
+const PIN_P3 = [1.2, .91, .77, .72, .85, 1.0, 1.09, 1.32, 1.45, 1.58, 1.75, 1.88, 1.93, 1.93, 1.83, 1.19, 1.2, 1.0, .82, .64, .56, .48, .39, .27, .23, .16, .11, .07, 0];
+function pinnacleGeom(R, dz) {
+  const pts = [new THREE.Vector2(0, 0)];
+  R.forEach((r, i) => { const y = i * dz; if (i > 0 && Math.abs(r - R[i - 1]) > .25) pts.push(new THREE.Vector2(R[i - 1], y - .02)); pts.push(new THREE.Vector2(Math.max(r, .001), y)); });
+  pts.push(new THREE.Vector2(0, (R.length - 1) * dz + .05));
+  return new THREE.LatheGeometry(pts, 48);
+}
+[['P2', 120, yP2top, PIN_P2, '2026-02-15', '2026-03-31'], ['P3', 285, yP3top, PIN_P3, '2026-02-20', '2026-04-05']].forEach(([tag, s, y, R, a, b]) => {
+  const o = new THREE.Group(), al = align(s), pin = mesh(pinnacleGeom(R, .3), M.gold); o.add(pin);
+  const top = (R.length - 1) * .3;
+  const av = mesh(new THREE.SphereGeometry(.22, 12, 8), M.avi); av.position.y = top + .15; o.add(av);
+  const rod = mesh(new THREE.CylinderGeometry(.03, .03, 1.6, 6), M.lamp); rod.position.y = top + .9; o.add(rod);
+  o.position.set(al.x, y, al.z);
+  addEl({ id: 'FIN-' + tag, name: `หัวเม็ดทรงพุ่ม (Fibreglass pinnacle, H ${top.toFixed(2)} m) + aviation light + lightning rod – Pylon ${tag}`, cat: 'arch', grp: 'สถาปัตยกรรม & ตกแต่ง', obj: o, start: a, finish: b, src: 'Assumed', dwg: tag === 'P2' ? 'AR แบบขยาย PYLON-1 (12.35 m)' : 'AR แบบขยาย PYLON-2 (8.20 m)' });
+});
+// stay cables (M-301) – yellow HDPE as in architectural renders
+const segAt = s => SEGS.find(e => e.cat === 'seg' && s >= e.s0 && s <= e.s1);
+function readyDate(tag, rl) { const p = pylonTopReady[tag].find(e => e.y1 >= rl); return p ? p.finish : pylonTopReady[tag].at(-1).finish; }
+const STAYLINE = {};
+function addStay(no, tag, sPy, sAnc, rlB) {
+  const a = W(sAnc, 0, profile(sAnc) + 0.3), b = W(sPy, 0, rlB);
+  const curve = new THREE.LineCurve3(a, b), o = new THREE.Group(); o.add(mesh(new THREE.TubeGeometry(curve, 1, .16, 8, false), M.cable));
+  const sg = segAt(sAnc), st = Math.max(sg.finish - 4 * DAY, readyDate(tag, rlB) + DAY);
+  addEl({ id: 'STAY-' + no, name: `Stay cable ${no} (H1 = ${Math.abs(sAnc - sPy).toFixed(3)} m, RL B ${rlB.toFixed(3)})`, cat: 'stay', grp: `Stay cables ${tag}`, obj: o, kind: 'cable', start: st, finish: st + 4 * DAY,
+    dwg: 'M-301 / M-302', src: 'Derived from Programme R.2 (Preparation of stayed cable) + Pylon progress', qty: { L: a.distanceTo(b) }, noShadow: false, seg: sg.id });
+  STAYLINE[no] = [a, b];
+}
+for (let k = 1; k <= 12; k++) { const H1 = 28.75 + 5 * (k - 1), rl = 32.62 + .9 * (k - 1); addStay(100 + k, 'P2', 120, 120 - H1, rl); addStay(200 + k, 'P2', 120, 120 + H1, rl); }
+for (let k = 1; k <= 6; k++) { const H1 = [14.749, 19.749, 24.747, 29.745, 34.742, 39.739][k - 1], rl = 21.268 + .9 * (k - 1); addStay(300 + k, 'P3', 285, 285 - H1, rl); addStay(400 + k, 'P3', 285, 285 + H1, rl); }
+// decoration cables (M-303 / Presentation p.162–163): anchored at pylon top above the stays, low tension → parabolic sag
+// C1/C2 = 7 strands (sag 4.011 / 3.055 m), C3/C4 = 4 strands (sag 2.276 / 2.304 m), cross-tie rods to the outermost stay
+[['C1', 120, yP2 + 31.2, 8, 4.011, 112], ['C2', 120, yP2 + 31.2, 218, 3.055, 212], ['C3', 285, yP3 + 17.2, 224, 2.276, 306], ['C4', 285, yP3 + 17.2, 350, 2.304, 406]].forEach(([n, sp, y, se, sag, outer]) => {
+  const yb = profile(se) + 1.0, pts = [], at = t => { const s = lerp(sp, se, t); return W(s, 0, lerp(y, yb, t) - 4 * sag * t * (1 - t)); };
+  for (let i = 0; i <= 48; i++) pts.push(at(i / 48));
+  const o = new THREE.Group(); o.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 96, .2, 8, false), M.deco));
+  const [sa, sb] = STAYLINE[outer];
+  [.35, .6].forEach(t => {   // cable cross-tie / tie rod (M-301 "CABLE CROSS-TIE TIE ROD")
+    const p = at(t), u = (p.x - sa.x) / (sb.x - sa.x); if (u <= 0 || u >= 1) return;
+    const q = new THREE.Vector3().lerpVectors(sa, sb, u); if (q.y < p.y - .3) o.add(member(p, q, .07, M.lamp));
+  });
+  addEl({ id: 'DECO-' + n, name: `Decoration cable ${n} (sag ${sag.toFixed(3)} m)`, cat: 'deco', grp: 'สถาปัตยกรรม & ตกแต่ง', obj: o, start: '2026-03-01', finish: '2026-03-31', src: 'Assumed', dwg: 'M-303 / M-416 / M-472 · Presentation p.162–166' });
+});
+
+/* ---------- 3d. FINISHES, MEP, ARCHITECTURE ---------- */
+const SPANS = [['P1–P2', 0, 120, '2025-12-01', '2026-03-31'], ['P2–P3', 120, 285, '2026-01-05', '2026-04-15'], ['P3–E1′', 285, NARROW_S, '2025-12-15', '2026-03-31'], ['F1′–P4', NARROW_S, 356.766, '2025-12-15', '2026-03-31']];
+function thaiLamp(s, sd, hw) {   // AR sheet "แบบขยายเสาไฟฟ้าแสงสว่าง" – curved swan-neck single arm
+  const g = new THREE.Group(), top = profile(s);
+  const base = W(s, sd * (hw - .65), top + .8), ped = mesh(new THREE.CylinderGeometry(.32, .42, 1.0, 8), M.lamp); ped.position.copy(base).add(new THREE.Vector3(0, .5, 0)); g.add(ped);
+  const pole = mesh(new THREE.CylinderGeometry(.09, .16, 9.0, 10), M.lamp); pole.position.copy(base).add(new THREE.Vector3(0, 4.5, 0)); g.add(pole);
+  const p0 = base.clone().setY(base.y + 9.0), p1 = W(s, sd * (hw - 1.0), top + 11.6), p2 = W(s, sd * (hw - 3.0), top + 10.4);
+  g.add(mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(p0, p1, p2), 16, .08, 6, false), M.lamp));
+  const hd = mesh(new THREE.CylinderGeometry(.18, .38, .5, 8), M.lampHead); hd.position.copy(p2).add(new THREE.Vector3(0, -.25, 0)); g.add(hd);
+  const fin = mesh(new THREE.ConeGeometry(.12, .5, 8), M.gold); fin.position.copy(p0).add(new THREE.Vector3(0, .25, 0)); g.add(fin);
+  return g;
+}
+SPANS.forEach(([nm, s0, s1, a, b]) => {
+  const hw = hwAt((s0 + s1) / 2), o = new THREE.Group();
+  [-1, 1].forEach(sd => {
+    o.add(mesh(loftBox(s0, s1, sd * (hw - .43), sd * (hw - .05), -.05, .8), M.barrier));
+    o.add(mesh(loftBox(s0, s1, sd * (hw - .23), sd * (hw - .13), .8, 1.35), M.rail));
+    o.add(mesh(loftBox(s0, s1, sd * 0.8, sd * 1.2, 0, .9), M.barrier));
+  });
+  addEl({ id: 'BAR-' + nm, name: `Concrete barrier, median barrier & Thai-pattern railing ${nm}`, cat: 'finish', grp: 'Barrier / Railing / SDL', obj: o, start: a, finish: b, src: 'Assumed (เริ่มได้ตามหมายเหตุ M-912/914)', dwg: 'M-510 · AR แบบขยายราวกันตก' });
+  const r = new THREE.Group(); r.add(mesh(roadRibbon(s0, s1, 1.25, hw - .4), M.road)); r.add(mesh(roadRibbon(s0, s1, -1.25, -(hw - .4)), M.road));
+  addEl({ id: 'WS-' + nm, name: `Wearing surface t = 50 mm + road marking ${nm}`, cat: 'finish', grp: 'ผิวทาง & เครื่องหมายจราจร', obj: r, start: '2026-04-01', finish: '2026-05-10', src: 'Assumed', dwg: 'M-401', noShadow: true });
+  const lg = new THREE.Group();
+  for (let s = s0 + 8; s < s1 - 4; s += 24) [-1, 1].forEach(sd => lg.add(thaiLamp(s, sd, hw)));
+  addEl({ id: 'LGT-' + nm, name: `Street lighting ${nm} – Thai style lamp post (ไฟฟ้าแสงสว่าง)`, cat: 'elec', grp: 'งานระบบไฟฟ้า/สื่อสาร', obj: lg, start: '2026-03-15', finish: '2026-05-15', src: 'Assumed', dwg: 'AR แบบขยายเสาไฟฟ้าแสงสว่าง · M-520/521' });
+});
+// MWA water main + comm/electrical cable tray inside box; drainage
+function pathInBox(off, dv, s0 = 0.5, s1 = 356.2) { const pts = []; for (let s = s0; s <= s1; s += 3) { const o = hwAt(s) > 10 ? off : off * .8 - Math.sign(off) * .1; pts.push(W(s, o, profile(s) - depthH(s) + slabHB(s) + dv)); } return new THREE.CatmullRomCurve3(pts); }
+{ const o = new THREE.Group(); [2.8, 4.1].forEach(off => o.add(mesh(new THREE.TubeGeometry(pathInBox(off, .65), 400, .5, 12), M.water)));
+  addEl({ id: 'MWA-PIPE', name: 'ท่อประปา กปน. (MWA) Steel pipe Ø1000 x2 ภายในกล่อง box girder', cat: 'water', grp: 'งานระบบประปา (MWA)', obj: o, start: '2026-02-17', finish: '2026-04-15', src: 'M-914: Distribute stocked MWA steel pipes over entire bridge', dwg: 'M-401 (opening 1100) / M-914 · Presentation p.120', noShadow: true }); }
+{ const o = new THREE.Group(); o.add(mesh(new THREE.TubeGeometry(pathInBox(-3.4, .9), 400, .32, 4), M.elec));
+  addEl({ id: 'TRAY', name: 'Cable tray ไฟฟ้า/สื่อสาร (ภายในกล่อง)', cat: 'elec', grp: 'งานระบบไฟฟ้า/สื่อสาร', obj: o, start: '2026-03-01', finish: '2026-04-30', src: 'Assumed – ไม่มีแบบงานระบบในโฟลเดอร์', dwg: '—', noShadow: true }); }
+{ const o = new THREE.Group(); [[1, NARROW_S - .5], [NARROW_S + .5, 356]].forEach(([a0, a1]) => [-1, 1].forEach(sd => { const pts = []; for (let s = a0; s <= a1; s += 4) pts.push(W(s, sd * (hwAt(s) - 2.05), profile(s) - 1.0)); pts.push(W(a1, sd * (hwAt(a1) - 2.05), profile(a1) - 1.0)); o.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 200, .16, 8), M.drain)); }));
+  [['P1', 0], ['P2', 120], ['P3', 285], ['P4', PIER.P4 - 3]].forEach(([t, s]) => [-1, 1].forEach(sd => { const a = W(s + 1.5, sd * (hwAt(s) - 2.05), profile(s) - 1.0), b = W(s + 1.5, sd * (hwAt(s) - 2.05), 1.8); o.add(member(a, b, .3, M.drain)); }));
+  addEl({ id: 'DRAIN', name: 'ระบบระบายน้ำ: drain pipe Ø75@5000, collector pipe & down pipes', cat: 'drain', grp: 'งานระบบระบายน้ำ', obj: o, start: '2026-02-20', finish: '2026-04-15', src: 'Assumed', dwg: 'M-601…M-612', noShadow: true }); }
+// Stair towers (AR "STAIR TOWER" sheets): square tower, lantern with arched openings, tiered crown, golden lotus bud, external stair to deck
+function stairTower(deckY) {
+  const g = new THREE.Group(), G0 = BANK_Y;
+  const add = (geo, mat, x, y, z) => { const m = mesh(geo, mat); m.position.set(x, y, z); g.add(m); return m; };
+  [[7.6, .5], [6.8, .5], [6.0, .5]].forEach(([w, h], i) => add(new THREE.BoxGeometry(w, h, w), M.white, 0, G0 + .25 + i * .5, 0));
+  const shaftTop = G0 + 15.5;   // overall tower height ≈ 28 m (model)
+  add(taper(shaftTop - G0 - 1.5, 4.6, 4.6, 4.2, 4.2), M.white, 0, G0 + 1.5, 0);
+  [[5.2, .5, 0], [4.8, .35, .5]].forEach(([w, h, dy]) => add(new THREE.BoxGeometry(w, h, w), M.white, 0, shaftTop + h / 2 + dy, 0));
+  const lan = add(new THREE.BoxGeometry(4.0, 4.2, 4.0), M.white, 0, shaftTop + 3.0, 0);
+  [[0, 2.03, 0], [0, -2.03, 0], [2.03, 0, Math.PI / 2], [-2.03, 0, Math.PI / 2]].forEach(([x, z, r]) => { const ar = add(new THREE.BoxGeometry(1.5, 2.8, .08), M.pylonDark, x, shaftTop + 2.9, z); ar.rotation.y = r;
+    const tp = add(new THREE.CylinderGeometry(.75, .75, .08, 16, 1, false, 0, Math.PI), M.pylonDark, x, shaftTop + 4.3, z); tp.rotation.set(Math.PI / 2, 0, r + Math.PI / 2); });
+  let y = shaftTop + 5.1; [[4.6, .4], [4.0, .5], [3.4, .5], [2.8, .5], [2.2, .5]].forEach(([w, h]) => { add(new THREE.BoxGeometry(w, h, w), M.white, 0, y + h / 2, 0); y += h; });
+  const gb = add(new THREE.BoxGeometry(2.4, .15, 2.4), M.gold, 0, y, 0);
+  const bud = add(pinnacleGeom(PIN_P3.map(r => r * .62), .3 * .62), M.gold, 0, y + .05, 0);
+  // external stair: two flights from ground to deck level along local +x side
+  const run = 7.5, w = 1.8, zS = 3.3, hMid = (deckY - G0) / 2;
+  const fl = (x0, y0, x1, y1, z) => { const a = new THREE.Vector3(x0, y0, z), b = new THREE.Vector3(x1, y1, z); g.add(member(a, b, .35, M.white)); const s = mesh(new THREE.BoxGeometry(a.distanceTo(b), .3, w), M.white); s.position.copy(a).add(b).multiplyScalar(.5); s.rotation.z = Math.atan2(y1 - y0, x1 - x0); g.add(s);
+    const rl = mesh(new THREE.BoxGeometry(a.distanceTo(b), .9, .08), M.rail); rl.position.copy(s.position).add(new THREE.Vector3(0, .6, w / 2)); rl.rotation.z = s.rotation.z; g.add(rl); };
+  fl(-2.3 - run, G0 + .3, -2.3, G0 + hMid, zS); add(new THREE.BoxGeometry(2.4, .35, 2 * w + .4), M.white, -1.2, G0 + hMid, zS + w / 2);
+  fl(-2.3, G0 + hMid, -2.3 - run, deckY, zS + w + .2); add(new THREE.BoxGeometry(2.4, .35, w), M.white, -2.3 - run - 1.2, deckY, zS + w + .2);
+  [[-2.3 - run / 2, zS], [-2.3 - run / 2, zS + w + .2]].forEach(([x, z]) => add(new THREE.BoxGeometry(.4, hMid, .4), M.white, x, G0 + hMid / 2, z));
+  return g;
+}
+[['P1', [[3.9, -19.9, -1], [3.9, 19.9, 1]]], ['P4', [[304.0, -21.5, -1], [306.1, 14.0, 1]]]].forEach(([t, list]) => {   // tower centres from federated model (STAIR TOWER_AR)
+  const o = new THREE.Group();
+  list.forEach(([x, z, sd]) => { const tw = stairTower(profile(Math.max(0, Math.min(x, PIER.P4))) + .2); tw.position.set(x, 0, z); tw.rotation.y = -align(x).a + (sd > 0 ? Math.PI : 0); o.add(tw); });
+  addEl({ id: 'TOWER-' + t, name: `หอบันได (Stair tower) ยอดพุ่มบัว ${t} x2 – ทางขึ้นลงคนเดินเท้า`, cat: 'arch', grp: 'สถาปัตยกรรม & ตกแต่ง', obj: o, start: '2026-02-15', finish: '2026-04-30', src: 'Assumed', dwg: 'AR STAIR TOWER (ST-1 … ST-4) · M-011' });
+});
+
+/* ---------- 3e. TEMPORARY WORKS ---------- */
+function makeFT() {
+  const g = new THREE.Group(), frames = [-10.5, -3.6, 3.6, 10.5];
+  frames.forEach(z => {
+    const p = (x, y) => new THREE.Vector3(x, y, z);
+    g.add(member(p(-8, .45), p(6, .45), .55, M.steel), member(p(5.5, .45), p(5.5, 7.2), .55, M.steel), member(p(-8, .45), p(5.5, 7.2), .45, M.steel), member(p(-1.5, .45), p(5.5, 7.2), .35, M.steel));
+  });
+  g.add(member(new THREE.Vector3(5.5, 7.4, -15.5), new THREE.Vector3(5.5, 7.4, 15.5), .9, M.steel));
+  g.add(member(new THREE.Vector3(-8, .7, -12), new THREE.Vector3(-8, .7, 12), .6, M.steel));
+  const hang = new THREE.Group(); g.add(hang); g.userData.hang = hang;
+  [-14.5, -10, -6, -2, 2, 6, 10, 14.5].forEach(z => { const r = mesh(new THREE.BoxGeometry(.12, 1, .12), M.dark); r.position.set(5.2, 0, z); r.userData.hanger = true; hang.add(r); });
+  const plat = mesh(new THREE.BoxGeometry(6.4, .35, 21), M.yellow); plat.userData.plat = true; hang.add(plat);
+  const form = mesh(new THREE.BoxGeometry(6.0, .25, 30.6), M.timber); form.userData.form = true; hang.add(form);
+  [-10.4, 10.4].forEach(z => { const rl = mesh(new THREE.BoxGeometry(6.4, 1.1, .08), M.yellow); rl.userData.rail = z; hang.add(rl); });
+  return g;
+}
+const FTS = {};
+[['FT1', ...SCHED.ft.P2, addD(SD["T'"][1], 3), addD(SD["T'"][1], 11)], ['FT2', ...SCHED.ft.P2, addD(SD.T[1], 2), addD(SD.T[1], 11)],
+ ['FT3', ...SCHED.ft.P3, SD.L1[1], addD(SD.T[0], -1)],   // main span P3 (L1) completed → dismantle FT3 so FT2 can reach and cast the mid-span closure T
+ ['FT4', ...SCHED.ft.P3, addD(SD["L1'"][1], 2), addD(SD["L1'"][1], 9)]].forEach(([n, a, b, rs, re]) => {
+  const o = makeFT();
+  const e = addEl({ id: n, name: `Form Traveller ${n} (Overhead truss type – KSN/SIAM design)`, cat: 'ft', grp: 'Form Traveller FT1–FT4', obj: o, temp: true, start: a, finish: b, rmS: rs, rmE: re, kind: 'ft',
+    dwg: '22-ITD-KK-FT-P3-P4-GA-001…049 / EC-001…006', src: SRC + (n === 'FT3' ? ' (Assembly) / รื้อถอน: หลัง Segment L1 (Main span P3) เสร็จ ก่อนหล่อ Closure T' : ' (Assembly) / Removal derived') });
+  FTS[n] = e;
+});
+function makeCrane(H, jib) {
+  const g = new THREE.Group(), mast = mesh(new THREE.BoxGeometry(2, H, 2), M.latY); mast.position.y = H / 2; mast.material = M.latY.clone(); mast.material.map = tLat.clone(); mast.material.map.repeat.set(1, H / 2); mast.material.map.needsUpdate = true; g.add(mast);
+  const slew = new THREE.Group(); slew.position.y = H; g.add(slew); g.userData.slew = slew;
+  const jb = mesh(new THREE.BoxGeometry(1, 1.6, 1.6), M.latY); jb.geometry.translate(.5, 0, 0); jb.scale.x = jib; slew.add(jb); g.userData.jib = jb;
+  const cj = mesh(new THREE.BoxGeometry(14, 1.4, 1.6), M.latY); cj.position.x = -7; slew.add(cj);
+  const cw = mesh(new THREE.BoxGeometry(3, 2.5, 2.2), M.concDark); cw.position.set(-12.5, -1.6, 0); slew.add(cw);
+  const cab = mesh(new THREE.BoxGeometry(2.4, 2.2, 2.2), M.yellow); cab.position.set(1.5, -1.5, 1.8); slew.add(cab);
+  const apex = mesh(new THREE.ConeGeometry(1.2, 7, 4), M.latY); apex.position.y = 4.3; slew.add(apex);
+  const trol = new THREE.Group(); trol.position.x = jib * .6; slew.add(trol); g.userData.trol = trol;
+  const line = mesh(new THREE.CylinderGeometry(.04, .04, 1, 4), M.dark); line.geometry.translate(0, -.5, 0); line.scale.y = H * .6; trol.add(line); g.userData.line = line;
+  const hook = mesh(new THREE.BoxGeometry(.8, 1, .8), M.steel); hook.position.y = -H * .6; trol.add(hook); g.userData.hook = hook;
+  return g;
+}
+(() => { const done = iso(Math.max(D(SD.T[1]), D(SD["M1'"][1])));
+  return [['TC-P2', 120, -24, 62, SCHED.tc.P2[0], addD(SCHED.tc.P2[0], 7), SCHED.tc.P2[1], addD(done, 4), addD(done, 17)], ['TC-P3', 285, -21, 48, SCHED.tc.P3[0], addD(SCHED.tc.P3[0], 7), SCHED.tc.P3[1], addD(done, 9), addD(done, 22)]]; })().forEach(([id, s, z, H, a, b, ext, rs, re]) => {
+  const o = makeCrane(H, 40); o.position.set(s - 4, 1.5, z);
+  const pad = mesh(new THREE.BoxGeometry(7, 4, 7), M.concDark); pad.position.y = -2; o.add(pad);
+  const e = addEl({ id, name: `Tower crane ${id.slice(3)} (Boom 40 m → ขยาย 74 m)`, cat: 'crane', grp: 'Tower Crane', obj: o, temp: true, start: a, finish: b, rmS: rs, rmE: re, kind: 'crane', ext: D(ext),
+    src: 'Programme R.2 (Installation of tower crane) / Removal Assumed', dwg: '—' });
+});
+// floating crane / piling barges (substructure)
+function barge() {
+  const g = new THREE.Group(), h = mesh(new THREE.BoxGeometry(36, 3, 14), M.dark); h.position.y = .6; g.add(h);
+  const cab = mesh(new THREE.BoxGeometry(6, 4, 5), M.yellow); cab.position.set(-6, 4, 0); g.add(cab);
+  const boom = mesh(new THREE.BoxGeometry(1.2, 1.2, 1), M.latR); boom.geometry.translate(0, 0, .5); boom.scale.z = 42; boom.position.set(-4, 4, 0); boom.rotation.set(0, Math.PI / 2, 0); boom.rotateX(-1.0); g.add(boom);
+  const rig = mesh(new THREE.BoxGeometry(1.5, 22, 1.5), M.latY); rig.position.set(10, 13, 0); g.add(rig);
+  return g;
+}
+[['BARGE-P2', 120, -42, '2023-12-15', '2024-01-07', '2024-09-30', '2024-10-10'], ['BARGE-P3', 285, 30, '2024-01-10', '2024-01-31', '2024-10-15', '2024-10-25']].forEach(([id, x, z, a, b, rs, re]) => {
+  const o = barge(); o.position.set(x, WATER_Y - .5, z);
+  addEl({ id, name: `Barge + crawler crane + piling rig (${id.slice(6)})`, cat: 'crane', grp: 'Marine plant (Barge/Crane)', obj: o, temp: true, start: a, finish: b, rmS: rs, rmE: re, src: 'Assumed', dwg: '—' });
+});
+// jetty
+function jetty(x0, x1, z, w) {
+  const g = new THREE.Group(), deck = mesh(new THREE.BoxGeometry(Math.abs(x1 - x0), .6, w), M.timber); deck.position.set((x0 + x1) / 2, 4.2, z); g.add(deck);
+  const pl = new THREE.CylinderGeometry(.45, .45, 13, 8);
+  const n = Math.floor(Math.abs(x1 - x0) / 7.5), inst = new THREE.InstancedMesh(pl, M.dark, (n + 1) * 2), mtx = new THREE.Matrix4();
+  for (let i = 0; i <= n; i++) [-w / 2 + .6, w / 2 - .6].forEach((dz, j) => { mtx.makeTranslation(lerp(x0, x1, i / n), -2.3, z + dz); inst.setMatrixAt(i * 2 + j, mtx); });
+  g.add(inst); return g;
+}
+{ const o = new THREE.Group(); o.add(jetty(30, 112, -26, 9), jetty(290, 312, 26, 9));
+  const pl2 = mesh(new THREE.BoxGeometry(30, .6, 10), M.timber); pl2.position.set(120, 4.2, -19); o.add(pl2);
+  addEl({ id: 'JETTY', name: 'Temporary steel jetty & working platform (ฝั่งตะวันตก → P2, ฝั่งตะวันออก → P3)', cat: 'jetty', grp: 'Jetty & Temporary access', obj: o, temp: true, start: '2023-10-01', finish: '2023-12-31', rmS: '2026-03-01', rmE: '2026-04-30', src: 'Assumed (Programme R.2: Removing jetty partial 27/01–08/02/25)', dwg: '—' }); }
+// cofferdams
+[['P2', PIER.P2, 38, 20, '2024-04-15', '2024-05-01', '2024-08-01', '2024-08-15'], ['P3', PIER.P3, 30, 17, '2024-05-01', '2024-05-15', '2024-08-16', '2024-08-31']].forEach(([t, x, l, w, a, b, rs, re]) => {
+  const o = new THREE.Group(), m = mesh(stadium(l, w, 13, .6), M.steel); m.material = M.dark; o.add(m); o.position.set(x, -9, 0); o.rotation.y = SKEW;
+  addEl({ id: 'COFF-' + t, name: `Steel sheet-pile cofferdam ${t}`, cat: 'jetty', grp: 'Cofferdam', obj: o, temp: true, start: a, finish: b, rmS: rs, rmE: re, src: 'Assumed', dwg: 'M-031/041' });
+});
+// falsework & scaffolding
+function shoring(s0, s1, offs, yBot, stepS = 3.0) {
+  const g = new THREE.Group(), mats = [];
+  for (let s = s0 + 1.5; s < s1; s += stepS) for (const o of offs) { if (Math.abs(o) > hwAt(s) - 3) continue;
+    const top = profile(s) - depthH(s) - .1, h = top - yBot; if (h < 1) continue;
+    const p = W(s, o, yBot + h / 2), m = new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -align(s).a), new THREE.Vector3(1.5, h, 1.5)); mats.push(m);
+  }
+  const box = new THREE.BoxGeometry(1, 1, 1), inst = new THREE.InstancedMesh(box, M.latY, mats.length); mats.forEach((m, i) => inst.setMatrixAt(i, m)); g.add(inst); return g;
+}
+[['FW-P2', 112.6, 127.4, 1.5, addD(SCHED.pt.P2, -127), addD(SCHED.pt.P2, -116), addD(SCHED.pt.P2, 2), addD(SCHED.pt.P2, 7), 'Pier table falsework P2', 'Programme R.2 (Removing temporary support 27/01–01/02/25)'],
+ ['FW-P3', 277.6, 292.4, 1.5, addD(SCHED.pt.P3, -168), addD(SCHED.pt.P3, -157), addD(SCHED.pt.P3, 2), addD(SCHED.pt.P3, 7), 'Pier table falsework P3', 'Assumed'],
+ ['SC-P1', 0.3, 21, BANK_Y, ...SCHED.sc.P2, addD(iso(Math.max(D(SD["T'"][1]), D(SCHED.end.P2[1]))), 9), addD(iso(Math.max(D(SD["T'"][1]), D(SCHED.end.P2[1]))), 18), 'Scaffolding end span P1–P2 (U′)', 'Programme R.2 (Temporary support installation 14–30/10/25) / Removal Assumed'],
+ ['SC-P4', 318.5, 356.4, BANK_Y, addD(SD["B1'"][0], 60), SCHED.sc.P3[1], SD["M1'"][1], addD(SD["M1'"][1], 6), 'Scaffolding / temporary support side span P3–P4', 'Programme R.2 (Scaffolding removing 16/02/26) / Install Assumed']].forEach(([id, s0, s1, yb, a, b, rs, re, nm, src]) => {
+  const o = shoring(s0, s1, [-7.5, -5, -2.5, 0, 2.5, 5, 7.5], yb);
+  addEl({ id, name: nm, cat: 'shore', grp: 'Falsework / Scaffolding', obj: o, temp: true, start: a, finish: b, rmS: rs, rmE: re, src, dwg: 'M-912/913', noShadow: true });
+});
+
+/* ---------- AR / sculpture only after the bridge structure is complete ---------- */
+const STRUCT_DONE = ELS.filter(e => ['seg', 'closure', 'ptable', 'pylon', 'stay'].includes(e.cat)).reduce((m, e) => Math.max(m, e.finish), 0);
+ELS.filter(e => e.cat === 'arch' || e.cat === 'deco').forEach(e => { if (e.start <= STRUCT_DONE) { const d = STRUCT_DONE + DAY - e.start; e.start += d; e.finish += d; } e.src += ' · เริ่มหลังโครงสร้างสะพานแล้วเสร็จ (' + fmtISO(STRUCT_DONE) + ')'; });
+
+/* ---------- 4D state ---------- */
+let MODE = 'real';
+function stateOf(e, t) {
+  if (e.temp) { if (t < e.start) return 'plan'; if (t < e.finish) return 'wip'; if (e.rmE && t >= e.rmE) return 'gone'; if (e.rmS && t >= e.rmS) return 'rm'; return 'done'; }
+  return t < e.start ? 'plan' : t < e.finish ? 'wip' : 'done';
+}
+function setMat(e, mat) { e.obj.traverse(m => { if (m.isMesh) m.material = mat === 'base' ? m.userData.base : mat; }); }
+function ensureEdges(e) {
+  if (e.edges) return; e.edges = [];
+  e.obj.traverse(m => { if (m.isMesh && !m.isInstancedMesh && m.geometry.attributes.position.count < 60000) { const ln = new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry, 28), L.done); ln.visible = false; ln.userData.noPick = true; m.add(ln); e.edges.push(ln); } });
+}
+function applyLook(e, t) {
+  const st = stateOf(e, t); e.st = st;
+  let phase = '';
+  if (e.kind === 'seg' && st === 'wip') phase = t < e.cast ? 'rebar' : 'fresh';
+  const key = MODE + st + phase + (catHidden[e.cat] ? 'h' : '');
+  if (e.kind === 'grow') { const p = st === 'wip' ? clamp((t - e.start) / (e.finish - e.start), .02, 1) : 1; e.obj.scale.y = p; }
+  if (e.lookKey === key) return; e.lookKey = key;
+  const hidden = catHidden[e.cat];
+  if (e.edges) e.edges.forEach(l => l.visible = false);
+  if (hidden || st === 'gone') { e.obj.visible = false; return; }
+  if (MODE === 'real') {
+    if (st === 'plan') { e.obj.visible = false; return; }
+    e.obj.visible = true;
+    if (st === 'wip' && !e.temp && !['finish', 'elec', 'water', 'drain', 'arch', 'deco'].includes(e.cat)) setMat(e, e.kind === 'seg' ? (phase === 'rebar' ? M.rebar : M.fresh) : e.kind === 'cable' ? M.cableWip : e.kind === 'grow' ? 'base' : M.wip);
+    else setMat(e, 'base');
+  } else if (MODE === 'bim') {
+    e.obj.visible = true;
+    if (st === 'plan') setMat(e, M.ghost);
+    else if (e.temp) setMat(e, M.bimTemp);
+    else if (st === 'wip') setMat(e, M.bimWip);
+    else setMat(e, catMat(e.cat));
+  } else {
+    if (st === 'plan' && e.temp) { e.obj.visible = false; return; }
+    e.obj.visible = true; ensureEdges(e); setMat(e, M.blueFill);
+    e.edges.forEach(l => { l.visible = true; l.material = st === 'plan' ? L.plan : e.temp ? L.temp : st === 'wip' ? L.wip : L.done; });
+  }
+}
+const catMats = {}; const catMat = c => catMats[c] || (catMats[c] = new THREE.MeshLambertMaterial({ color: CATS[c].c }));
+
+let NOW = D('2025-08-20');
+function updateFT(t) {
+  for (const n in FTS) {
+    const e = FTS[n], seq = FTSEQ[n]; if (!e.obj.visible) continue;
+    let cur = seq[0]; for (const sg of seq) if (sg.start <= t) cur = sg;
+    const a = align(cur.near), top = profile(cur.near);
+    const drop = e.st === 'rm' ? clamp((t - e.rmS) / Math.max(DAY, e.rmE - e.rmS), 0, 1) * (top - WATER_Y - 4) : 0;   // lowered onto the barge while dismantling
+    e.obj.position.set(a.x, top - drop, a.z); e.obj.rotation.y = cur.dir > 0 ? -a.a : -a.a + Math.PI;
+    e.obj.scale.z = hwAt((cur.s0 + cur.s1) / 2) / 15.65;
+    const H = depthH(cur.far), hang = e.obj.userData.hang, len = 7.4 + H + 1.2;
+    hang.children.forEach(c => {
+      if (c.userData.hanger) { c.scale.y = len; c.position.y = 7.4 - len / 2; }
+      else if (c.userData.plat) c.position.set(2.8, -H - 1.2, 0);
+      else if (c.userData.form) c.position.set(2.8, -1.0, 0);
+      else if (c.userData.rail !== undefined) c.position.set(2.8, -H - .5, c.userData.rail);
+    });
+  }
+}
+function updateCranes(t, dt) {
+  for (const id of ['TC-P2', 'TC-P3']) { const e = elById[id]; if (!e.obj.visible) continue;
+    const ext = t >= e.ext ? 74 : 40; e.obj.userData.jib.scale.x = ext; e.obj.userData.trol.position.x = ext * .55;
+    if (playing || tour.on) e.obj.userData.slew.rotation.y += dt * .05 * (id === 'TC-P2' ? 1 : -1); else if (!e.rotInit) { e.obj.userData.slew.rotation.y = id === 'TC-P2' ? .9 : 2.2; e.rotInit = true; } }
+}
+function refresh() {
+  for (const e of ELS) applyLook(e, NOW);
+  updateFT(NOW); updateUI();
+}
+
+/* =====================================================================
+   4. CONTEXT: river, banks, city, sky
+   ===================================================================== */
+// River banks (from federated model topography, sampled every 25 m across the bridge frame) – x = distance along bridge from P1
+const BANK_W = [[-125, 9], [-100, 10], [-75, 18], [-50, 27], [-25, 31], [0, 32], [25, 36], [50, 37], [75, 36], [100, 39], [125, 40]];
+const BANK_E = [[-125, 283], [-100, 282], [-75, 282], [-50, 287], [-25, 294], [0, 300], [25, 311], [50, 314], [75, 321], [100, 325], [125, 328]];
+function bankAt(T, z, slope) { if (z <= T[0][0]) return T[0][1] + (z - T[0][0]) * slope; if (z >= T.at(-1)[0]) return T.at(-1)[1] + (z - T.at(-1)[0]) * slope;
+  for (let i = 0; i < T.length - 1; i++) if (z <= T[i + 1][0]) return lerp(T[i][1], T[i + 1][1], (z - T[i][0]) / (T[i + 1][0] - T[i][0])); }
+const bankW = z => bankAt(BANK_W, z, .12), bankE = z => bankAt(BANK_E, z, .16), ZR = 3000, bankZs = []; for (let z = -ZR; z <= ZR; z += 25) bankZs.push(z);
+const waterGeo = new THREE.PlaneGeometry(1400, 2 * ZR);
+const water = new Water(waterGeo, { textureWidth: 1024, textureHeight: 1024, waterNormals: texWaterNormals(), sunDirection: new THREE.Vector3(), sunColor: 0xffffff, waterColor: 0x3d4f3a, distortionScale: 1.1, fog: true });
+water.rotation.x = -Math.PI / 2; water.position.set(178, WATER_Y, 0); water.material.uniforms.size.value = 2.2; gCtx.add(water);
+const flatWater = mesh(new THREE.PlaneGeometry(1400, 2 * ZR), new THREE.MeshBasicMaterial({ color: 0x74c0fc, transparent: true, opacity: .22, depthWrite: false }));
+flatWater.rotation.x = -Math.PI / 2; flatWater.position.set(178, WATER_Y, 0); flatWater.visible = false; scene.add(flatWater);
+const bed = mesh(new THREE.PlaneGeometry(1400, 2 * ZR), new THREE.MeshStandardMaterial({ color: 0x4a4436, roughness: 1 })); bed.rotation.x = -Math.PI / 2; bed.position.set(178, BED_Y, 0); gCtx.add(bed);
+const tGrass = texGround('#5f7d45', 'rgba(40,60,30,.6)'); tGrass.repeat.set(60, 60);
+const groundMat = new THREE.MeshStandardMaterial({ map: tGrass, roughness: 1 });
+function landGeom(side) {   // shape in (x, -z) then laid flat
+  const pts = side < 0 ? [[-3000, -ZR], ...bankZs.map(z => [bankW(z), z]), [-3000, ZR]] : [[3500, ZR], ...bankZs.slice().reverse().map(z => [bankE(z), z]), [3500, -ZR]];
+  const sh = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z))); const g = new THREE.ShapeGeometry(sh); g.rotateX(-Math.PI / 2);
+  const uv = g.attributes.uv, ps = g.attributes.position; for (let i = 0; i < ps.count; i++) uv.setXY(i, ps.getX(i) / 50, ps.getZ(i) / 50); return g;
+}
+const gW = mesh(landGeom(-1), groundMat); gW.position.y = BANK_Y; gW.receiveShadow = true; gCtx.add(gW);
+const gE = mesh(landGeom(1), groundMat); gE.position.y = BANK_Y; gE.receiveShadow = true; gCtx.add(gE);
+tGrass.repeat.set(1, 1);
+function bankWall(fx, sd) {   // quay wall + railing following the bank polyline
+  const pos = [], idx = []; bankZs.forEach((z, i) => { const x = fx(z); pos.push(x, BED_Y, z, x, BANK_Y, z); if (i) { const a = (i - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } });
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const w = mesh(g, M.concDark); w.material = M.concDark.clone(); w.material.side = THREE.DoubleSide; w.userData.bank = true; gCtx.add(w);
+  const rp = []; bankZs.forEach(z => rp.push(new THREE.Vector3(fx(z) - sd * .4, BANK_Y + 1.0, z)));
+  const r = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rp), 240, .12, 5), M.white); r.userData.bank = true; gCtx.add(r);
+}
+bankWall(bankW, 1); bankWall(bankE, -1);
+// roads: riverside road on the west bank (parallel to the bank)
+const asphalt = new THREE.MeshStandardMaterial({ color: 0x404347, roughness: .95 });
+function stripAlong(fx, off, w) { const pos = [], idx = []; bankZs.forEach((z, i) => { const x = fx(z) + off; pos.push(x - w / 2, BANK_Y + .05, z, x + w / 2, BANK_Y + .05, z); if (i) { const a = (i - 1) * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } });
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); const m = mesh(g, asphalt); m.material.side = THREE.DoubleSide; m.receiveShadow = true; return m; }
+const roadW = stripAlong(bankW, -60, 14); gCtx.add(roadW);
+const roadE = new THREE.Group();
+// approach viaducts (by others – context)
+const approachMat = new THREE.MeshStandardMaterial({ color: 0xb8b4ac, map: tConc, roughness: .9 });
+function approach(s0, s1, hw = 15.65) {
+  const g = new THREE.Group(), n = Math.ceil((s1 - s0) / 3) + 1, pos = [], idx = [];
+  const prof = [[-hw, 0], [hw, 0], [hw - 3.6, -2.2], [-(hw - 3.6), -2.2]];
+  const yAt = s => s < 0 ? 11.902 + 0.025 * s : 11.661 - 0.0225 * (s - PIER.P4);
+  for (let i = 0; i < n; i++) { const s = lerp(s0, s1, i / (n - 1)); prof.forEach(([o, v]) => { const p = W(s, o, yAt(s) + v); pos.push(p.x, p.y, p.z); }); }
+  for (let i = 0; i < n - 1; i++) for (let e = 0; e < 4; e++) { const a = i * 4 + e, b = i * 4 + (e + 1) % 4; idx.push(a, a + 4, b, b, a + 4, b + 4); }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+  const m = mesh(geo, approachMat); m.material.side = THREE.DoubleSide; m.castShadow = m.receiveShadow = true; g.add(m);
+  for (let s = s0 + 20; s < s1; s += 36) { const p = W(s, 0, 0), h = yAt(s) - 2.2 - BANK_Y; const c = mesh(new THREE.BoxGeometry(2.5, h, 9), approachMat); c.position.set(p.x, BANK_Y + h / 2, p.z); c.rotation.y = -align(s).a; c.castShadow = true; g.add(c); }
+  return g;
+}
+const gApproach = new THREE.Group(); gApproach.add(approach(-260, -0.3), approach(PIER.P4 + 0.3, 640, 8.5)); gCtx.add(gApproach);
+// city
+const winDay = texWindows(false), winNight = texWindows(true);
+const bldMat = new THREE.MeshStandardMaterial({ map: winDay, emissiveMap: winNight, emissive: 0xffffff, emissiveIntensity: 0, roughness: .8 });
+const roadPts = []; for (let s = 300; s < 1700; s += 25) { const a = align(s); roadPts.push([a.x, a.z]); }
+const nearRoad = (x, z) => roadPts.some(([px, pz]) => Math.hypot(px - x, pz - z) < 55);
+const bldList = [];
+for (let i = 0; i < 1400 && bldList.length < 560; i++) {
+  const east = R() < .5, z = (R() - .5) * 2600, x = east ? bankE(z) + 45 + R() * 1100 : bankW(z) - 85 - R() * 1100;
+  if (!east && Math.abs(z) < 50) continue; if (east && nearRoad(x, z)) continue;
+  if (east && x < 700 && z > 0 && z < 500) continue; if (east && x < 400 && z > -110 && z < 10) continue;
+  const w = 14 + R() * 26, d = 14 + R() * 26, far = Math.min(1, Math.hypot(x - 178, z) / 900), h = Math.hypot(x - 178, z) < 520 ? 5 + R() * 14 : 8 + R() * R() * (45 + 90 * far);
+  bldList.push([x, z, w, d, h]);
+}
+const bGeo = new THREE.BoxGeometry(1, 1, 1); bGeo.translate(0, .5, 0);
+const city = new THREE.InstancedMesh(bGeo, bldMat, bldList.length); const mtx = new THREE.Matrix4(), col = new THREE.Color();
+bldList.forEach(([x, z, w, d, h], i) => { mtx.compose(new THREE.Vector3(x, BANK_Y, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), (R() - .5) * .3), new THREE.Vector3(w, h, d)); city.setMatrixAt(i, mtx); col.setHSL(.08 + R() * .08, .08 + R() * .1, .72 + R() * .2); city.setColorAt(i, col); });
+city.castShadow = city.receiveShadow = true; gCtx.add(city);
+// trees
+const treeGeo = new THREE.IcosahedronGeometry(1, 1), treeMat = new THREE.MeshStandardMaterial({ color: 0x3f6b2f, roughness: 1, flatShading: true });
+const trunkGeo = new THREE.CylinderGeometry(.15, .25, 1, 5); trunkGeo.translate(0, .5, 0);
+const nT = 700, trees = new THREE.InstancedMesh(treeGeo, treeMat, nT), trunks = new THREE.InstancedMesh(trunkGeo, M.timber, nT);
+for (let i = 0; i < nT; i++) {
+  const east = i % 2, z = (R() - .5) * 2400, x = east ? (R() < .6 ? bankE(z) + 4 + R() * 14 : bankE(z) + 40 + R() * 400) : (R() < .6 ? bankW(z) - 4 - R() * 28 : bankW(z) - 90 - R() * 400);
+  const okz = east ? !nearRoad(x, z) && !(x < 680 && z > -5 && z < 490) && !(x < 380 && z > -95 && z < 0) : Math.abs(z) > 30; const s = okz ? 2.5 + R() * 3 : 0.001;
+  mtx.compose(new THREE.Vector3(x, BANK_Y + 3 + s * .6, z), new THREE.Quaternion(), new THREE.Vector3(s, s * 1.1, s)); trees.setMatrixAt(i, mtx);
+  mtx.compose(new THREE.Vector3(x, BANK_Y, z), new THREE.Quaternion(), new THREE.Vector3(okz ? 1 : .001, okz ? 3.5 : .001, okz ? 1 : .001)); trunks.setMatrixAt(i, mtx);
+  col.setHSL(.25 + R() * .08, .45, .25 + R() * .12); trees.setColorAt(i, col);
+}
+trees.castShadow = true; gCtx.add(trees, trunks);
+// boats
+const boats = [];
+function boat(kind) {
+  const g = new THREE.Group();
+  if (kind === 0) { const h = mesh(new THREE.BoxGeometry(9, 2.2, 55), new THREE.MeshStandardMaterial({ color: 0x5b3a29, roughness: .8 })); h.position.y = .3; g.add(h); const c = mesh(new THREE.BoxGeometry(7, 1.5, 40), new THREE.MeshStandardMaterial({ color: 0x8c7b68 })); c.position.y = 1.9; g.add(c); }
+  else { const h = mesh(new THREE.BoxGeometry(4.5, 1.6, 26), M.white); h.position.y = .4; g.add(h); const r = mesh(new THREE.BoxGeometry(4, 2, 16), new THREE.MeshStandardMaterial({ color: 0xe8590c })); r.position.y = 2; g.add(r); }
+  g.traverse(m => { if (m.isMesh) m.castShadow = true; }); return g;
+}
+[[0, 175, -900, 4], [1, 230, 600, -9], [0, 160, 200, 3.2], [1, 205, -300, 11]].forEach(([k, x, z, v]) => { const b = boat(k); b.position.set(x, WATER_Y, z); b.userData.v = v; gCtx.add(b); boats.push(b); });
+// cars (riverside roads + bridge after opening)
+const carGeo = new THREE.BoxGeometry(2, 1.5, 4.6); carGeo.translate(0, .75, 0);
+const carMat = new THREE.MeshStandardMaterial({ roughness: .4, metalness: .5 });
+const NC = 90, cars = new THREE.InstancedMesh(carGeo, carMat, NC), carData = [];
+for (let i = 0; i < NC; i++) { carData.push({ road: i < 40 ? 'W' : 'B', lane: (R() * 3 | 0), dir: R() < .5 ? 1 : -1, p: R(), v: 9 + R() * 6 }); col.setHSL(R(), .5, R() < .3 ? .9 : .35 + R() * .3); cars.setColorAt(i, col); }
+cars.castShadow = true; gCtx.add(cars);
+const OPEN = D('2026-06-15');
+function updateCars(dt) {
+  const dummy = new THREE.Object3D();
+  carData.forEach((c, i) => {
+    c.p = (c.p + dt * c.v / (c.road === 'B' ? 900 : 2400) * c.dir + 1) % 1;
+    if (c.road === 'B') {
+      if (NOW < OPEN) { dummy.position.set(0, -50, 0); dummy.scale.setScalar(.001); }
+      else { const s = -250 + c.p * 880, off = c.dir * (s >= NARROW_S ? 2.3 + (c.lane % 2) * 3.2 : 3.0 + c.lane * 3.5), y = s < 0 ? 11.902 + .025 * s : s > PIER.P4 ? 11.661 - .0225 * (s - PIER.P4) : profile(s);
+        const p = W(s, off, y + .1); dummy.position.copy(p); dummy.rotation.set(0, -align(s).a + (c.dir > 0 ? Math.PI / 2 : -Math.PI / 2), 0); dummy.scale.setScalar(1); }
+    } else { const z = -1200 + c.p * 2400, x = bankW(z) - 60 + c.dir * (1.8 + c.lane * 1.6); dummy.position.set(x, BANK_Y + .05, z); dummy.rotation.set(0, c.dir > 0 ? 0 : Math.PI, 0); dummy.scale.setScalar(1); }
+    dummy.updateMatrix(); cars.setMatrixAt(i, dummy.matrix);
+  });
+  cars.instanceMatrix.needsUpdate = true;
+}
+// labels
+function label(txt, pos, col = '#f0b429') {
+  const c = cnv(256, 96, (g, w, h) => { g.fillStyle = 'rgba(10,16,28,.78)'; g.beginPath(); g.roundRect(8, 8, w - 16, h - 16, 18); g.fill(); g.strokeStyle = col; g.lineWidth = 4; g.stroke(); g.fillStyle = '#fff'; g.font = 'bold 44px IBM Plex Sans Thai, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, w / 2, h / 2 + 2); });
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false, transparent: true })); s.position.copy(pos); s.scale.set(14, 5.25, 1); s.renderOrder = 10; return s;
+}
+const gLabels = new THREE.Group(); scene.add(gLabels);
+[['P1', 0, 30], ['P2', 120, 70], ['P3', 285, 50], ['P4', PIER.P4, 30]].forEach(([t, s, y]) => { const p = W(s, 0, y); gLabels.add(label(t, p)); });
+gLabels.add(label('165 m', W(202, 0, 24), '#22b8cf'), label('120 m', W(60, 0, 22), '#22b8cf'), label('71.8 m', W(321, 0, 20), '#22b8cf'));
+// Parliament (สัปปายะสภาสถาน) massing – height map sampled from the project federated model "20260723_Kiek Kai Bridge 1_2&3"
+// (Autodesk Viewer, element Parliament_R24). OBB centre (-221.2,-134.5) model-m, axis 61°, 4 m cells (104 x 64), level = 2 m, RLE: c{n}
+const PARL_HM = { cx: -221.2, cy: -134.5, ang: 61, L: 412.9, B: 253.5, nu: 104, nw: 64, cell: 4, dz: 2,
+hs: "3131131131311313113131131131311313113131131131311313113131131131311313113131131131311313113131131131311331311311313113131131311311313113{16}13{13}13331{70}3{48}13131131311313113113131133131131131311313113131131131311334{44}3313131131311313113113131133131131131311313113131131131311334{44}331{56}334{44}3313131131311313113113131133131131131311313113131131131311334{44}3313131131311313113113131133131131131311313113131131131{4}334{44}331{53}311334{6}8{6}74{18}887{4}84{6}3313131131311313113113131133131131131311313113131131131311334{6}BA{4}B74{18}BBA{4}B4{6}331313113131{16}3131131131{22}334{6}A9{4}A74{7}5554{8}A{7}4{6}331{11}313113113131131{10}311313113131131131311334{6}67{6}4{7}5774{8}887{4}84{6}3313131131311313113113131133131131131311313113131131131311334{20}5554{21}331{56}334{44}3313131131311313113131131133131131131311313113131131131311334{17}A{10}4{17}33311311313113131131311311331311311313113131131311311313113H{19}A{8}H{18}331{56}3HHN{16}HA{8}N{16}HH33311311313113131131311311331311311313113131131311311313113HN{17}HCBA{5}CLN{15}LN33311311313113131131311311331311311313113131131311313113113HNNNR{15}DC{5}DDR{15}NNN331{25}3{13}1{18}3HNNRRUUUTU{8}TUFFFEEFFFU{4}RU{8}RRRNN333113113131131311313113113{33}HNNRU{15}HIHGGIIHU{14}RRNN3{35}EF{8}E{15}HNNRU{14}RHLJIILLHU{14}RRNN3{35}EF{23}HNNRU{4}M{4}U{7}MNLLLNNMU{4}RU{9}RRNNF{20}3{7}EF{11}E{20}HNNRU{4}Z{13}ONNZ{13}MUUURRNNE{19}FE{6}3EFL{14}E{16}HNNRUUURZ{13}QPQZ{13}MUUURRNNE{13}L{12}F3EFL{14}E{16}HNNRRUUUZ{13}SRSZ{13}MUUURRNNE{13}LKL{10}F3EFLLK{11}LE{16}HNNRU{4}Z{13}SRSZ{13}MUUURRNNE{13}LK{7}L{4}F3EFLLK{11}LF{16}HNNRU{4}Z{13}SRSZ{13}MUUURRNNE{13}LK{7}L{4}F3EFLLKKLLLK{6}LFFE{14}HNNRU{4}Z{5}S{9}RS{9}Z{5}MUUURRNNE{12}LLK{7}L{4}F3EFLLKKL{8}KLO{17}NNRU{4}Z{5}S{19}Z{5}MUUURRNNE{12}LLK{7}L{4}F3EFLLKKL{8}KLOON{14}ONNRU{4}Z{5}S{19}Z{5}MUUURRNNE{12}LLK{7}L{4}F3EFLLKKL{8}KLOON{14}ONNRU{4}Z{5}SSST{13}SSSZ{5}MUUURRN{13}ELLK{7}L{4}F3EFLLKKL{8}KLOON{14}ONNRU{4}Z{5}SSSTW{4}XZYW{4}TSSSZ{5}RUUURRNO{13}L{13}F.EFLLKKL{8}KLOON{14}ONNRU{4}Z{5}SSSTWY{9}XTSSSZ{5}U{4}RRNO{13}L{13}F.EFLLKKL{8}KLOON{14}ONNRRUUUZ{5}SSSTWYXccdccXYXTSSSZ{5}U{4}RRNOON{8}OOOL{13}F.EFLLKKL{10}OON{14}OOORUURUZ{5}SSSTWYchmnmhcYXTSSSZ{5}U{4}RROOON{8}OOOL{13}F.EFLLKKL{10}OON{14}ON{7}OPS{6}TXYcmprrngbXTS{6}RON{17}OOOL{13}F.EFLLKKL{10}OON{14}ON{8}OS{6}TZYdnr_vnhcZTS{6}QON{17}OOOL{13}F.EFLLKKL{10}OON{14}ON{7}OPS{6}TYYcmrvtngbYTS{6}QON{17}OOOL{13}F.EFLLKKL{10}OON{14}OOOR{5}Z{5}SSSTWYchnnnhcYXTSSSZ{5}O{9}N{8}OOOL{13}F.EFLLKKL{8}KLOON{14}ONNRU{4}Z{5}SSSTWYXcghgccYXTSSSZ{5}U{4}RRNOON{8}OOOL{13}F.EFLLKKL{8}KLOON{14}ONNRU{4}Z{5}SSSTWYYYbcbYYYXTSSSZ{5}U{4}RRNOON{8}OOOL{13}F.EFLLKKL{8}KLOON{14}ONNRU{4}Z{5}SSSTWX{4}ZYX{4}TSSSZ{5}U{4}RRNO{13}L{13}F.EFLLKKL{8}KLOON{14}ONNRU{4}Z{5}SSST{13}SSSZ{5}MUUURRNO{13}L{13}F.EFLLKKL{8}KLOON{14}ONNRU{4}Z{5}S{19}Z{5}MUUURRNHE{12}LLK{7}L{4}F.EFLLKKL{8}KLO{17}NNRU{4}Z{5}S{19}Z{5}MUUURRNHE{12}LLK{7}L{4}F.EFLLK{11}LFE{15}HNNRU{4}Z{5}S{9}RS{9}Z{5}MUUURRNHE{12}LLK{7}L{4}F.EFLLK{11}LF{16}HNNRUUUMZ{13}SRSZ{13}MUUURRNHE{12}LLK{7}L{4}F.EFLLK{11}LE{16}HNNRTUUMZ{13}SRSZ{13}MUUURNNHE{12}LLK{7}L{4}F.EFL{14}E{16}HNNRUUUMZ{13}SRSZ{13}MUUURNNHE{12}LLK{7}L{4}F.EFL{14}E{16}HNNRUUUMZ{13}QQQZ{13}MUUURNNHE{12}L{13}F.EF{11}E{20}HNNRUUUMZ{13}OOOZ{13}MUUURNNHE{12}L{13}F.3{9}EF{22}HNNRUUUM{8}RRRMMNMLMNNMRRRM{8}UUURNNHE{18}FFE{6}.3{10}E{22}HNNRU{14}HILKJKLLHU{14}RNNHF{20}3{6}.3{32}HNNRU{14}HJJIHIJJHU{14}RNNH3{26}.3{32}HNNRRU{13}RHGGFGGHRU{13}RRNNH3{26}.3{32}HNNR{15}QFD{5}FFR{15}NNH3{26}.3{32}HN{8}R{10}CB{5}CR{16}NNH3{26}.3{32}HHN{16}A{9}N{16}HH3{26}.3{32}H{17}NA{9}N{16}HH3{26}.3{49}A{11}3{43}.3{49}A{11}3{43}.3{58}AA3{43}...0..0.0..0.0..0.0..0..0.0..0.0..0.0..0..0.0..0.0..0.0..0..0.0..0.0..0.0..0..0.0..0.3.3{4}.3{12}.",
+cs: "w{555}b{15}w{10}b{15}w{64}b{15}w{10}b{15}w{64}b{15}w{10}b{15}w{64}b{4}r{7}b{4}w{10}b{4}r{7}b{4}w{64}b{4}r{7}b{4}w{14}r{7}b{4}w{64}b{4}r{7}b{4}w{14}r{7}b{4}w{64}b{4}r{7}b{4}w{10}b{4}r{7}b{4}w{64}b{15}w{10}b{15}w{64}b{15}w{11}b{13}w{74}b{5}w{88}d{8}w{96}dw{706}v{17}w{48}v{19}w{24}v{13}w{48}v{13}w{30}v{13}w{48}v{13}wvw{16}v{11}wv{13}w{48}v{13}wv{7}wbbw{7}v{11}w{62}v{13}wv{7}wbbw{7}vvwwwv{6}wwwv{11}w{16}d{7}w{6}d{6}w{13}v{12}wwv{7}wbbw{7}vvb{4}w{4}vw{30}d{7}w{6}d{6}w{13}v{12}wwv{7}wbbw{7}vvb{4}w{4}vw{30}ddw{15}ddw{13}v{12}wwv{7}wbbw{7}vvb{4}w{4}vwwwv{13}w{14}ddw{4}d{6}w{5}ddw{24}vwwv{7}wbbw{7}vvb{4}w{4}vwwwv{13}w{14}ddwwg{11}wwddw{35}bbww.w{4}vvb{4}w{4}vwwwv{13}w{14}ddwdg{11}wwddw{32}bbwbbww.w{4}vvb{4}w{4}vwwwv{13}w{14}ddwdg{11}wwddw{14}v{8}w{10}bbwbbww.w{4}vvb{4}w{8}v{4}r{5}v{4}w{14}ddwdg{11}wwddw{14}v{8}w{10}bbwbbww.w{4}vvb{4}w{8}v{4}r{5}v{4}w{12}d{4}wwg{11}wwddwwwddw{9}v{8}w{10}bbwbbww.w{4}vvb{4}w{8}v{4}r{5}v{4}w{12}d{4}wwg{11}wwddw{14}v{8}w{10}bbwbbww.w{4}vvb{4}w{8}v{4}r{5}v{4}w{12}d{4}wwg{11}wwddw{14}v{8}w{10}bbwbbww.w{4}vvb{4}w{8}v{4}r{5}v{4}w{14}ddwwg{11}wwddwwwdw{10}v{8}w{10}bbwbbww.w{4}vvb{4}w{4}vwwwv{13}w{14}ddwwg{11}wwdddwwwdw{9}v{8}w{10}bbwbbww.w{4}vvb{4}w{4}vwwwv{13}w{14}ddwwg{11}wwdddwwwdw{9}v{8}w{10}bbwbbww.w{4}vvb{4}w{4}vwwwv{13}w{14}dddwg{11}dwdddwwwdw{27}bbwbbww.w{4}vvb{4}w{4}vwwwv{13}w{14}dddw{7}dwwwddwdddwwwdw{30}bbww.w{4}vvb{4}w{4}vw{30}ddw{6}dddw{6}dddwwwdw{8}v{12}wwv{7}wbbww.w{4}vvb{4}w{4}vw{30}d{7}wd{4}wd{7}wwwdw{8}v{12}wwv{7}wbbww.w{4}v{11}wwv{12}w{16}d{7}wdwddwd{7}wwwdw{8}v{12}wwv{7}wbbww.w{4}v{11}w{38}dwdwd{8}wwwdw{8}v{12}wwv{7}wbbww.w{4}v{11}wv{13}w{24}dwdw{12}dw{7}bv{12}wwv{7}wbbww.w{16}v{13}w{24}dwdw{12}dw{7}bv{12}wwv{7}wbbww.w{16}v{13}w{26}dw{12}dw{7}bv{12}w{14}.w{12}v{17}wwwdw{24}d{12}w{7}bv{12}w{14}.w{9}vw{22}dw{43}bv{18}w{8}.w{32}dw{18}dw{51}.w{32}dw{70}.w{32}dw{19}dwwwdw{46}.w{32}dw{70}.w{32}dw{70}.w{32}ddw{69}.w{32}d{12}w{59}.w{103}.w{103}.w{103}...w..w.w..w.w..w.w..w..w.w..w.w..w.w..w..w.w..w.w..w.w..w..w.w..w.w..w.w..w..w.w..w.w.w{4}.w{12}." };
+// ---- Landmarks – positions/sizes from the project federated model (Autodesk Viewer "20260723_Kiek Kai Bridge 1_2&3")
+// looking P1 → P4: right (+z) = รัฐสภา (สัปปายะสภาสถาน), left (−z) = พระอุโบสถวัดจุฬามณี + ท่าเทียบเรือ
+const gLand = new THREE.Group(); gCtx.add(gLand);
+const MODEL_P1 = [-527.75, 338.0], MODEL_E = [0.8533, -0.5208], MODEL_N = [0.5208, 0.8533], MODEL_GROUND = -25.8;
+const fromModel = (x, y) => { const dx = x - MODEL_P1[0], dy = y - MODEL_P1[1]; return [dx * MODEL_E[0] + dy * MODEL_E[1], -(dx * MODEL_N[0] + dy * MODEL_N[1])]; };
+const modelRot = deg => { const r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); const u = c * MODEL_E[0] + s * MODEL_E[1], l = c * MODEL_N[0] + s * MODEL_N[1]; return Math.atan2(l, u); };  // rotation.y for local +x
+const unRLE = s => s.replace(/(.)\{(\d+)\}/g, (m, c, n) => c.repeat(+n));
+(function parliament() {
+  const H = unRLE(PARL_HM.hs), Cc = unRLE(PARL_HM.cs), lv = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+  const COL = { w: 0xdcd8d0, d: 0x6e6b67, v: 0x7aa35a, b: 0x93b4c4, r: 0xb57a52, g: 0xd9a520 };
+  const a = PARL_HM.ang * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a), list = [];
+  for (let j = 0; j < PARL_HM.nw; j++) for (let i = 0; i < PARL_HM.nu; i++) {
+    const k = j * PARL_HM.nu + i, ch = H[k]; if (!ch || ch === '.' || ch === '0') continue;
+    let h = lv.indexOf(ch) * PARL_HM.dz; const cl = Cc[k] || 'w'; if (cl === 'g') h = Math.min(h, 58);
+    const u = (i + .5) * PARL_HM.cell - PARL_HM.L / 2, w = (j + .5) * PARL_HM.cell - PARL_HM.B / 2;
+    const [x, z] = fromModel(PARL_HM.cx + u * ca - w * sa, PARL_HM.cy + u * sa + w * ca);
+    list.push([x, z, h, COL[cl] ?? COL.w]);
+  }
+  const geo = new THREE.BoxGeometry(1, 1, 1); geo.translate(0, .5, 0);
+  const mat = new THREE.MeshStandardMaterial({ roughness: .8, metalness: .05 });
+  const inst = new THREE.InstancedMesh(geo, mat, list.length), m4 = new THREE.Matrix4(), q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), modelRot(PARL_HM.ang)), cc = new THREE.Color();
+  list.forEach(([x, z, h, c], n) => { m4.compose(new THREE.Vector3(x, BANK_Y, z), q, new THREE.Vector3(PARL_HM.cell + .02, h, PARL_HM.cell + .02)); inst.setMatrixAt(n, m4); inst.setColorAt(n, cc.set(c)); });
+  inst.castShadow = inst.receiveShadow = true; gLand.add(inst);
+  // พระศรีรัตนเจดีย์ (golden chedi on the roof) – radial profile from the model, base EL +58 m
+  const [chx, chz] = fromModel(-236.2, -112.1), base = BANK_Y + 58, gq = new THREE.Group();
+  [[0, 4, 20], [4, 8, 19], [8, 12, 16.7], [12, 20, 10.2]].forEach(([h0, h1, hw]) => { const b = mesh(new THREE.BoxGeometry(hw * 2, h1 - h0, hw * 2), M.gold); b.position.y = (h0 + h1) / 2; gq.add(b); });
+  const prof = [[0, 9.8], [2, 10.3], [4, 10.5], [6, 10.5], [8, 10.2], [9.9, 9.6], [10, 7.6], [12, 7.4], [14, 7.6], [16, 7.6], [18, 7.3], [20, 6.8], [22, 5.1], [24, 4.5], [26, 3.5], [28, 3.2], [30, 2.1], [32, 1.9], [34, 1.5], [36, 1.1], [38, .9], [40, .6], [42, .4], [44, .3], [46, .2], [50, 0]];
+  const lat = mesh(new THREE.LatheGeometry(prof.map(([y, r]) => new THREE.Vector2(r, y)), 40), M.gold); lat.position.y = 20; gq.add(lat);
+  gq.position.set(chx, base, chz); gq.rotation.y = modelRot(PARL_HM.ang); gq.traverse(o => { if (o.isMesh) o.castShadow = true; }); gLand.add(gq);
+  const lbl = label('รัฐสภา', new THREE.Vector3(chx, base + 80, chz), '#e9c54a'); lbl.scale.set(24, 9, 1); gLabels.add(lbl);
+})();
+// พระอุโบสถวัดจุฬามณี (model: โบส์_r1, 38.1 x 25.0 m, H 26 m, axis 73°)
+const [TPX, TPZ] = fromModel(-219.1, 203.6);
+const TEMPLE = { x: TPX, z: TPZ };
+(function ubosot() {
+  const g = new THREE.Group(), L0 = 38.1, B0 = 25.0;
+  const roofGrey = new THREE.MeshStandardMaterial({ color: 0x6f747b, roughness: .55, metalness: .1 });
+  const box = (w, h, d, x, y, z, mat) => { const m = mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y + h / 2, z); m.castShadow = m.receiveShadow = true; g.add(m); return m; };
+  box(L0, .5, B0, 0, BANK_Y, 0, M.white); box(L0 - 3, 1.2, B0 - 4, 0, BANK_Y + .5, 0, M.white); box(L0 - 5, .8, B0 - 6, 0, BANK_Y + 1.7, 0, M.white);   // ฐานไพที (stepped plinth)
+  const yW = BANK_Y + 2.5; box(L0 - 9, 6.0, B0 - 11, 0, yW, 0, M.white);                         // walls
+  for (let i = -3; i <= 3; i++) [-1, 1].forEach(sd => box(1.4, 2.6, .12, i * 4.2, yW + 1.6, sd * ((B0 - 11) / 2 + .05), M.pylonDark));  // windows
+  for (let i = -6; i <= 6; i++) [-1, 1].forEach(sd => { const c = mesh(new THREE.CylinderGeometry(.32, .36, 6.2, 10), M.white); c.position.set(i * 2.6, yW + 3.1, sd * ((B0 - 11) / 2 + 2.0)); g.add(c); });
+  function gable(len, span, rise, y, mat) {
+    const sh = new THREE.Shape([new THREE.Vector2(-span / 2, 0), new THREE.Vector2(span / 2, 0), new THREE.Vector2(0, rise)]);
+    const geo = new THREE.ExtrudeGeometry(sh, { depth: len, bevelEnabled: false }); geo.translate(0, 0, -len / 2); geo.rotateY(Math.PI / 2);
+    const m = mesh(geo, mat); m.position.y = y; m.castShadow = true; g.add(m); return m;
+  }
+  const yR = yW + 6.0;
+  gable(L0 - 2, B0 - 4, 4.0, yR, roofGrey);                   // lower roof tier (eaves)
+  gable(L0 - 5, B0 - 8, 14.5, yR + .4, roofGrey);             // main steep roof
+  [-1, 1].forEach(sd => {                                     // gilded barge boards (ช่อฟ้า ใบระกา หางหงส์) on both gable ends
+    const xe = sd * ((L0 - 5) / 2 + .1), half = (B0 - 8) / 2, top = yR + .4 + 14.5;
+    [-1, 1].forEach(sw => { const a = new THREE.Vector3(xe, yR + .4, sw * half), b = new THREE.Vector3(xe, top, 0); g.add(member(a, b, .45, M.gold));
+      const hh = mesh(new THREE.ConeGeometry(.3, 1.6, 6), M.gold); hh.position.set(xe, yR + 1.0, sw * (half + .3)); g.add(hh); });
+    const cf = mesh(new THREE.ConeGeometry(.35, 2.4, 8), M.gold); cf.position.set(xe + sd * .4, top + .9, 0); cf.rotation.z = -sd * .55; g.add(cf);
+    const tri = new THREE.Shape([new THREE.Vector2(-half + .6, 0), new THREE.Vector2(half - .6, 0), new THREE.Vector2(0, 13.2)]);
+    const pg = mesh(new THREE.ShapeGeometry(tri), M.white); pg.rotation.y = sd > 0 ? Math.PI / 2 : -Math.PI / 2; pg.position.set(xe - sd * .05, yR + .6, 0); g.add(pg);
+  });
+  [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { const sm = mesh(new THREE.LatheGeometry([[0, 0], [.8, 0], [.8, .6], [.6, 1.0], [.6, 1.8], [.35, 2.6], [.1, 3.6], [0, 4]].map(([r, y]) => new THREE.Vector2(r, y)), 12), M.white); sm.position.set(a * (L0 / 2 + 3), BANK_Y, b * (B0 / 2 + 3)); g.add(sm); }); // ใบเสมา
+  g.position.set(TEMPLE.x, 0, TEMPLE.z); g.rotation.y = modelRot(73); gLand.add(g);
+  const lbl = label('วัดจุฬามณี', new THREE.Vector3(TEMPLE.x, BANK_Y + 34, TEMPLE.z), '#e9c54a'); lbl.scale.set(22, 8.25, 1); gLabels.add(lbl);
+})();
+// ท่าเทียบเรือ / ศาลาริมน้ำ (model: อาคารท่าเทียบเรือ, ~32 x 29 m on piles, spire top +21.4 m above ground, axis 70°)
+(function pierPavilion() {
+  const g = new THREE.Group(), [px, pz] = fromModel(-267.3, 229.9), dy = BANK_Y + .8;
+  const roofGrey = new THREE.MeshStandardMaterial({ color: 0x8a9096, roughness: .5, metalness: .2 });
+  for (let i = -2; i <= 2; i++) for (let j = -2; j <= 2; j++) { const p = mesh(new THREE.CylinderGeometry(.35, .35, dy - BED_Y, 8), M.white); p.position.set(i * 6, (dy + BED_Y) / 2, j * 5.5); g.add(p); }
+  const deck = mesh(new THREE.BoxGeometry(30, .6, 26), M.white); deck.position.y = dy; g.add(deck);
+  const rail = mesh(new THREE.BoxGeometry(30, .9, 26), M.rail); rail.scale.set(1.001, 1, 1.001); rail.position.y = dy + .75; rail.material = M.rail; g.add(rail); rail.visible = false;
+  for (const [x, z] of [[-9, -7], [9, -7], [-9, 7], [9, 7], [-4, -7], [4, -7], [-4, 7], [4, 7]]) { const c = mesh(new THREE.CylinderGeometry(.3, .3, 5, 8), M.timber); c.position.set(x, dy + 2.8, z); g.add(c); }
+  function gable(len, span, rise, y, rotY) { const sh = new THREE.Shape([new THREE.Vector2(-span / 2, 0), new THREE.Vector2(span / 2, 0), new THREE.Vector2(0, rise)]);
+    const geo = new THREE.ExtrudeGeometry(sh, { depth: len, bevelEnabled: false }); geo.translate(0, 0, -len / 2); const m = mesh(geo, roofGrey); m.position.y = y; m.rotation.y = rotY; m.castShadow = true; g.add(m);
+    [-1, 1].forEach(sd => { const cf = mesh(new THREE.ConeGeometry(.25, 1.6, 6), M.gold); const off = new THREE.Vector3(0, y + rise + .5, sd * len / 2).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY); cf.position.copy(off); g.add(cf); }); }
+  gable(28, 17, 6.0, dy + 5.3, 0); gable(24, 15, 5.5, dy + 5.3, Math.PI / 2);             // cruciform roofs
+  const mb = mesh(new THREE.BoxGeometry(6.2, 3.2, 6.2), M.white); mb.position.y = dy + 11.6; g.add(mb);   // mondop base
+  [[6.8, .5, 13.4], [5.6, 1.4, 14.3], [4.6, .4, 15.2]].forEach(([w, h, y]) => { const b = mesh(new THREE.BoxGeometry(w, h, w), M.gold); b.position.y = dy + y; g.add(b); });
+  const sp = mesh(new THREE.ConeGeometry(2.4, 6.0, 4), new THREE.MeshStandardMaterial({ color: 0x2b2b2b, metalness: .3, roughness: .5 })); sp.rotation.y = Math.PI / 4; sp.position.y = dy + 18.4; g.add(sp);
+  const tip = mesh(new THREE.ConeGeometry(.6, 2.6, 8), M.gold); tip.position.y = dy + 22.5; g.add(tip);
+  g.position.set(px, 0, pz); g.rotation.y = modelRot(70); g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); gLand.add(g);
+})();
+// sky, stars, night lights
+const sky = new Sky(); sky.scale.setScalar(20000); scene.add(sky);
+const starGeo = new THREE.BufferGeometry(), sp = []; for (let i = 0; i < 2500; i++) { const th = R() * Math.PI * 2, ph = Math.acos(R() * .95), r = 7000; sp.push(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th)); }
+starGeo.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3));
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 2, sizeAttenuation: false, fog: false })); scene.add(stars);
+const spots = [];
+[[120, 44], [285, 27]].forEach(([s, y]) => [-26, 26].forEach(dz => { const l = new THREE.SpotLight(0xffd8a0, 0, 160, .45, .6, 1.2); l.position.set(s, 3, dz); l.target.position.set(s, y - 4, 0); scene.add(l, l.target); spots.push(l); }));
+const pmrem = new THREE.PMREMGenerator(renderer);
+const bgBIM = gradientTex('#e8eef5', '#b9c6d6'), bgBlue = gradientTex('#071a33', '#0b2a4a'), bgNight = gradientTex('#02050c', '#0d1a33');
+const grid = new THREE.GridHelper(1600, 80, 0x2f6ea8, 0x173a5e); grid.position.set(178, BANK_Y + .02, 0); grid.visible = false; scene.add(grid);
+
+let theme = 'day', isNight = false;
+function setSun(el, az) { const phi = THREE.MathUtils.degToRad(90 - el), th = THREE.MathUtils.degToRad(az), v = new THREE.Vector3().setFromSphericalCoords(1, phi, th); sky.material.uniforms.sunPosition.value.copy(v); water.material.uniforms.sunDirection.value.copy(v).normalize(); sun.position.copy(v).multiplyScalar(700).add(sun.target.position); return v; }
+function envFromSky() { const sc = new THREE.Scene(), sk = new Sky(); sk.scale.setScalar(1000); sk.material.uniforms.sunPosition.value.copy(sky.material.uniforms.sunPosition.value); ['turbidity', 'rayleigh', 'mieCoefficient', 'mieDirectionalG'].forEach(k => sk.material.uniforms[k].value = sky.material.uniforms[k].value); sc.add(sk); if (scene.environment) scene.environment.dispose(); scene.environment = pmrem.fromScene(sc).texture; }
+function applyTheme(t) {
+  theme = t; isNight = t === 'night'; MODE = t === 'bim' ? 'bim' : t === 'blue' ? 'blue' : 'real';
+  document.body.dataset.ui = t === 'bim' ? 'light' : 'dark';
+  document.querySelectorAll('#themes button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  const real = MODE === 'real';
+  sky.visible = real && !isNight; stars.visible = isNight; water.visible = real; flatWater.visible = !real; bed.visible = !real || true;
+  city.visible = MODE !== 'blue'; trees.visible = trunks.visible = real; gW.visible = gE.visible = MODE !== 'blue'; grid.visible = MODE === 'blue';
+  boats.forEach(b => b.visible = real); cars.visible = real;
+  gApproach.visible = MODE !== 'blue';
+  gLand.visible = MODE !== 'blue';
+  gCtx.children.forEach(o => { if (o.isMesh && (o.geometry.type === 'BoxGeometry' || o.userData.bank)) o.visible = MODE !== 'blue'; });
+  bldMat.emissiveIntensity = isNight ? 1.1 : 0; bldMat.map = MODE === 'bim' ? null : winDay; bldMat.color.set(MODE === 'bim' ? 0xf1f3f5 : 0xffffff); bldMat.transparent = MODE === 'bim'; bldMat.opacity = MODE === 'bim' ? .55 : 1; bldMat.needsUpdate = true;
+  groundMat.color.set(MODE === 'bim' ? 0xdfe6ee : 0xffffff); groundMat.map = MODE === 'bim' ? null : tGrass; groundMat.needsUpdate = true;
+  M.lampHead.emissive.set(isNight ? 0xffe9a8 : 0); M.lampHead.emissiveIntensity = 3;
+  M.avi.emissive.set(isNight ? 0xff2020 : 0x330000); M.avi.emissiveIntensity = 4;
+  M.cable.emissive.set(isNight ? 0x6b5a36 : 0); M.deco.emissive.set(isNight ? 0x9a6a00 : 0); M.gold.emissive.set(isNight ? 0x7a5200 : 0);
+  spots.forEach(l => l.intensity = isNight ? 700 : 0);
+  bloom.enabled = isNight || MODE === 'blue'; bloom.strength = isNight ? .55 : .45; bloom.threshold = isNight ? .9 : .8;
+  water.material.uniforms.sunColor.value.set({ day: 0x8c8676, sunset: 0xffa060, night: 0x1a2030 }[t] || 0x888888);
+  if (t === 'day') { const u = sky.material.uniforms; u.turbidity.value = 5; u.rayleigh.value = 1.2; u.mieCoefficient.value = .004; u.mieDirectionalG.value = .8; setSun(48, 140); renderer.toneMappingExposure = .5; sun.color.set(0xfff5e6); sun.intensity = 2.6; hemi.intensity = .55; hemi.color.set(0xdfefff); scene.fog = new THREE.Fog(0xc6d4de, 900, 3600); scene.background = null; water.material.uniforms.waterColor.value.set(0x3d4f3a); envFromSky(); }
+  if (t === 'sunset') { const u = sky.material.uniforms; u.turbidity.value = 9; u.rayleigh.value = 2.6; u.mieCoefficient.value = .009; u.mieDirectionalG.value = .9; setSun(4.5, 248); renderer.toneMappingExposure = .45; sun.color.set(0xffb070); sun.intensity = 2.2; hemi.intensity = .35; hemi.color.set(0xffd2b0); scene.fog = new THREE.Fog(0xcf9a76, 700, 3200); scene.background = null; water.material.uniforms.waterColor.value.set(0x3a3a30); envFromSky(); }
+  if (t === 'night') { setSun(-20, 250); const mv = new THREE.Vector3(-.3, .8, .4).normalize(); sun.position.copy(mv).multiplyScalar(700).add(sun.target.position); water.material.uniforms.sunDirection.value.copy(mv); renderer.toneMappingExposure = .95; sun.color.set(0x8fa8ff); sun.intensity = .25; hemi.intensity = .3; hemi.color.set(0x7088c0); scene.fog = new THREE.Fog(0x0a1222, 400, 2600); scene.background = bgNight; water.material.uniforms.waterColor.value.set(0x0c1418); if (scene.environment) { scene.environment.dispose(); } scene.environment = null; }
+  if (t === 'bim') { renderer.toneMappingExposure = 1.0; sun.color.set(0xffffff); sun.intensity = 1.8; setSun(55, 130); hemi.intensity = 1.0; hemi.color.set(0xffffff); scene.fog = null; scene.background = bgBIM; scene.environment = null; flatWater.material.color.set(0x74c0fc); flatWater.material.opacity = .25; }
+  if (t === 'blue') { renderer.toneMappingExposure = 1.0; sun.intensity = .6; hemi.intensity = .6; scene.fog = null; scene.background = bgBlue; scene.environment = null; flatWater.material.color.set(0x1971c2); flatWater.material.opacity = .15; }
+  bed.material.color.set(MODE === 'real' ? 0x4a4436 : MODE === 'bim' ? 0xa5b7c8 : 0x0b2a4a);
+  for (const e of ELS) e.lookKey = null; refresh(); updateUrl();
+}
+
+/* =====================================================================
+   5. SOUNDSCAPE (procedural Web Audio – ไม่ต้องโหลดไฟล์เสียง)
+   ===================================================================== */
+class Sound {
+  constructor() { this.on = false; this.music = false; this.next = { clank: 0, bird: 0, beep: 0, horn: 0, note: 0, pump: 0 }; }
+  init() {
+    const AC = window.AudioContext || window.webkitAudioContext; const c = this.ctx = new AC();
+    this.master = c.createGain(); this.master.gain.value = 0; this.master.connect(c.destination);
+    this.verb = c.createConvolver(); this.verb.buffer = this.impulse(3); const vg = c.createGain(); vg.gain.value = .4; this.verb.connect(vg).connect(this.master);
+    const brown = this.noise('brown'), pink = this.noise('pink'), white = this.noise('white');
+    this.river = this.loop(brown, 'lowpass', 420, 0); const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = .09; lg.gain.value = 160; lfo.connect(lg).connect(this.river.f.frequency); lfo.start();
+    this.wind = this.loop(pink, 'bandpass', 700, 0, .6); const l2 = c.createOscillator(), g2 = c.createGain(); l2.frequency.value = .05; g2.gain.value = 350; l2.connect(g2).connect(this.wind.f.frequency); l2.start();
+    this.city = this.loop(brown, 'lowpass', 160, 0);
+    this.hiss = this.loop(white, 'highpass', 5200, 0);
+    // generator / machinery hum
+    this.gen = c.createGain(); this.gen.gain.value = 0; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 220; lp.connect(this.gen).connect(this.master);
+    [49, 98.5, 147].forEach((f, i) => { const o = c.createOscillator(); o.type = i ? 'square' : 'sawtooth'; o.frequency.value = f; const g = c.createGain(); g.gain.value = i ? .08 : .35; o.connect(g).connect(lp); o.start(); });
+    // crickets (night)
+    this.crk = c.createGain(); this.crk.gain.value = 0; const co = c.createOscillator(); co.frequency.value = 4300; const am = c.createGain(); am.gain.value = 0; const ao = c.createOscillator(); ao.type = 'square'; ao.frequency.value = 28; const ag = c.createGain(); ag.gain.value = .5; ao.connect(ag).connect(am.gain); co.connect(am).connect(this.crk).connect(this.master); co.start(); ao.start();
+    // drone propellers
+    this.drn = c.createGain(); this.drn.gain.value = 0; const dbp = c.createBiquadFilter(); dbp.type = 'bandpass'; dbp.frequency.value = 520; dbp.Q.value = .7; dbp.connect(this.drn).connect(this.master);
+    this.drnOsc = [168, 171, 252].map(f => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; const g = c.createGain(); g.gain.value = .25; o.connect(g).connect(dbp); o.start(); return o; });
+    const dn = this.loop(white, 'highpass', 3000, 0); dn.g.disconnect(); dn.g.gain.value = .05; dn.g.connect(this.drn);
+    // music pad
+    this.pad = c.createGain(); this.pad.gain.value = 0; this.pad.connect(this.verb); this.pad.connect(this.master);
+    this.padOsc = [130.81, 196.0, 261.6].map(f => { const o = c.createOscillator(); o.type = 'sine'; o.frequency.value = f; const g = c.createGain(); g.gain.value = .12; o.connect(g).connect(this.pad); o.start(); return o; });
+  }
+  noise(type) {
+    const c = this.ctx, n = c.sampleRate * 4, b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0); let last = 0, b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < n; i++) { const w = Math.random() * 2 - 1;
+      if (type === 'white') d[i] = w * .4; else if (type === 'brown') { last = (last + .02 * w) / 1.02; d[i] = last * 3.5; }
+      else { b0 = .99886 * b0 + w * .0555179; b1 = .99332 * b1 + w * .0750759; b2 = .969 * b2 + w * .153852; b3 = .8665 * b3 + w * .3104856; b4 = .55 * b4 + w * .5329522; b5 = -.7616 * b5 - w * .016898; d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * .5362) * .11; b6 = w * .115926; } }
+    return b;
+  }
+  impulse(sec) { const c = this.ctx, n = c.sampleRate * sec, b = c.createBuffer(2, n, c.sampleRate); for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.5); } return b; }
+  loop(buf, type, f, gain, q = .7) { const c = this.ctx, s = c.createBufferSource(); s.buffer = buf; s.loop = true; const fl = c.createBiquadFilter(); fl.type = type; fl.frequency.value = f; fl.Q.value = q; const g = c.createGain(); g.gain.value = gain; s.connect(fl).connect(g).connect(this.master); s.start(); return { s, f: fl, g }; }
+  env(node, t, a, peak, d) { node.gain.setValueAtTime(0.0001, t); node.gain.exponentialRampToValueAtTime(peak, t + a); node.gain.exponentialRampToValueAtTime(0.0001, t + a + d); }
+  clank(v) { const c = this.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'triangle'; o.frequency.value = 700 + Math.random() * 900; o.connect(g); g.connect(this.master); g.connect(this.verb); this.env(g, t, .002, .25 * v, .35); o.start(t); o.stop(t + .5);
+    const o2 = c.createOscillator(), g2 = c.createGain(); o2.frequency.value = o.frequency.value * 2.76; o2.connect(g2).connect(this.master); this.env(g2, t, .002, .12 * v, .18); o2.start(t); o2.stop(t + .3); }
+  thump(v) { const c = this.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(40, t + .2); o.connect(g).connect(this.master); this.env(g, t, .005, .5 * v, .25); o.start(t); o.stop(t + .35); }
+  beep(v) { const c = this.ctx; for (let i = 0; i < 3; i++) { const t = c.currentTime + i * .35, o = c.createOscillator(), g = c.createGain(); o.type = 'square'; o.frequency.value = 1250; o.connect(g).connect(this.master); this.env(g, t, .01, .05 * v, .18); o.start(t); o.stop(t + .25); } }
+  bird(v) { const c = this.ctx, n = 2 + Math.random() * 4 | 0, base = 2600 + Math.random() * 1800; for (let i = 0; i < n; i++) { const t = c.currentTime + i * .13, o = c.createOscillator(), g = c.createGain(); o.frequency.setValueAtTime(base, t); o.frequency.exponentialRampToValueAtTime(base * 1.45, t + .05); o.frequency.exponentialRampToValueAtTime(base * .9, t + .1); o.connect(g); g.connect(this.master); g.connect(this.verb); this.env(g, t, .01, .06 * v, .09); o.start(t); o.stop(t + .14); } }
+  horn(v) { const c = this.ctx, t = c.currentTime, g = c.createGain(), f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 700; f.connect(g); g.connect(this.master); g.connect(this.verb);
+    [110, 138.6].forEach(fr => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.connect(f); o.start(t); o.stop(t + 2); }); g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.12 * v, t + .15); g.gain.setValueAtTime(.12 * v, t + 1.5); g.gain.linearRampToValueAtTime(.0001, t + 1.9); }
+  pluck(freq, v) { const c = this.ctx, t = c.currentTime + .02, g = c.createGain(); g.connect(this.master); g.connect(this.verb);
+    [[1, 'triangle', .5], [2, 'sine', .25], [3.01, 'sine', .1]].forEach(([m, ty, a]) => { const o = c.createOscillator(); o.type = ty; o.frequency.value = freq * m; const og = c.createGain(); og.gain.value = a; o.connect(og).connect(g); o.start(t); o.stop(t + 2.2); });
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.18 * v, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + 2.0); }
+  set(on) { if (!this.ctx) this.init(); this.on = on; if (on) this.ctx.resume(); this.master.gain.setTargetAtTime(on ? .9 : 0, this.ctx.currentTime, .3); }
+  update(dt, s) {
+    if (!this.ctx || !this.on) return; const c = this.ctx, now = c.currentTime, k = .4;
+    const near = clamp(1 - s.dist / 900, 0, 1), alt = clamp(s.alt / 150, 0, 1);
+    this.river.g.gain.setTargetAtTime(s.real ? .55 * clamp(1 - s.alt / 260, .15, 1) : .15, now, k);
+    this.wind.g.gain.setTargetAtTime(.05 + .35 * alt + (s.drone ? .1 : 0), now, k);
+    this.city.g.gain.setTargetAtTime(.25 + (s.opened ? .25 : 0), now, k);
+    this.hiss.g.gain.setTargetAtTime(.012, now, k);
+    const act = s.active ? near : 0;
+    this.gen.gain.setTargetAtTime(.10 * act, now, k);
+    this.crk.gain.setTargetAtTime(s.night ? .022 : 0, now, 1);
+    this.drn.gain.setTargetAtTime(s.drone ? .16 : 0, now, .2);
+    this.drnOsc.forEach((o, i) => o.frequency.setTargetAtTime([168, 171, 252][i] * (1 + clamp(s.speed / 120, 0, .6)), now, .3));
+    this.pad.gain.setTargetAtTime(this.music ? .05 : 0, now, 1.5);
+    if (act > .05 && now > this.next.clank) { this.clank(act); this.next.clank = now + .25 + Math.random() * 1.6 / (.4 + act); }
+    if (s.casting && act > .05 && now > this.next.pump) { this.thump(act); this.next.pump = now + .62; }
+    if (act > .05 && now > this.next.beep) { this.beep(act); this.next.beep = now + 9 + Math.random() * 14; }
+    if (!s.night && s.real && now > this.next.bird) { this.bird(.8 + Math.random() * .4); this.next.bird = now + 2 + Math.random() * 7; }
+    if (s.real && now > this.next.horn) { if (this.next.horn) this.horn(.8); this.next.horn = now + 25 + Math.random() * 40; }
+    if (this.music && now > this.next.note) {   // Thai-flavoured pentatonic (C D E G A) ranat-like plucks
+      const sc = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.26];
+      this.mi = clamp((this.mi ?? 3) + (Math.random() * 5 | 0) - 2, 0, sc.length - 1); this.pluck(sc[this.mi], 1);
+      if (Math.random() < .3) this.pluck(sc[clamp(this.mi - 2, 0, 7)] / 2, .7);
+      this.next.note = now + [.42, .42, .84, .21][Math.random() * 4 | 0];
+      if (Math.random() < .03) { const roots = [[130.81, 196, 261.6], [146.83, 220, 293.7], [110, 164.8, 220], [130.81, 196, 329.6]][Math.random() * 4 | 0]; this.padOsc.forEach((o, i) => o.frequency.setTargetAtTime(roots[i], now, 2)); }
+    }
+  }
+}
+const snd = new Sound();
+
+/* =====================================================================
+   6. CAMERA PRESETS, DRONE TOUR, FLY MODE
+   ===================================================================== */
+const VIEWS = {
+  overview: [[-70, 92, 215], [182, 8, -10]], p2: [[58, 42, 78], [120, 26, 0]], p3: [[338, 32, 62], [285, 19, 0]],
+  ft: [[188, 26, -46], [214, 12, 0]], land: [[-110, 70, 10], [420, 20, 30]], under: [[205, 4, 44], [190, 9, 0]], river: [[150, 2.4, 260], [180, 12, 0]], top: [[178, 520, 1], [178, 0, 0]],
+};
+let camAnim = null;
+function goView(name, dur = 1.6) { const v = VIEWS[name]; if (!v) return; camAnim = { p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(...v[0]), t1: new THREE.Vector3(...v[1]), u: 0, dur }; }
+const TOUR = [
+  [[-320, 70, 360], [178, 15, 0], 'Kiak Kai Extradosed Bridge', 'สะพานข้ามแม่น้ำเจ้าพระยา บริเวณแยกเกียกกาย · ช่วงสะพานหลัก 356.766 m'],
+  [[-40, 30, 95], [0, 12, 0], 'End Pier P1 · ศาลาทรงไทยหัวสะพาน', 'STA 1+141.069 · Pile cap F4 · End span on scaffolding'],
+  [[45, 20, 46], [110, 18, 0], 'Side span P1–P2 · 120 m', 'Balanced cantilever A′–S′ ด้วย Form Traveller FT1'],
+  [[92, 26, -32], [120, 38, 0], 'Pier P2 · Pylon P2', 'Pile cap F28 (Bored pile Ø1.8 m × 28) · Pier table 15 m'],
+  [[134, 60, -26], [120, 52, 0], 'Pylon P2 – Saddle zone & ยอดพุ่มบัวทองคำ', 'Stay cables 101–112 / 201–212 · RL saddle 32.62–42.52'],
+  [[150, 22, -30], [200, 14, 0], 'Main span P2–P3 · 165 m', 'Extradosed central-plane stay cables · Deck 31.30 m'],
+  [[200, 18, -36], [218, 12, 0], 'Form Traveller & Mid-span closure T', 'FT2 · Closure 2.50 m · Continuity tendons'],
+  [[222, 3.5, 42], [214, 11, 0], 'ใต้สะพาน · Navigation channel 75 m', 'HWL +2.13 / LWL −0.77 MSL · Clearance 9.0 m'],
+  [[270, 34, 36], [285, 21, 0], 'Pier P3 · Pylon P3', 'Pile cap F19 · Stay cables 301–306 / 401–406'],
+  [[330, 22, 46], [350, 12, 12], 'Side span P3–P4 · โค้งราบ', 'Ballast P3 side span · Final closure M1′'],
+  [[330, 75, 40], [483, 70, 232], 'รัฐสภาไทย (สัปปายะสภาสถาน)', 'ฝั่งขวาเมื่อมองจาก P1 ไป P4'],
+  [[268, 30, -100], [333, 12, -46], 'พระอุโบสถวัดจุฬามณี', 'ฝั่งซ้ายเมื่อมองจาก P1 ไป P4 · Deck แคบลง 31.3 → 17.0 m'],
+  [[440, 85, 170], [200, 15, 0], 'Overview from the east bank', 'แผนงาน 4D: Programme R.2 (12/12/2024)'],
+  [[178, 300, 380], [178, 8, 0], 'Kiak Kai Bridge · 4D BIM', 'Method Statement Simulation'],
+];
+const tour = { on: false, u: 0, dur: 115, posC: new THREE.CatmullRomCurve3(TOUR.map(w => new THREE.Vector3(...w[0])), false, 'centripetal'), tgtC: new THREE.CatmullRomCurve3(TOUR.map(w => new THREE.Vector3(...w[1])), false, 'centripetal'), bat: 100, last: new THREE.Vector3(), spd: 0, idx: -1 };
+const fly = { on: false, keys: {}, yaw: 0, pitch: 0, drag: null, spd: 0 };
+const capEl = document.getElementById('caption'), hud = document.getElementById('hud');
+function startTour() { stopFly(); tour.on = true; tour.u = 0; tour.idx = -1; tour.bat = 100; controls.enabled = false; hud.style.display = 'block'; document.body.classList.add('noui'); document.getElementById('btnTour').classList.add('on'); if (!snd.on) toggleSound(true); }
+function stopTour() { if (!tour.on) return; tour.on = false; controls.enabled = true; hud.style.display = 'none'; capEl.style.display = 'none'; document.body.classList.remove('noui'); document.getElementById('btnTour').classList.remove('on'); controls.target.copy(tour.tgtC.getPoint(Math.min(tour.u, .999))); }
+function startFly() { stopTour(); fly.on = true; controls.enabled = false; const d = new THREE.Vector3(); camera.getWorldDirection(d); fly.yaw = Math.atan2(-d.x, -d.z); fly.pitch = Math.asin(d.y); hud.style.display = 'block'; document.getElementById('flyhelp').style.display = 'block'; document.getElementById('btnFly').classList.add('on'); if (!snd.on) toggleSound(true); }
+function stopFly() { if (!fly.on) return; fly.on = false; controls.enabled = true; hud.style.display = 'none'; document.getElementById('flyhelp').style.display = 'none'; document.getElementById('btnFly').classList.remove('on'); const d = new THREE.Vector3(); camera.getWorldDirection(d); controls.target.copy(camera.position).addScaledVector(d, 60); }
+addEventListener('keydown', e => { fly.keys[e.code] = true; if (e.code === 'Escape') { stopTour(); stopFly(); } if (e.code === 'KeyH' && !e.target.closest('input,select')) document.body.classList.toggle('noui'); if (e.code === 'Space' && !fly.on && e.target === document.body) { e.preventDefault(); togglePlay(); } });
+addEventListener('keyup', e => { fly.keys[e.code] = false; });
+canvas.addEventListener('pointerdown', e => { if (fly.on) fly.drag = [e.clientX, e.clientY]; });
+addEventListener('pointerup', () => fly.drag = null);
+addEventListener('pointermove', e => { if (fly.on && fly.drag) { fly.yaw -= (e.clientX - fly.drag[0]) * .004; fly.pitch = clamp(fly.pitch - (e.clientY - fly.drag[1]) * .004, -1.4, 1.4); fly.drag = [e.clientX, e.clientY]; } });
+const HOME = new THREE.Vector3(120, 0, 0);
+function hudUpdate(spd) {
+  const p = camera.position, lat = 13.7905 + (-p.z) / 111000, lon = 100.5155 + p.x / (111000 * Math.cos(13.79 * Math.PI / 180));
+  document.getElementById('hudL').innerHTML = `<span class="rec">● REC</span> 4K 30fps<br>ALT ${(p.y - WATER_Y).toFixed(1)} m<br>H.S ${(spd * 3.6).toFixed(1)} km/h<br>D ${p.distanceTo(HOME).toFixed(0)} m`;
+  document.getElementById('hudR').innerHTML = `BAT ${tour.bat.toFixed(0)}%<br>GPS ▮▮▮▮ 18<br>${lat.toFixed(5)}°N<br>${lon.toFixed(5)}°E (approx.)`;
+  document.getElementById('hudB').innerHTML = `4D ${fmtTH(NOW)} · ${document.getElementById('stepName').textContent}`;
+}
+
+/* =====================================================================
+   7. UI
+   ===================================================================== */
+const STEPS = [
+  { d: '2023-10-01', t: 'งานเตรียมการ & Temporary Jetty', dw: '—', b: ['ปรับพื้นที่ ตั้งสำนักงานสนาม รั้ว/ป้ายเตือนจราจรทางน้ำ (ประสานกรมเจ้าท่า)', 'ตอกเข็มเหล็ก Temporary jetty ฝั่งตะวันตก → P2 และฝั่งตะวันออก → P3', 'Hold point: แผนจัดการจราจรทางน้ำ, Work permit งานทางน้ำ'] },
+  { d: '2024-01-08', t: 'งานเสาเข็มเจาะ Ø1.80 m (P2 = 28 ต้น, P3 = 19 ต้น, P1/P4 = 8 ต้น)', dw: 'M-021 / M-022', b: ['เจาะด้วย Rig บน Barge + Temporary casing, ใช้ Polymer/Bentonite slurry', 'ตรวจ Slurry, Koden test, ทำความสะอาดก้นหลุม, หย่อนกรงเหล็ก, เท Tremie', 'QA: Sonic logging / PIT, Static/Dynamic load test ตามข้อกำหนด'] },
+  { d: '2024-05-01', t: 'ฐานราก Pile Cap F28 / F19 / F4 + Cofferdam + Scour protection', dw: 'M-025, M-031–M-052', b: ['ติดตั้ง Steel sheet-pile cofferdam, สูบน้ำ, เท Tremie seal', 'ตัดหัวเข็ม ผูกเหล็ก Pile cap + Post-tensioning ใน Pile cap (M-033/M-043)', 'เทคอนกรีตแบบ Mass concrete ควบคุมอุณหภูมิ (Thermal control plan)', 'วางหิน Riprap ป้องกันการกัดเซาะรอบ P2/P3'] },
+  { d: '2024-07-01', t: 'ตอม่อ Pier P1–P4', dw: 'M-101–M-114, M-150/M-250', b: ['ยกแบบหล่อตอม่อเป็นช่วง (Lift) ใช้ Tower/Crawler crane', 'ติดตั้ง Seismic buffer ที่ P1/P4', 'Survey control ระดับและตำแหน่งก่อนทำ Pier table'] },
+  { d: '2024-10-01', t: 'STEP 1 – Pier Table (Pier head) P2/P3 + Prestressing', dw: 'M-901, M-152/M-252', b: ['ตั้ง Falsework บนฐานราก, หล่อ Pier table 15.0 m (H = 6.8 m P2 / 5.5 m P3)', 'ร้อยลวด/ดึงลวดอัดแรง Pier table, ถอด Temporary support (27/01–01/02/2025)', 'Pier table P2 เสร็จ 25/01/2025, P3 เสร็จ 22/03/2025 (Programme R.2)'] },
+  { d: '2025-01-27', t: 'ติดตั้ง Tower crane & ประกอบ Form Traveller FT1–FT4', dw: '22-ITD-KK-FT-…', b: ['Tower crane P2: Boom 40 m (27/01/25) ขยายเป็น 74 m (22–27/03/25)', 'ประกอบ FT1/FT2 บน P2: 04/02–21/03/2025 · FT3/FT4 บน P3: 01/04–16/05/2025', 'Load test ของ Form traveller ก่อนใช้งาน, ตรวจ Hanger rod / Anchor bar'] },
+  { d: '2025-03-28', t: 'STEP 2–3 – Balanced Cantilever Segment A/A′, B/B′ (P2) และ A1/A1′, B1/B1′ (P3)', dw: 'M-901', b: ['หล่อ Segment แบบสมดุล 2 ฝั่ง (สมดุลน้ำหนัก, ห้ามต่างกันเกิน 1 Segment)', 'วงรอบ Segment ~13 วัน (ดูตารางรอบงานด้านล่าง)', 'ดึงลวด Top slab cantilever tendons หลังคอนกรีตได้กำลังตามกำหนด'] },
+  { d: '2025-04-30', t: 'STEP 4.1-1 – ก่อสร้าง Pylon P2 (Kicker + 8 Portions) / Pylon P3', dw: 'M-150/159, M-250/259, M-902', b: ['Pylon P2: 30/04–30/07/2025 (Programme R.2) · Pylon P3: 26/06–26/08/2025', 'ฝัง Steel pipe / Saddle ของ Stay cable ตามระดับ RL B (M-301)', 'ติดตั้ง MWA pipe stock บน Segment A–C (ตามหมายเหตุ M-903)'] },
+  { d: '2025-06-01', t: 'STEP 5–20 – Cantilever + ติดตั้ง/ดึง Stay cable', dw: 'M-902 – M-911, M-301/302', b: ['ติดตั้งและ Pre-tension Stay cable: Side span 50% → Main span 100% → Side span 100%', 'ทำงาน 2 กะ ช่วง Segment E–P (Programme R.2)', 'ควบคุม Camber/Deflection ตาม M-1011–M-1043 ทุก Segment (Survey เช้ามืด)'] },
+  { d: '2025-06-09', t: 'Ballast / Counterweight Side span P3–P4', dw: 'M-406, M-905–M-911', b: ['หล่อ Ballast ใน Segment B1′–L1′ (115–711 kN) หลังติดตั้ง Stay', 'วาง Plastic sheet กันการยึดเกาะระหว่าง Ballast กับพื้นกล่อง', 'Temporary support/Scaffolding ใต้ Side span ถอดเป็นระยะ'] },
+  { d: '2025-10-08', t: 'End span บน Scaffolding P1–P2 (U′) และ P3–P4', dw: 'M-912 / M-913', b: ['ติดตั้ง Temporary support 14–30/10/2025 (P1) และ 08–24/10/2025 (P4)', 'หล่อ End segment บนนั่งร้าน + Bottom slab tendons', 'Barrier/Median/Railing เริ่มได้โดยต้องสมดุลรอบแกน P2'] },
+  { d: SD["M1'"][0], t: 'Final closure M1′ (P3–P4) · ถอด FT4', dw: 'M-913', b: ['FT4 ถอยไป E1′ แล้วรื้อ (FT3 รื้อแล้วหลัง L1 เสร็จ)', 'หล่อ Closure M1′, ดึง Bottom slab tendons End span', 'ถอด Scaffolding (16/02/2026)'] },
+  { d: SD["T'"][0], t: 'Side-span closure T′ (P1–P2)', dw: 'M-912', b: ['FT1 เลื่อนไปข้างหน้า 1 Segment, ผูกเหล็ก + Bottom slab tendons', 'หล่อ Closure T′ 09–23/01/2026'] },
+  { d: SD.L1[1], t: 'Main span P3 (A1–L1) แล้วเสร็จ → รื้อ Form Traveller FT3', dw: 'M-914', b: ['ถอด Formwork / Hanger และลดระดับ FT3 ลงเรือ Barge ด้วย Strand jack / Winch', 'เคลียร์ปลาย Cantilever ฝั่ง P3 ให้ว่าง เพื่อให้ FT2 จาก Main span P2 เข้าตำแหน่ง Closure', 'ตรวจระดับปลาย Cantilever ทั้งสองฝั่ง (Survey) ก่อนติดตั้ง Strongback'] },
+  { d: SD.T[0], t: 'FT2 เลื่อนเข้าตำแหน่ง Mid-span closure T + Continuity tendons', dw: 'M-914', b: ['Launching FT2 จาก Segment S ไปยังตำแหน่ง Closure T (คร่อมปลาย Cantilever ทั้งสองฝั่ง)', 'ยึด Strongback / Jacking ปรับระดับปลาย Cantilever, ผูกเหล็ก + ท่อร้อยลวด', 'หล่อ Closure T (ช่วงอุณหภูมิต่ำสุด), ดึง Bottom slab continuity tendons span P2–P3', 'รื้อ FT2 และ Form traveller ที่เหลือ'] },
+  { d: '2026-02-11', t: 'Final cable force adjustment · MWA pipes · Barrier / SDL', dw: 'M-914', b: ['ปรับแรงใน Stay cable ครั้งสุดท้าย (ถ้าจำเป็น)', 'กระจายท่อ MWA ตลอดสะพาน, งาน Barrier/Railing ที่เหลือ, SDL'] },
+  { d: '2026-02-17', t: 'งานสถาปัตยกรรม & ประติมากรรม (หลังโครงสร้างแล้วเสร็จ) · งานระบบ · ผิวทาง', dw: 'M-303, M-416, M-510, M-520, M-601–M-612', b: ['ยอดเสาทรงไทย, Decoration cable, ศาลาหัวสะพาน', 'ไฟฟ้าแสงสว่าง/ล่อฟ้า/Aviation light, ระบบระบายน้ำ, Wearing surface 50 mm'] },
+  { d: '2026-05-15', t: 'Load test · ตรวจรับ · เปิดใช้งาน', dw: '—', b: ['Static/Dynamic load test, ตรวจ Bearing/Expansion joint', 'เปิดการจราจร (สมมติ 15/06/2026)'] },
+].map(s => ({ ...s, t0: D(s.d) })).sort((a, b) => a.t0 - b.t0);
+const CYCLE = [['Launching Form Traveller & set up', '1 วัน', 'D1'], ['Rebar bottom slab', '2 วัน', 'D2–D3'], ['Rebar outer web', '1 วัน', 'D3 (FF)'], ['Rebar inner web', '1 วัน', 'D4'], ['Inner form', '1 วัน', 'D5'], ['Rebar top slab', '4 วัน', 'D6–D9'], ['Tendon duct (Trans. & Long.)', '1 วัน', 'D7 (SS+1)'], ['Formwork front joint', '1 วัน', 'D9 (FF)'], ['Placing concrete segment', '1 วัน', 'D10'], ['Installation PC strand', '1 วัน', 'D12 (FS+1)'], ['Stressing & grouting tendon', '1 วัน', 'D13']];
+
+const $ = id => document.getElementById(id);
+const slider = $('slider');
+const t2v = t => (t - T0) / (T1 - T0) * 1000, v2t = v => T0 + v / 1000 * (T1 - T0);
+// ticks
+(function () { const tk = $('ticks'); for (let y = 2024; y <= 2026; y++) for (const m of [0, 6]) { const t = new Date(y, m, 1).getTime(); if (t < T0 || t > T1) continue; const d = document.createElement('div'); d.style.left = t2v(t) / 10 + '%'; d.textContent = (m ? 'ก.ค. ' : 'ม.ค. ') + (y + 543); tk.appendChild(d); }
+  [['2025-01-25', 'Pier table P2'], ['2025-07-30', 'Pylon P2'], ['2026-02-10', 'Mid closure'], ['2026-06-15', 'เปิดใช้']].forEach(([d, n]) => { const e = document.createElement('div'); e.className = 'ms'; e.style.left = t2v(D(d)) / 10 + '%'; e.style.top = '0'; e.textContent = '◆ ' + n; tk.appendChild(e); }); })();
+function setNow(t, fromSlider) { NOW = clamp(t, T0, T1); if (!fromSlider) slider.value = t2v(NOW); refresh(); }
+slider.addEventListener('input', () => setNow(v2t(+slider.value), true));
+let playing = false;
+function togglePlay() { playing = !playing; if (playing && NOW >= T1 - DAY) setNow(T0); $('btnPlay').textContent = playing ? '❚❚ หยุด' : '▶ เล่น 4D'; $('btnPlay').classList.toggle('on', playing); }
+$('btnPlay').onclick = togglePlay;
+document.querySelectorAll('#themes button').forEach(b => b.onclick = () => applyTheme(b.dataset.t));
+$('view').onchange = e => goView(e.target.value);
+$('btnTour').onclick = () => tour.on ? stopTour() : startTour();
+$('btnFly').onclick = () => fly.on ? stopFly() : startFly();
+function toggleSound(force) { const on = force ?? !snd.on; snd.set(on); $('btnSound').innerHTML = (on ? '🔊' : '🔇') + '<span class="lbl"> เสียง</span>'; $('btnSound').classList.toggle('on', on); }
+$('btnSound').onclick = () => toggleSound();
+$('btnMusic').onclick = () => { if (!snd.on) toggleSound(true); snd.music = !snd.music; $('btnMusic').classList.toggle('on', snd.music); };
+$('btnUI').onclick = () => document.body.classList.toggle('noui');
+/* ===== Schedule import: PDF (MS Project print) / MS Project XML / CSV / JSON  →  task list  →  BIM element dates ===== */
+const SCHED_IO = (() => {
+  const MON = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+  function parseDate(s) {   // m/d/yy, m/d/yyyy, yyyy-mm-dd(Thh:mm), d-Mon-yy
+    if (!s) return null; s = String(s).trim();
+    let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); if (m) { const y = m[3].length === 2 ? 2000 + +m[3] : +m[3]; return `${y}-${String(m[1]).padStart(2, '0')}-${String(m[2]).padStart(2, '0')}`; }
+    m = s.match(/(\d{1,2})[-\s]([A-Z][a-z]{2})[-\s](\d{2,4})/); if (m && MON[m[2]] !== undefined) { const y = m[3].length === 2 ? 2000 + +m[3] : +m[3]; return `${y}-${String(MON[m[2]] + 1).padStart(2, '0')}-${String(m[1]).padStart(2, '0')}`; }
+    return null;
+  }
+  // --- PDF printed from MS Project (Gantt table columns: ID | Task Name | Duration | Start | Finish | Predecessors ...)
+  async function fromPDF(buf, progress) {
+    const pdfjs = window.pdfjsLib; if (!pdfjs) throw new Error('pdf.js not loaded');
+    const doc = await pdfjs.getDocument({ data: buf }).promise, toks = [];
+    for (let p = 1; p <= doc.numPages; p++) {
+      const tc = await (await doc.getPage(p)).getTextContent();
+      tc.items.forEach(i => { const s = i.str.trim(); if (s) toks.push(s); });
+      if (progress) progress(p / doc.numPages);
+    }
+    return fromTokens(toks);
+  }
+  function fromTokens(toks) {
+    const dur = /^\d+(\.\d+)?\s*e?(days?|d|wks?|w|hrs?|h|mons?|mo)\??$/i, dt = /(\d{1,2}\/\d{1,2}\/\d{2,4})/;
+    const tasks = new Map();
+    for (let i = 0; i < toks.length - 4; i++) {
+      if (!/^\d{1,5}$/.test(toks[i])) continue;
+      let j = i + 1, name = toks[j];
+      if (!name || /^\d+([,.]\d+)*$/.test(name) || dt.test(name) || dur.test(name)) continue;
+      j++;
+      if (!dur.test(toks[j]) && toks[j + 1] && dur.test(toks[j + 1]) && !dt.test(toks[j])) { name += ' ' + toks[j]; j++; }   // wrapped task name
+      if (!dur.test(toks[j])) continue;
+      const s = (toks[j + 1] || '').match(dt), f = (toks[j + 2] || '').match(dt);
+      if (!s || !f) continue;
+      const id = +toks[i]; if (!tasks.has(id)) tasks.set(id, { id, name: name.trim(), dur: toks[j], start: parseDate(s[1]), finish: parseDate(f[1]) });
+      i = j + 2;
+    }
+    return [...tasks.values()].sort((a, b) => a.id - b.id);
+  }
+  // --- MS Project XML (File ▸ Save As ▸ XML)
+  function fromXML(text) {
+    const x = new DOMParser().parseFromString(text, 'application/xml'), out = [];
+    x.querySelectorAll('Tasks > Task').forEach(t => { const g = n => t.querySelector(':scope > ' + n)?.textContent;
+      const id = +g('ID'); if (!g('Name')) return; out.push({ id, name: g('Name'), start: parseDate(g('Start')), finish: parseDate(g('Finish')), level: +g('OutlineLevel') }); });
+    return out.sort((a, b) => a.id - b.id);
+  }
+  // --- CSV / Excel export (columns ID, Name/Task Name, Start, Finish)
+  function fromCSV(text) {
+    const sep = (text.split(/\r?\n/)[0].match(/[;\t]/) || [','])[0];
+    const splitRow = r => { const out = []; let cur = '', q = false; for (let i = 0; i < r.length; i++) { const c = r[i]; if (q) { if (c === '"' && r[i + 1] === '"') { cur += '"'; i++; } else if (c === '"') q = false; else cur += c; } else if (c === '"') q = true; else if (c === sep) { out.push(cur.trim()); cur = ''; } else cur += c; } out.push(cur.trim()); return out; };
+    const rows = text.replace(/^﻿/, '').split(/\r?\n/).filter(r => r.trim()).map(splitRow);
+    const h = rows[0].map(c => c.toLowerCase()), ci = k => h.findIndex(c => k.some(x => c.includes(x)));
+    const iI = ci(['id']), iN = ci(['task name', 'name', 'ชื่อ']), iS = ci(['start', 'เริ่ม']), iF = ci(['finish', 'end', 'เสร็จ']);
+    return rows.slice(1).map((r, n) => ({ id: iI >= 0 ? +r[iI] || n + 1 : n + 1, name: r[iN], start: parseDate(r[iS]), finish: parseDate(r[iF]) })).filter(t => t.name && t.start && t.finish);
+  }
+  // --- map Programme tasks → schedule object used by the BIM model
+  function toSchedule(tasks) {
+    const S = { seg: {}, pylon: { P2: [], P3: [] }, ft: {}, tc: {}, pt: {}, end: {}, sc: {}, matched: 0, unmatched: [] };
+    let pier = 'P2', pylonCtx = null, pylonP3 = null;
+    const ord = ['Kicker', '1st Portion', '2nd Portion', '3rd Portion', '4th Portion', '5th Portion', '6th Portion', '7th Portion', '8th Portion'];
+    for (const t of tasks) {
+      const n = t.name.replace(/\s+/g, ' ').trim();
+      let m;
+      if ((m = n.match(/^Pier No\.?\s*(P\d)/i))) { pier = m[1].toUpperCase(); pylonCtx = null; continue; }
+      if ((m = n.match(/^Pylon (P\d)A?$/i))) { pylonCtx = m[1].toUpperCase(); if (pylonCtx === 'P3') pylonP3 = [t.start, t.finish]; S.matched++; continue; }
+      if ((m = n.match(/^Segment ([A-Z]\d?'?)\s*(\(|$)/))) { S.seg[m[1]] = [t.start, t.finish]; S.matched++; pylonCtx = null; continue; }
+      const k = ord.findIndex(o => n.toLowerCase().startsWith(o.toLowerCase()));
+      if (k >= 0 && pylonCtx) { S.pylon[pylonCtx][k] = [t.start, t.finish]; S.matched++; continue; }
+      if (/^Pier Table .*completed/i.test(n)) { S.pt[pier] = t.finish; S.matched++; continue; }
+      if (/^Installation of Tower Crane/i.test(n)) { S.tc[pier] = [t.start, t.finish]; S.matched++; continue; }
+      if (/^Assembly and Installation of Form Travel/i.test(n)) { S.ft[pier] = [t.start, t.finish]; S.matched++; continue; }
+      if (/^End span construction/i.test(n)) { S.end[pier] = [t.start, t.finish]; S.matched++; continue; }
+      if (/^Temporary support installation/i.test(n)) { S.sc[pier] = [t.start, t.finish]; S.matched++; continue; }
+      if (/^(Side span|Main span|End span|Balance Cantilever|Chao Phraya)/i.test(n)) { pylonCtx = null; continue; }
+      if (!/^(Launching|Installation|Placing|Stressing|Removing|Preparation|Concrete|Scaffolding|Resetting|Stock|1st|2nd)/i.test(n)) S.unmatched.push(n);
+    }
+    if (pylonP3 && !S.pylon.P3.length) {   // only the summary is printed for P3A → split into 6 lifts
+      const a = new Date(pylonP3[0]).getTime(), b = new Date(pylonP3[1]).getTime(), w = [1, 1.1, 1.1, 1.1, 1.4, 1.7], tot = w.reduce((x, y) => x + y);
+      let acc = 0; const iso = v => new Date(v).toISOString().slice(0, 10);
+      S.pylon.P3 = w.map(x => { const s0 = a + (b - a) * acc / tot; acc += x; const e0 = a + (b - a) * acc / tot; return [iso(s0 + (acc > x ? 86400000 : 0)), iso(e0)]; });
+    }
+    S.tasks = tasks.length;
+    return S;
+  }
+  return { fromPDF, fromTokens, fromXML, fromCSV, toSchedule, parseDate };
+})();
+
+// ---- left / right panel toggles (remembered per browser)
+const UIKEY = 'kk4d.ui';
+function setPanel(side, show) { document.body.classList.toggle(side === 'L' ? 'hideL' : 'hideR', !show); $('btn' + side).classList.toggle('on', show); try { const u = JSON.parse(localStorage.getItem(UIKEY) || '{}'); u[side] = show; localStorage.setItem(UIKEY, JSON.stringify(u)); } catch (e) { } }
+$('btnL').onclick = () => setPanel('L', document.body.classList.contains('hideL'));
+$('btnR').onclick = () => setPanel('R', document.body.classList.contains('hideR'));
+$('closeL').onclick = () => setPanel('L', false); $('closeR').onclick = () => setPanel('R', false);
+addEventListener('keydown', e => { if (e.target.closest && e.target.closest('input,select,textarea')) return; if (e.key === '[') $('btnL').click(); if (e.key === ']') $('btnR').click(); });
+try { const u = JSON.parse(localStorage.getItem(UIKEY) || '{}'); if (u.L === false) setPanel('L', false); if (u.R === false) setPanel('R', false); } catch (e) { }
+if (new URLSearchParams(location.search).get('panels') === '0') { setPanel('L', false); setPanel('R', false); }
+// ---- schedule import dialog
+$('schedSrc').textContent = 'แผนงาน: ' + (SCHED.user ? SCHED.source + ' (อัปโหลด ' + (SCHED.imported || '') + ')' : 'Programme R.2 (12/12/2024) – ค่าเริ่มต้น');
+let pendingSched = null;
+const openModal = v => { $('modal').style.display = $('modalBack').style.display = v ? 'block' : 'none'; };
+$('btnImport').onclick = () => { openModal(true); $('impStatus').textContent = ''; $('mApply').disabled = true; pendingSched = null; };
+$('mClose').onclick = $('modalBack').onclick = () => openModal(false);
+$('drop').onclick = () => $('impFile').click();
+['dragover', 'dragenter'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => $('drop').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.remove('over'); }));
+$('drop').addEventListener('drop', e => { if (e.dataTransfer.files[0]) importFile(e.dataTransfer.files[0]); });
+$('impFile').onchange = e => { if (e.target.files[0]) importFile(e.target.files[0]); e.target.value = ''; };
+async function loadPdfJs() {
+  if (window.pdfjsLib) return;
+  await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'; sc.onload = res; sc.onerror = () => rej(new Error('โหลด pdf.js ไม่สำเร็จ (ต้องเชื่อมต่ออินเทอร์เน็ต)')); document.head.appendChild(sc); });
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+async function importFile(f) {
+  const st = $('impStatus'), ext = f.name.split('.').pop().toLowerCase(); pendingSched = null; $('mApply').disabled = true;
+  st.innerHTML = `กำลังอ่าน <b>${f.name}</b> (${(f.size / 1e6).toFixed(1)} MB) …`;
+  try {
+    let tasks, S;
+    if (ext === 'mpp') { st.innerHTML = `<span class="bad">ไฟล์ .mpp เป็นฐานข้อมูลไบนารีของ MS Project ที่เบราว์เซอร์อ่านโดยตรงไม่ได้</span>\nวิธีอัปเดต:\n1) เปิดใน MS Project ▸ File ▸ Save As ▸ <b>XML Format (*.xml)</b> แล้วอัปโหลดไฟล์ .xml\n2) หรือ File ▸ Print ▸ Microsoft Print to PDF (มุมมอง Gantt ที่มีคอลัมน์ ID, Task Name, Duration, Start, Finish)\n3) หรือแปลงด้วย tools/mpp2json.py (MPXJ, ต้องมี Java) แล้วอัปโหลด schedule.json`; return; }
+    if (ext === 'pdf') { await loadPdfJs(); tasks = await SCHED_IO.fromPDF(new Uint8Array(await f.arrayBuffer()), p => st.innerHTML = `กำลังอ่าน PDF … ${(p * 100).toFixed(0)}%`); }
+    else if (ext === 'xml') tasks = SCHED_IO.fromXML(await f.text());
+    else if (ext === 'csv' || ext === 'txt') tasks = SCHED_IO.fromCSV(await f.text());
+    else if (ext === 'json') { const j = JSON.parse(await f.text()); if (j.seg) S = j; else tasks = j.tasks || j; }
+    else throw new Error('ไม่รองรับไฟล์ชนิด .' + ext);
+    if (!S) S = SCHED_IO.toSchedule(tasks);
+    S.source = S.source && ext === 'json' ? S.source : f.name; S.imported = fmtISO(Date.now());
+    const nSeg = Object.keys(S.seg || {}).length, known = Object.keys(SCHED_DEFAULT.seg).filter(k => S.seg && S.seg[k]).length;
+    const changed = Object.keys(S.seg || {}).filter(k => SCHED_DEFAULT.seg[k] && (SCHED_DEFAULT.seg[k][0] !== S.seg[k][0] || SCHED_DEFAULT.seg[k][1] !== S.seg[k][1]));
+    const lastT = S.seg && S.seg.T ? S.seg.T[1] : '—', lastM = S.seg && S.seg["M1'"] ? S.seg["M1'"][1] : '—';
+    if (!nSeg) throw new Error('ไม่พบรายการ Segment (เช่น "Segment A\'", "Segment T(Mid span closure)") ในไฟล์ – ตรวจสอบว่าเป็นแผนงาน Balanced Cantilever ของโครงการนี้');
+    st.innerHTML = `<span class="ok">✔ อ่านได้ ${S.tasks ?? '—'} tasks · จับคู่กับแบบจำลอง ${known}/${Object.keys(SCHED_DEFAULT.seg).length} segments</span>\n` +
+      `Pylon P2: ${(S.pylon?.P2 || []).filter(Boolean).length}/9 lifts · Pylon P3: ${(S.pylon?.P3 || []).filter(Boolean).length}/6 · FT: ${Object.keys(S.ft || {}).join(', ') || '—'} · Tower crane: ${Object.keys(S.tc || {}).join(', ') || '—'}\n` +
+      `วันที่เปลี่ยนจากแผนเดิม: ${changed.length} segments${changed.length ? ' (' + changed.slice(0, 8).join(', ') + (changed.length > 8 ? ' …' : '') + ')' : ''}\n` +
+      `Mid-span closure T เสร็จ: ${lastT} · Final closure M1′ เสร็จ: ${lastM}` + (known < Object.keys(SCHED_DEFAULT.seg).length ? `\n<span class="bad">Segment ที่ไม่พบในไฟล์จะใช้วันที่จาก R.2 เดิม</span>` : '');
+    delete S.unmatched; pendingSched = S; $('mApply').disabled = false;
+  } catch (err) { st.innerHTML = `<span class="bad">✖ ${err.message || err}</span>`; }
+}
+$('mApply').onclick = () => { if (!pendingSched) return; try { localStorage.setItem('kk4d.schedule', JSON.stringify(pendingSched)); } catch (e) { alert('บันทึกไม่สำเร็จ: ' + e.message); return; } location.reload(); };
+$('mReset').onclick = () => { try { localStorage.removeItem('kk4d.schedule'); } catch (e) { } location.reload(); };
+$('mExport').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(Object.assign({}, SCHED, { user: undefined }), null, 1)], { type: 'application/json' })); a.download = 'schedule.json'; a.click(); };
+
+$('mobileToggle').onclick = () => $('left').classList.toggle('show');
+$('btnShot').onclick = () => { composer.render(); const a = document.createElement('a'); a.href = renderer.domElement.toDataURL('image/png'); a.download = `KiakKai_4D_${fmtISO(NOW)}_${theme}.png`; a.click(); };
+$('btnGlb').onclick = () => {
+  const ex = new GLTFExporter(), root = new THREE.Group(); root.name = 'KiakKai_Extradosed_Bridge_' + fmtISO(NOW);
+  for (const e of ELS) if (e.obj.visible && !e.temp) { const saved = []; e.obj.traverse(m => { saved.push([m, m.userData]); m.userData = {}; }); const c = e.obj.clone(true); saved.forEach(([m, u]) => m.userData = u);const origMeshes = []; e.obj.traverse(m => { if (m.isMesh) origMeshes.push(m); }); let mi = 0; const drop = []; c.traverse(m => { if (m.isMesh) { const o = origMeshes[mi++]; m.material = (o && o.userData.base) || m.material; } if (m.isLineSegments) drop.push(m); }); drop.forEach(m => m.removeFromParent()); c.name = e.id; c.userData = { id: e.id, name: e.name, category: CATS[e.cat].th, start: fmtISO(e.start), finish: fmtISO(e.finish), drawing: e.dwg, source: e.src }; root.add(c); }
+  ex.parse(root, glb => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' })); a.download = `KiakKai_BIM_${fmtISO(NOW)}.glb`; a.click(); }, err => alert(err), { binary: true });
+};
+// tabs
+let tab = 'gantt';
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => { tab = b.dataset.tab; document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b)); renderTab(); });
+const GROUPS = []; { const m = new Map(); for (const e of ELS) { if (!m.has(e.grp)) { const g = { n: e.grp, a: Infinity, b: 0, as: false, els: [] }; m.set(e.grp, g); GROUPS.push(g); } const g = m.get(e.grp); g.a = Math.min(g.a, e.start); g.b = Math.max(g.b, e.temp ? (e.rmE || e.finish) : e.finish); g.els.push(e); if (/Assumed/.test(e.src) && !/Programme/.test(e.src)) g.as = true; } GROUPS.sort((x, y) => x.a - y.a); }
+function renderTab() {
+  const tb = $('tabbody');
+  if (tab === 'gantt') {
+    tb.innerHTML = `<div class="mut" style="margin-bottom:6px">แผนงาน 4D (คลิกแถวเพื่อกระโดดไปวันเริ่มงาน) · <span class="pill" style="background:var(--acc2);color:#111">${SCHED.user ? 'อัปโหลด: ' + SCHED.source : 'Programme R.2'}</span> <span class="pill" style="background:#6c7a90;color:#111">สมมติฐาน</span></div><div id="gwrap" style="position:relative"></div>
+      <h3>รอบงาน 1 Segment (Programme R.2 · 13 วัน)</h3><table class="cyc">${CYCLE.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="mut">${r[2]}</td></tr>`).join('')}</table>`;
+    const gw = $('gwrap'); gw.innerHTML = GROUPS.map((g, i) => `<div class="grow" data-i="${i}" title="${g.n}: ${fmtTH(g.a)} – ${fmtTH(g.b)}"><div class="gl">${g.n}</div><div class="gt"><div class="gb ${g.as ? 'as' : ''}" style="left:${t2v(g.a) / 10}%;width:${Math.max(.6, (t2v(g.b) - t2v(g.a)) / 10)}%"><div class="pg"></div></div></div></div>`).join('') + '<div id="gnow"></div>';
+    gw.querySelectorAll('.grow').forEach(r => r.onclick = () => { const g = GROUPS[+r.dataset.i]; setNow(g.a + DAY); focusOn(g.els); });
+  } else if (tab === 'ms') {
+    tb.innerHTML = `<div class="mut" style="margin-bottom:8px">ขั้นตอนการก่อสร้างตามแบบ PROPOSED CONSTRUCTION STEPS (M-901–M-914) และ Programme R.2 · คลิกเพื่อจำลองขั้นตอน</div>` +
+      STEPS.map((s, i) => `<div class="ms-step" data-i="${i}"><span class="d">${fmtTH(s.t0)} · ${s.dw}</span><b>${i + 1}. ${s.t}</b><ul>${s.b.map(x => `<li>${x}</li>`).join('')}</ul></div>`).join('') +
+      `<h3>ความปลอดภัยหลัก (Key HSE)</h3><ul class="mut" style="padding-left:16px;font-size:11.5px"><li>งานบนที่สูง/บน Form traveller: Full body harness, Safety net, ราวกันตก</li><li>งานยก: Lifting plan, ตรวจ Crane รายวัน, Wind speed &lt; 36 km/h (ยกหยุดเมื่อเกิน)</li><li>งานทางน้ำ: เรือกู้ภัย, ทุ่นไฟเตือน, Life jacket, ประสานกรมเจ้าท่า</li><li>งานดึงลวด: Exclusion zone หลัง Jack, บันทึกแรงดึง/ระยะยืด</li></ul>`;
+    tb.querySelectorAll('.ms-step').forEach(r => r.onclick = () => setNow(STEPS[+r.dataset.i].t0 + 5 * DAY));
+  } else if (tab === 'model') {
+    const grps = {}; for (const k in CATS) (grps[CATS[k].grp] ||= []).push(k);
+    tb.innerHTML = Object.entries(grps).map(([g, ks]) => `<h3>${g}</h3>` + ks.map(k => { const n = ELS.filter(e => e.cat === k).length; return `<div class="cat"><i style="background:${CATS[k].c}"></i><label><input type="checkbox" data-k="${k}" ${catHidden[k] ? '' : 'checked'}> ${CATS[k].th}</label><span class="mut">${n}</span></div>`; }).join('')).join('') +
+      `<h3>บริบท</h3><div class="cat"><label><input type="checkbox" id="chkLbl" checked> ป้ายชื่อตอม่อ/ช่วงสะพาน</label></div><div class="cat"><label><input type="checkbox" id="chkCity" ${city.visible ? 'checked' : ''}> อาคาร/เมือง</label></div>
+      <p class="mut" style="font-size:11.5px">คลิกที่ชิ้นส่วนในโมเดลเพื่อดูคุณสมบัติ BIM (ID, แบบอ้างอิง, ปริมาณ, วันที่ตามแผน)</p>`;
+    tb.querySelectorAll('input[data-k]').forEach(c => c.onchange = () => { catHidden[c.dataset.k] = !c.checked; refresh(); });
+    $('chkLbl').onchange = e => gLabels.visible = e.target.checked; $('chkCity').onchange = e => city.visible = e.target.checked;
+  } else {
+    tb.innerHTML = `<h3>แบบที่ใช้สร้างโมเดล</h3><ul style="padding-left:16px;font-size:12px;line-height:1.55">
+      <li><b>Substructure</b> – 2022.08.15 Kiak Kai Extradosed Bridge drawings.pdf (21 แผ่น: M-005–M-114)</li>
+      <li><b>Superstructure</b> – 20230825 Kiak Kai Bridge Drawings.pdf (63 แผ่น: M-012/013, M-301–303, M-401–472, M-501–612)</li>
+      <li><b>Form Traveller</b> – 22-ITD-KK-FT-P3-P4-GA-001…049, EC-001…006 (55 แผ่น)</li>
+      <li><b>Construction Sequence</b> – Revised ConStage & Camber Rev.2 (M-901–M-914, M-1011–M-1043)</li>
+      <li><b>Planning</b> – Program of Extradose at Kiak Kai Bridge R.2 (12/12/2024) .mpp/.pdf (1,232 tasks)</li><li><b>AR Main Bridge</b> – แบบสถาปัตย์ 24 แผ่น (ผัง, เสาไฟ, ราวกันตก, PYLON-1/2, STAIR TOWER)</li><li><b>Presentation</b> – Implementing BIM for Infrastructure Projects (KK-C2) R9 EXAT (302 หน้า): ภาพจริง/Render, ขนาด Pylon, Decorative cable, Deck 31→17 m</li><li><b>Federated model</b> – Autodesk Viewer "20260723_Kiek Kai Bridge 1_2&amp;3": ตำแหน่ง Pier/Pile cap, โปรไฟล์หัวเม็ด P2/P3, Pylon, หอบันได, แนวตลิ่ง, วัด/ท่าเทียบเรือ และ Height map อาคารรัฐสภา</li></ul>
+      <h3>ข้อมูลหลักที่ถอดจากแบบ</h3><table class="cyc">
+      <tr><td>ช่วงสะพาน</td><td>120.000 + 165.000 + 71.766 = 356.766 m</td></tr><tr><td>STA</td><td>P1 1+141.069 · P2 1+261.069 · P3 1+426.069 · P4 1+497.835</td></tr>
+      <tr><td>Profile</td><td>+2.500% / LVC 200 m / −2.250% (EL 11.902 → 14.813 → 11.661)</td></tr><tr><td>Deck</td><td>กว้าง 31.30 m (3 ช่อง + ทางเท้า/ทิศ) · แคบลงเหลือ 17.00 m ตั้งแต่ Segment F1′ (Side span P3–P4)</td></tr><tr><td>Pylon</td><td>P2: Pedestal 20.6 m · Shaft 11.6×2.4 m · หัวเสา+นาฬิกา 4.15 m · หัวเม็ดทรงพุ่ม 12.35 m (R 3.45) รวม 48.15 m · P3: Shaft 4.2×2.8 m 19.38 m + หัวเม็ด 8.2 m รวม 27.45 m</td></tr><tr><td>Decorative cable</td><td>C1/C2 7 strands (sag 4.011/3.055 m) · C3/C4 4 strands (sag 2.276/2.304 m)</td></tr><tr><td>แนวราบ</td><td>ตรง P1–กลางช่วง P2–P3 แล้วโค้งซ้าย R ≈ 554 m (P3 −3.3 m, P4 −15.8 m จากแนวตรง ตาม Federated model)</td></tr><tr><td>บริบท</td><td>มอง P1→P4: ขวา = รัฐสภา (Height map 4 m จาก Federated model) · ซ้าย = พระอุโบสถวัดจุฬามณี + ท่าเทียบเรือ (ขนาด/ตำแหน่งจากโมเดล)</td></tr>
+      <tr><td>Girder depth</td><td>P2: 6.80→3.30 m (H=3300+0.5335x²) · P3: 5.50→3.30 m (H=3300+0.9163x²)</td></tr>
+      <tr><td>Segments</td><td>P2: A–S / A′–S′ (19+19) · P3: A1–L1 / A1′–L1′ (12+12) · Closure T, T′, M1′</td></tr>
+      <tr><td>Stay cables</td><td>P2: 101–112, 201–212 · P3: 301–306, 401–406 (central plane)</td></tr>
+      <tr><td>Foundation</td><td>Bored pile Ø1.80 m · F28 (P2) · F19 (P3) · F4 (P1/P4)</td></tr>
+      <tr><td>ระดับน้ำ</td><td>HWL +2.13 / LWL −0.77 MSL · Navigation 75 m × 9.0 m</td></tr></table>
+      <h3>ข้อจำกัด / สมมติฐาน</h3><ul class="mut" style="padding-left:16px;font-size:11.5px"><li>โฟลเดอร์มีเฉพาะ PDF + MPP (ไม่มี DWG/IFC/PPT/JPG) – โมเดลสร้างแบบ Parametric จากมิติในแบบ</li>
+      <li>แบบสถาปัตย์ใช้แล้ว (Pylon, Stair tower, เสาไฟ, ราว) · ไม่มีแบบงานระบบไฟฟ้า/ประปา/ปรับอากาศ/ดับเพลิงแยก – งานระบบในโมเดลอ้างอิงแบบ M-401/520/601 และหมายเหตุ M-914 (ท่อ MWA) แสดงเชิงสัญลักษณ์ (Indicative) · สะพานไม่มีระบบปรับอากาศ/ดับเพลิง</li>
+      <li>วันที่งานฐานราก/ตอม่อ/ตกแต่ง เป็นสมมติฐาน (ไม่อยู่ใน Programme R.2) – แสดงแถบลายในแผนงาน</li>
+      <li>รูปทรงหน้าตัด, Pylon, ยอดเสาทรงไทย และโค้งราบ P3–P4 เป็นการประมาณเพื่อการนำเสนอ</li></ul>`;
+  }
+  updateUI();
+}
+function focusOn(els) { const b = new THREE.Box3(); els.forEach(e => b.union(e.box)); const c = b.getCenter(new THREE.Vector3()), r = Math.max(25, b.getSize(new THREE.Vector3()).length() * .7);
+  camAnim = { p0: camera.position.clone(), t0: controls.target.clone(), p1: c.clone().add(new THREE.Vector3(-r * .6, r * .55, r * .9)), t1: c, u: 0, dur: 1.4 }; }
+// S-curve
+const SC = []; { const tot = ELS.filter(e => !e.temp).reduce((a, e) => a + (e.finish - e.start), 0); for (let i = 0; i <= 120; i++) { const t = lerp(T0, T1, i / 120); SC.push(ELS.filter(e => !e.temp).reduce((a, e) => a + clamp(t - e.start, 0, e.finish - e.start), 0) / tot); } }
+function progressAt(t) { const i = (t - T0) / (T1 - T0) * 120, a = Math.floor(clamp(i, 0, 119)); return lerp(SC[a], SC[a + 1], i - a); }
+function drawSC() { const c = $('scurve'), g = c.getContext('2d'), w = c.width, h = c.height; g.clearRect(0, 0, w, h);
+  const css = getComputedStyle(document.body); g.strokeStyle = 'rgba(127,127,127,.3)'; g.lineWidth = 1; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(0, h * i / 4); g.lineTo(w, h * i / 4); g.stroke(); }
+  g.strokeStyle = css.getPropertyValue('--acc2'); g.lineWidth = 2; g.beginPath(); SC.forEach((v, i) => { const x = i / 120 * w, y = h - 4 - v * (h - 8); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+  const x = (NOW - T0) / (T1 - T0) * w, y = h - 4 - progressAt(NOW) * (h - 8); g.fillStyle = css.getPropertyValue('--acc'); g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); g.strokeStyle = css.getPropertyValue('--acc'); g.setLineDash([3, 3]); g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); g.setLineDash([]); }
+const totalVol = ELS.filter(e => e.qty?.vol && ['seg', 'closure', 'ptable', 'pylon', 'pier', 'cap'].includes(e.cat)).reduce((a, e) => a + e.qty.vol, 0);
+let uiTimer = 0;
+function updateUI() {
+  $('dateBig').textContent = fmtTH(NOW); $('dateSmall').textContent = fmtISO(NOW);
+  let cur = STEPS[0]; for (const s of STEPS) if (s.t0 <= NOW) cur = s; $('stepName').textContent = cur.t;
+  const deck = SEGS, cast = deck.filter(e => NOW >= (e.cast || e.finish)).length;
+  $('kSeg').textContent = `${cast}/${deck.length}`;
+  const stays = ELS.filter(e => e.cat === 'stay'); $('kCab').textContent = `${stays.filter(e => NOW >= e.finish).length}/${stays.length}`;
+  const vol = ELS.filter(e => e.qty?.vol && ['seg', 'closure', 'ptable', 'pylon', 'pier', 'cap'].includes(e.cat)).reduce((a, e) => a + (NOW >= (e.kind === 'seg' ? e.cast : e.finish) ? e.qty.vol : 0), 0);
+  $('kVol').textContent = `${Math.round(vol).toLocaleString()} / ${Math.round(totalVol).toLocaleString()}`;
+  const pr = progressAt(NOW); $('kProg').textContent = (pr * 100).toFixed(1) + '%'; $('kProgBar').style.width = pr * 100 + '%';
+  // activities
+  const act = new Map();
+  for (const e of ELS) { const st = e.st; if (st === 'wip' || st === 'rm') { let txt = e.name;
+      if (e.kind === 'seg' && st === 'wip') { const d = (NOW - e.start) / DAY; txt += ' — ' + (d < 1 ? 'Launching FT & set-up' : NOW < e.cast - DAY ? 'ผูกเหล็ก/แบบหล่อ/ท่อร้อยลวด' : NOW < e.cast ? 'เทคอนกรีต' : 'ร้อยลวด PC / ดึงลวด & Grouting'); }
+      if (st === 'rm') txt += ' — กำลังรื้อถอน'; if (e.temp && st === 'wip') txt += ' — กำลังติดตั้ง';
+      if (!act.has(e.grp)) act.set(e.grp, []); act.get(e.grp).push(txt); } }
+  $('act').innerHTML = act.size ? [...act].slice(0, 9).map(([g, l]) => `<li><b>${g}</b><small>${l.slice(0, 2).join('<br>')}${l.length > 2 ? `<br>+ อีก ${l.length - 2} รายการ` : ''}</small></li>`).join('') : '<li style="border-color:var(--ok)">ไม่มีกิจกรรมก่อสร้าง ณ วันนี้</li>';
+  drawSC();
+  const gn = $('gnow'); if (gn) { gn.style.left = `calc(156px + (100% - 156px) * ${t2v(NOW) / 1000})`; document.querySelectorAll('#gwrap .grow').forEach(r => { const g = GROUPS[+r.dataset.i]; r.querySelector('.pg').style.width = clamp((NOW - g.a) / (g.b - g.a), 0, 1) * 100 + '%'; }); }
+  document.querySelectorAll('.ms-step').forEach((r, i) => r.classList.toggle('cur', STEPS[i] === cur));
+}
+// picking
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let downAt = null, selBox = null;
+canvas.addEventListener('pointerdown', e => downAt = [e.clientX, e.clientY]);
+canvas.addEventListener('pointerup', e => {
+  if (!downAt || fly.on || tour.on || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  ptr.set(e.clientX / innerWidth * 2 - 1, -e.clientY / innerHeight * 2 + 1); ray.setFromCamera(ptr, camera);
+  const vis = o => { while (o) { if (!o.visible) return false; o = o.parent; } return true; };
+  const hit = ray.intersectObject(gStruct, true).find(h => h.object.isMesh && vis(h.object) && h.object.material !== M.ghost);
+  if (selBox) { scene.remove(selBox); selBox = null; }
+  const p = $('props'); if (!hit) { p.style.display = 'none'; return; }
+  let o = hit.object; while (o && !o.userData.el) o = o.parent; const el = o.userData.el; if (!el) return;
+  selBox = new THREE.Box3Helper(el.box, 0xffd43b); scene.add(selBox);
+  const st = { plan: ['plan', 'ยังไม่เริ่ม'], wip: ['wip', 'กำลังดำเนินการ'], done: ['done', 'แล้วเสร็จ'], rm: ['wip', 'กำลังรื้อถอน'], gone: ['plan', 'รื้อถอนแล้ว'] }[el.st];
+  const rows = [['Element ID', el.id], ['ประเภท', CATS[el.cat].th], ['ชื่อ', el.name], ['สถานะ 4D', `<span class="pill ${st[0]}">${st[1]}</span>`], ['เริ่ม', fmtTH(el.start)], ['แล้วเสร็จ', fmtTH(el.finish)]];
+  if (el.rmE) rows.push(['รื้อถอน', fmtTH(el.rmS) + ' – ' + fmtTH(el.rmE)]);
+  if (el.s0 !== undefined) rows.push(['ตำแหน่ง', `STA ${station(el.s0)} – ${station(el.s1)}`]);
+  if (el.qty?.H) rows.push(['ความลึก H', el.qty.H.toFixed(2) + ' m']); if (el.qty?.L) rows.push(['ความยาว', el.qty.L.toFixed(2) + ' m']); if (el.qty?.vol) rows.push(['ปริมาตรคอนกรีต', el.qty.vol.toFixed(1) + ' m³']);
+  rows.push(['แบบอ้างอิง', el.dwg || '—'], ['ที่มาของวันที่', el.src]);
+  p.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><b class="acc">คุณสมบัติ BIM</b><button onclick="this.closest('#props').style.display='none'">✕</button></div><table>${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+  p.style.display = 'block';
+});
+
+/* =====================================================================
+   8. LOOP
+   ===================================================================== */
+const params = new URLSearchParams(location.search);
+function updateUrl() { if (!history.replaceState) return; const u = new URL(location.href); u.searchParams.set('theme', theme); u.searchParams.set('date', fmtISO(NOW)); history.replaceState(null, '', u); }
+const clock = new THREE.Clock(); let frames = 0, urlTimer = 0;
+function loop() {
+  requestAnimationFrame(loop);
+  const dt = Math.min(clock.getDelta(), .1);
+  if (playing) { setNow(NOW + dt * (+$('speed').value) * DAY); if (NOW >= T1) togglePlay(); }
+  water.material.uniforms.time.value += dt * .6;
+  boats.forEach(b => { b.position.z += b.userData.v * dt; b.rotation.y = b.userData.v > 0 ? 0 : Math.PI; if (b.position.z > 1400) b.position.z = -1400; if (b.position.z < -1400) b.position.z = 1400; });
+  updateCars(dt); updateCranes(NOW, dt);
+  if (isNight) M.avi.emissiveIntensity = (performance.now() % 1500) < 700 ? 6 : .3;
+  if (camAnim) { camAnim.u = Math.min(1, camAnim.u + dt / camAnim.dur); const k = camAnim.u < .5 ? 2 * camAnim.u ** 2 : 1 - (-2 * camAnim.u + 2) ** 2 / 2; camera.position.lerpVectors(camAnim.p0, camAnim.p1, k); controls.target.lerpVectors(camAnim.t0, camAnim.t1, k); if (camAnim.u >= 1) camAnim = null; }
+  let spd = 0;
+  if (tour.on) {
+    tour.u += dt / tour.dur; if (tour.u >= 1) { stopTour(); } else {
+      const p = tour.posC.getPoint(tour.u), tg = tour.tgtC.getPoint(Math.min(1, tour.u + .004)); spd = p.distanceTo(tour.last) / Math.max(dt, 1e-3); tour.last.copy(p);
+      camera.position.copy(p); camera.lookAt(tg); tour.bat = Math.max(12, 100 - tour.u * 70);
+      const idx = Math.round(tour.u * (TOUR.length - 1)); if (idx !== tour.idx) { tour.idx = idx; capEl.innerHTML = `${TOUR[idx][2]}<small>${TOUR[idx][3]}</small>`; capEl.style.display = 'block'; }
+      hudUpdate(spd);
+    }
+  } else if (fly.on) {
+    const f = new THREE.Vector3(-Math.sin(fly.yaw) * Math.cos(fly.pitch), Math.sin(fly.pitch), -Math.cos(fly.yaw) * Math.cos(fly.pitch)), r = new THREE.Vector3(Math.cos(fly.yaw), 0, -Math.sin(fly.yaw));
+    const k = fly.keys, v = (k.ShiftLeft || k.ShiftRight ? 60 : 18) * dt, mv = new THREE.Vector3();
+    if (k.KeyW || k.ArrowUp) mv.add(f); if (k.KeyS || k.ArrowDown) mv.sub(f); if (k.KeyD || k.ArrowRight) mv.add(r); if (k.KeyA || k.ArrowLeft) mv.sub(r); if (k.KeyR || k.KeyE) mv.y += 1; if (k.KeyF || k.KeyQ) mv.y -= 1;
+    if (mv.lengthSq()) mv.normalize().multiplyScalar(v); camera.position.add(mv); camera.position.y = Math.max(WATER_Y + 1.5, camera.position.y); spd = mv.length() / Math.max(dt, 1e-3);
+    camera.lookAt(camera.position.clone().add(f)); tour.bat = Math.max(5, tour.bat - dt * .08); hudUpdate(spd);
+  } else controls.update();
+  // sound
+  const active = ELS.filter(e => e.st === 'wip' || e.st === 'rm'); let dist = 1e9; for (const e of active) dist = Math.min(dist, camera.position.distanceTo(e.center));
+  snd.update(dt, { dist, alt: camera.position.y, real: MODE === 'real', night: isNight, active: active.length > 0, casting: active.some(e => e.kind === 'seg' && NOW >= e.cast - DAY && NOW < e.cast + DAY), drone: tour.on || fly.on, speed: spd, opened: NOW >= OPEN });
+  composer.render();
+  if (++frames === 3) { $('loading').style.opacity = 0; setTimeout(() => $('loading').remove(), 700); }
+  if (frames === 30) document.title = 'Kiak Kai 4D BIM';
+  if (frames === 45) window.__READY = true;
+}
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); });
+
+// init from URL (?date=2025-08-20&theme=sunset&view=p2&ui=0&tour=0.35)
+if (params.get('date')) NOW = D(params.get('date'));
+slider.value = t2v(NOW);
+applyTheme(params.get('theme') || 'day');
+const v0 = params.get('view'); if (v0 && VIEWS[v0]) { camera.position.set(...VIEWS[v0][0]); controls.target.set(...VIEWS[v0][1]); $('view').value = v0; } else { camera.position.set(...VIEWS.overview[0]); }
+if (params.get('ui') === '0') document.body.classList.add('noui');
+if (params.get('tour')) { const u = +params.get('tour'); const p = tour.posC.getPoint(u), tg = tour.tgtC.getPoint(Math.min(1, u + .004)); controls.enabled = false; camera.position.copy(p); camera.lookAt(tg); controls.target.copy(tg); hud.style.display = 'block'; capEl.style.display = 'block'; const i = Math.round(u * (TOUR.length - 1)); capEl.innerHTML = `${TOUR[i][2]}<small>${TOUR[i][3]}</small>`; tour.bat = 100 - u * 70; hudUpdate(12); }
+renderTab(); refresh();
+loop();
+window.__app = { setNow, applyTheme, goView, ELS, startTour };
+// PWA: offline cache when served over http(s) with sw.js next to this page (GitHub Pages)
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => { });
+</script>
+</body>
+</html>
