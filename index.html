@@ -2175,6 +2175,8 @@ canvas.addEventListener('pointerup', e => {
   const p = $('props'); if (!hit) { p.style.display = 'none'; return; }
   let o = hit.object; while (o && !o.userData.el) o = o.parent; const el = o.userData.el; if (!el) return;
   selBox = new THREE.Box3Helper(el.box, 0xffd43b); scene.add(selBox);
+  const selEl = el, sb = selBox; (function sync() { if (selBox !== sb) return; let v = $('props').style.display !== 'none', q = selEl.obj; while (q) { if (!q.visible) v = false; q = q.parent; }
+    if ($('props').style.display === 'none') { scene.remove(sb); selBox = null; return; } sb.visible = v; requestAnimationFrame(sync); })();
   const st = { plan: ['plan', L2('ยังไม่เริ่ม', 'Not started')], wip: ['wip', L2('กำลังดำเนินการ', 'In progress')], done: ['done', L2('แล้วเสร็จ', 'Completed')], rm: ['wip', L2('กำลังรื้อถอน', 'Dismantling')], gone: ['plan', L2('รื้อถอนแล้ว', 'Removed')] }[el.st];
   const rows = [['Element ID', el.id], [L2('ประเภท', 'Category'), CATS[el.cat].th], [L2('ชื่อ', 'Name'), el.name], [L2('สถานะ 4D', '4D status'), `<span class="pill ${st[0]}">${st[1]}</span>`], [L2('เริ่ม', 'Start'), fmtTH(el.start)], [L2('แล้วเสร็จ', 'Finish'), fmtTH(el.finish)]];
   if (el.rmE) rows.push([L2('รื้อถอน', 'Removal'), fmtTH(el.rmS) + ' – ' + fmtTH(el.rmE)]);
