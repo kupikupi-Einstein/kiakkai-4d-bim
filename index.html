@@ -2144,27 +2144,47 @@ function cabStep(no, step, cam = false) {
   p.querySelector('.cd-s').textContent = `${L2('ขั้นที่', 'Step')} ${step}/${NSTEP} · Phase ${CAB_STEPS[step - 1][0]}${CAB_STEPS[step - 1][0] === 'F' ? L2(' (วันที่สมมติ)', ' (date assumed)') : ''}`;
   p.querySelector('.cd-t').textContent = stepTxt(c, step - 1);
   p.querySelector('.cd-c').value = no;
+  const bar = p.querySelector('.cd-bar i'); if (bar) bar.style.width = (100 * step / NSTEP).toFixed(1) + '%';
+  const x = p.querySelector('.cd-x'); if (x && step < NSTEP) x.innerHTML = '';
+  if (step >= NSTEP && typeof window.__cabDone === 'function') window.__cabDone(no);
 }
 (() => {
   const p = document.createElement('div'); p.id = 'cabDet';
   p.innerHTML = `<div class="cd-h">${L2('ติดตั้ง Cable 1 เส้น – ทีละขั้น (Cable System)', 'One cable, step by step (Cable System)')}</div>
     <div class="cd-r"><select class="cd-c">${CABW.slice().sort((a, b) => a.no - b.no).map(c => `<option value="${c.no}">Cable ${c.no} · ${c.n} strands · ${c.L.toFixed(1)} m</option>`).join('')}</select></div>
     <div class="cd-r"><button data-a="prev">◀</button><button data-a="play">▶ ${L2('เล่น', 'Play')}</button><button data-a="next">▶|</button><button data-a="cam">🎥</button><button data-a="off">✕</button></div>
-    <div class="cd-s"></div><div class="cd-t"></div>`;
+    <div class="cd-bar"><i></i></div><div class="cd-s"></div><div class="cd-t"></div><div class="cd-x"></div>`;
   document.body.appendChild(p);
   let timer = null;
   const cur = () => CAB_DETAIL || { no: +p.querySelector('.cd-c').value, step: 0 };
+  const playBtn = p.querySelector('button[data-a="play"]');
+  const setPlay = on => { playBtn.textContent = on ? '❚❚ ' + L2('หยุด', 'Pause') : '▶ ' + L2('เล่น', 'Play'); playBtn.classList.toggle('on', on); p.classList.toggle('playing', on); };
+  const stopPlay = () => { clearInterval(timer); timer = null; setPlay(false); };
+  const ftOf = no => no < 200 ? 'FT1' : no < 300 ? 'FT2' : no < 400 ? 'FT3' : 'FT4';
+  const showDone = no => {   // end of the cable: completion + next segment of the same form traveller
+    const c = CABW.find(x => x.no === no); if (!c) return;
+    const nx = SEGS.filter(e => e.ft === ftOf(no) && e.kind === 'seg' && e.start >= c.e.start).sort((a, b) => a.start - b.start)[0];
+    const x = p.querySelector('.cd-x');
+    x.innerHTML = `<div class="cd-ok">✅ ${L2('ติดตั้ง Cable ' + no + ' เสร็จเรียบร้อยแล้ว', 'Cable ' + no + ' installation complete')} (${c.n} strands · 100 %)</div>` +
+      (nx ? `<div class="cd-nx">${L2('ขั้นต่อไป: เริ่มงาน', 'Next: start')} <b>${nx.name.replace(/\s*\(.*\)/, '')}</b> ${L2('ด้วย', 'with')} ${ftOf(no)} · ${fmtTH(nx.start)}<br>` +
+            `<span>${L2('Launching FT → เหล็กพื้นล่าง → เหล็กผนัง → แบบใน → สมอ stay cable → เหล็กพื้นบน → เทคอนกรีต → ดึงลวด PT', 'Launch FT → bottom-slab rebar → web rebar → inner form → stay-cable anchorage → top-slab rebar → concrete → PT stressing')}</span><br>` +
+            `<button data-go="1">▶ ${L2('ไปที่ segment ถัดไป', 'Go to the next segment')}</button></div>` : `<div class="cd-nx">${L2('ไม่มี segment ต่อจาก cable นี้ใน FT เดียวกัน – ต่อด้วยงาน closure / งานอื่น', 'No further segment for this traveller – closure / other works follow')}</div>`);
+    const go = x.querySelector('button[data-go]'); if (go) go.onclick = () => { CAB_DETAIL = null; x.innerHTML = ''; setNow(nx.start + .5 * DAY); if (VIEWS.ft) goView('ft', 1.2); };
+  };
   p.querySelector('.cd-c').onchange = e => cabStep(+e.target.value, 1, true);
   p.querySelectorAll('button').forEach(b => b.onclick = () => {
     const a = b.dataset.a, d = cur();
     if (a === 'prev') cabStep(d.no, d.step - 1);
     if (a === 'next') cabStep(d.no, d.step + 1, d.step === 0);
     if (a === 'cam') cabCam(d.no);
-    if (a === 'off') { CAB_DETAIL = null; p.classList.remove('open'); clearInterval(timer); timer = null; return; }
-    if (a === 'play') { if (timer) { clearInterval(timer); timer = null; return; } cabStep(d.no, d.step >= NSTEP || d.step === 0 ? 1 : d.step, true);
-      timer = setInterval(() => { const q = cur(); if (q.step >= NSTEP) { clearInterval(timer); timer = null; return; } cabStep(q.no, q.step + 1); }, 2200); }
+    if (a === 'off') { CAB_DETAIL = null; p.classList.remove('open'); stopPlay(); return; }
+    if (a === 'prev' || a === 'next') stopPlay();
+    if (a === 'play') { if (timer) { stopPlay(); return; }
+      const first = d.step >= NSTEP || d.step === 0; cabStep(d.no, first ? 1 : d.step + 1, first); setPlay(true);
+      timer = setInterval(() => { const q = cur(); if (q.step >= NSTEP) { stopPlay(); showDone(q.no); return; } cabStep(q.no, q.step + 1); }, 2200); }
     p.classList.add('open');
   });
+  window.__cabDone = showDone;
   const bt = document.createElement('button'); bt.id = 'btnCabDet'; bt.innerHTML = '🧵<span class="lbl"> ' + L2('Cable ทีละขั้น', 'Cable step-by-step') + '</span>';
   bt.onclick = () => { p.classList.toggle('open'); if (p.classList.contains('open') && !CAB_DETAIL) cabStep(207, 1, true); };
   const anchorBtn = document.getElementById('btnTour'); if (anchorBtn) anchorBtn.parentNode.insertBefore(bt, anchorBtn);
@@ -2355,5 +2375,5 @@ font:13px/1.35 'Segoe UI',Tahoma,sans-serif;padding:8px 12px;border-radius:10px;
 padding:10px 12px;border-radius:10px;border:1px solid #ff8a1f;width:300px}#cabDet.open{display:block}#cabDet .cd-h{color:#ff8a1f;font-weight:700;margin-bottom:6px}
 #cabDet .cd-r{margin:4px 0;display:flex;gap:4px}#cabDet select{flex:1;background:#2a3036;color:#fff;border:1px solid #555;border-radius:6px;padding:3px}
 #cabDet button{flex:1;background:#2a3036;color:#fff;border:1px solid #555;border-radius:6px;padding:4px;cursor:pointer}#cabDet button:hover{border-color:#ff8a1f}
-#cabDet .cd-s{color:#f2b632;font-weight:700;margin-top:6px}#cabDet .cd-t{font-size:14px;margin-top:2px}body.noui #cabDet{right:16px}</style><style>@media (max-width:700px){#tlrow{flex-wrap:wrap;row-gap:6px}#tlwrap{flex-basis:100%;order:9}#speed{max-width:150px}#cabHud{top:auto;bottom:215px;left:8px;right:8px;transform:none;max-width:none;font-size:11.5px;max-height:24vh;overflow:auto}}</style></body>
+#cabDet .cd-s{color:#f2b632;font-weight:700;margin-top:6px}#cabDet .cd-t{font-size:14px;margin-top:2px}body.noui #cabDet{right:16px}</style><style>@media (max-width:700px){#tlrow{flex-wrap:wrap;row-gap:6px}#tlwrap{flex-basis:100%;order:9}#speed{max-width:150px}#cabHud{top:auto;bottom:215px;left:8px;right:8px;transform:none;max-width:none;font-size:11.5px;max-height:24vh;overflow:auto}}</style><style>#cabDet .cd-bar{height:5px;background:#3a3f45;border-radius:3px;margin-top:6px;overflow:hidden}#cabDet .cd-bar i{display:block;height:100%;width:0;background:#f2b632;transition:width .4s}#cabDet.playing .cd-s::after{content:" ●";color:#ff6b6b;animation:cdblink 1s steps(2) infinite}@keyframes cdblink{50%{opacity:0}}#cabDet button.on{background:#f2b632;color:#111}#cabDet .cd-ok{margin-top:8px;color:#69db7c;font-weight:700}#cabDet .cd-nx{margin-top:4px;font-size:12.5px;line-height:1.45}#cabDet .cd-nx span{color:#adb5bd;font-size:11.5px}#cabDet .cd-nx button{margin-top:6px}</style></body>
 </html>
