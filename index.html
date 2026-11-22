@@ -2088,7 +2088,7 @@ function loop() {
   snd.update(dt, { dist, alt: camera.position.y, real: MODE === 'real', night: isNight, active: active.length > 0, casting: active.some(e => e.kind === 'seg' && NOW >= e.cast - DAY && NOW < e.cast + DAY), drone: tour.on || fly.on, speed: spd, opened: NOW >= OPEN });
   composer.render();
   if (++frames === 3) { $('loading').style.opacity = 0; setTimeout(() => $('loading').remove(), 700); }
-  if (frames === 30) document.title = 'Kiak Kai – Stay Cable 4D';
+  if (frames === 30) document.title = 'Kiak Kai 4D BIM';
   if (frames === 45) window.__READY = true;
 }
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); });
