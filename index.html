@@ -979,7 +979,7 @@ function updateCables(t) {
   for (const tag in SCAF) SCAF[tag].g.visible = t >= SCAF[tag].t0 && t < SCAF[tag].t1 && MODE !== 'blue';
   for (const tag in PREP) PREP[tag].forEach(g => { g.visible = t >= SCAF[tag].t0 && t < SCAF[tag].t1 && MODE === 'real'; if (g.visible) prepClip(g, t); });
   const hud = document.getElementById('cabHud'); if (!hud) return;
-  if (!CAB_ACTIVE.length) { hud.style.display = 'none'; return; }
+  if (!CAB_ACTIVE.length) { hud.style.display = 'none'; const dt = document.getElementById('cabDetail'); if (dt) dt.style.display = 'none'; return; }
   hud.style.display = 'block';
   if (typeof CAB_DETAIL !== 'undefined' && CAB_DETAIL) { const d = CAB_DETAIL; CAB_ACTIVE.sort((x, y) => (y.c.no === d.no) - (x.c.no === d.no)); }
   hud.innerHTML = `<div class="ch-t">${L2('งานติดตั้ง Stay cable – ขั้นตอน Cable System', 'Stay-cable installation – Cable System procedure')}</div>` + CAB_ACTIVE.sort((x, y) => x.c.no - y.c.no).map(({ c, ph, k, u }) =>
@@ -988,6 +988,7 @@ function updateCables(t) {
     (ph === 'P' ? `<div class="ch-k">${L2('รอยเชื่อม HDPE', 'HDPE welds')} ${Math.min(nWeld(c), Math.round(nWeld(c) * ssg(u, .10, .34)))}/${nWeld(c)} · ${L2('ท่อยาวไม่เกิน 11.8 m ต่อท่อน', 'pipes up to 11.8 m each')}</div>` : '') +
     `<div class="ch-bar"><i style="width:${(100 * k / c.n).toFixed(0)}%;background:${c.force === 100 ? '#40c057' : c.force === 50 ? '#ffc107' : '#f2b632'}"></i></div>` +
     `<div class="ch-k">${L2('strand ที่ติดตั้งแล้ว', 'strands installed')} ${k}/${c.n}${ph === 'S' || ph === 'F' ? ' · ' + L2('แรงดึง', 'force') + ' ' + (ph === 'F' ? '100' : c.force || L2('ติดตั้ง (ConTen)', 'installation (ConTen)')) + (c.force || ph === 'F' ? ' %' : '') : ''}</div></div>`).join('');
+  if (typeof renderCabDetail === 'function') renderCabDetail();
 }
 
 /* ---------- 3d. FINISHES, MEP, ARCHITECTURE ---------- */
@@ -2237,6 +2238,113 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigat
   const t = document.getElementById('btnTour'); t.parentNode.insertBefore(b, t);
   if (!REFL) applyTheme(theme);
 })();
+
+/* ---------- cable detail panel: HDPE welding · strand sequence + ConTen · gauge reading ---------- */
+const SEQ55_DECK = [[4, 1, 5], [2, 9, 8, 7, 6, 3], [10, 16, 15, 14, 13, 12, 11], [17, 24, 23, 22, 21, 20, 19, 18], [25, 31, 30, 29, 28, 27, 26],
+  [32, 39, 38, 37, 36, 35, 34, 33], [40, 46, 45, 44, 43, 42, 41], [47, 52, 51, 50, 49, 48], [53, 55, 54]];   // R9 #462, DG-P55 deck (active) anchor
+const EX_REC = [[1, 62.7, 254], [2, 59.7, 242], [3, 57.4, 233], [4, 55.3, 226], [5, 53.5, 218], [6, 51.7, 211], [7, 50.1, 205], [8, 48.6, 199]];   // Stressing Manual Encl. 1 example (DG-P31)
+(() => {
+  const p = document.createElement('div'); p.id = 'cabDetail';
+  p.innerHTML = '<div class="dt-h"></div><div class="dt-b"></div><div class="dt-s"></div>'; document.body.appendChild(p);
+  const st = document.createElement('style');
+  st.textContent = '#cabDetail{position:fixed;right:16px;bottom:118px;width:440px;z-index:31;display:none;background:rgba(18,22,26,.92);color:#e9eef5;border:1px solid #f2b632;border-radius:10px;padding:8px 10px;font-size:12px;user-select:none;cursor:grab;touch-action:none}' +
+    '#cabDetail .dt-h{color:#ff8a1f;font-weight:700;font-size:13px;margin-bottom:4px}#cabDetail .dt-s{color:#9aa4b2;font-size:10.5px;margin-top:4px;line-height:1.35}#cabDetail svg{display:block;width:100%;height:auto}' +
+    'body.hudoff #cabDetail{display:none!important}@media (max-width:700px){#cabDetail{width:auto;left:8px;right:8px;bottom:300px;max-height:34vh;overflow:auto}}';
+  document.head.appendChild(st);
+  // drag (same behaviour as the other cable panels; position remembered)
+  let pos = null; try { pos = JSON.parse(localStorage.getItem('kk4d-detail') || 'null'); } catch (e) {}
+  const place = q => { if (q) Object.assign(p.style, { left: q[0] + 'px', top: q[1] + 'px', right: 'auto', bottom: 'auto' }); }; place(pos);
+  p.addEventListener('pointerdown', ev => { if (ev.target.closest('button,select,input')) return; const r = p.getBoundingClientRect(), dx = ev.clientX - r.left, dy = ev.clientY - r.top; p.setPointerCapture(ev.pointerId);
+    const mv = e => { pos = [Math.min(Math.max(0, e.clientX - dx), innerWidth - 60), Math.min(Math.max(0, e.clientY - dy), innerHeight - 40)]; place(pos); };
+    const up = () => { p.removeEventListener('pointermove', mv); p.removeEventListener('pointerup', up); try { localStorage.setItem('kk4d-detail', JSON.stringify(pos)); } catch (e) {} };
+    p.addEventListener('pointermove', mv); p.addEventListener('pointerup', up); ev.preventDefault(); });
+  const hb = document.getElementById('btnHud'); if (hb) hb.addEventListener('dblclick', () => { pos = null; try { localStorage.removeItem('kk4d-detail'); } catch (e) {} ['left', 'top', 'right', 'bottom'].forEach(k => p.style[k] = ''); });
+})();
+function stepIdx(u) { let i = 0; for (let j = 0; j < NSTEP; j++) if (CAB_STEPS[j][3] - .012 <= u) i = j; return i; }
+const T2 = (th, en) => L2(th, en);
+function svgWeld(c, u) {
+  const g = ssg(u, .10, .34), nw = nWeld(c), w = Math.min(nw, Math.floor(g * nw) + 1), f = (g * nw) % 1;   // weld w of nw, f = progress inside this weld
+  const S = [[.12, T2('จัดแนว + bead-up', 'Alignment + bead-up'), '0.15 N/mm²'], [.40, T2('ให้ความร้อน', 'Heating-up'), '≤ 0.02 N/mm²'], [.46, T2('ถอดแผ่นร้อน', 'Changeover'), '≤ 6 s'],
+             [.54, T2('เพิ่มแรงอัด', 'Pressure build-up'), '≈ 6 s'], [1, T2('อัดต่อ + หล่อเย็น', 'Joining + cooling'), '0.15 N/mm²']];
+  let k = 0; while (k < S.length - 1 && f > S[k][0]) k++;
+  const open = k === 2 ? 1 : k === 3 ? 1 - (f - .46) / .08 : 0, gapL = 160 - 18 * open, gapR = 180 + 18 * open, heater = k <= 1 || (k === 2 && f < .43);
+  const X = x => 30 + x * 360, P = [[0, 166], [.01, 130], [.11, 130], [.12, 160], [.40, 160], [.41, 166], [.46, 166], [.54, 130], [1, 130]].map(([x, y]) => [X(x), y]);
+  return `<svg viewBox="0 0 420 300" font-family="Segoe UI,Tahoma" font-size="11">
+  <rect x="8" y="6" width="404" height="92" rx="8" fill="#20262e"/>
+  <rect x="48" y="16" width="20" height="62" fill="#5c6370"/><rect x="94" y="16" width="20" height="62" fill="#5c6370"/><rect x="${gapR + 46}" y="16" width="20" height="62" fill="#5c6370"/><rect x="${gapR + 92}" y="16" width="20" height="62" fill="#5c6370"/>
+  <rect x="20" y="30" width="${gapL - 20}" height="34" fill="#f2b632" stroke="#9a6a00"/><rect x="${gapR}" y="30" width="${400 - gapR}" height="34" fill="#f2b632" stroke="#9a6a00"/>
+  ${k >= 4 ? '<ellipse cx="170" cy="28" rx="9" ry="4" fill="#d9a21b"/><ellipse cx="170" cy="66" rx="9" ry="4" fill="#d9a21b"/>' : ''}
+  ${heater ? '<rect x="162" y="14" width="16" height="66" fill="#c62828"/><text x="170" y="12" fill="#ff8787" text-anchor="middle" font-size="10">220 °C</text>' : ''}
+  ${k === 0 || k >= 3 ? '<path d="M126 47 h22 m-6 -5 l6 5 l-6 5 M314 47 h-22 m6 -5 l-6 5 l6 5" stroke="#74c0fc" stroke-width="2.5" fill="none"/>' : ''}
+  <text x="18" y="92" fill="#9aa4b2" font-size="10">${T2('เครื่องเชื่อม butt 4 แคลมป์ · ลูกศร = แรงอัดจากกระบอกไฮดรอลิก', '4-clamp butt-welding machine · arrows = hydraulic cylinder force')}</text>
+  <text x="18" y="116" fill="#ff8a1f" font-weight="700">${T2('รอยเชื่อม', 'Weld')} ${w}/${nw} · ${S[k][1]} · ${S[k][2]}</text>
+  <line x1="${X(0)}" y1="166" x2="${X(1)}" y2="166" stroke="#5c6370"/><polyline points="${P.map(q => q.join(',')).join(' ')}" fill="none" stroke="#74c0fc" stroke-width="2"/>
+  <line x1="${X(f)}" y1="124" x2="${X(f)}" y2="170" stroke="#ff8a1f" stroke-width="2"/>
+  <text x="${X(.02)}" y="181" fill="#9aa4b2" font-size="9.5">${T2('จัดแนว', 'align')}</text><text x="${X(.2)}" y="181" fill="#9aa4b2" font-size="9.5">${T2('ให้ความร้อน', 'heat-up')}</text><text x="${X(.42)}" y="181" fill="#9aa4b2" font-size="9.5">↕</text><text x="${X(.62)}" y="181" fill="#9aa4b2" font-size="9.5">${T2('อัดต่อ + หล่อเย็น', 'joining + cooling')}</text>
+  <rect x="8" y="190" width="404" height="106" rx="8" fill="#20262e"/>
+  <text x="18" y="207" fill="#ffd8a8" font-weight="700">${T2('ความดันที่ต้องอ่านบนเกจเครื่องเชื่อม', 'Pressure to read on the welding-machine gauge')}</text>
+  <text x="18" y="224" fill="#e9eef5">p = (A ${T2('ปลายท่อ', 'pipe ends')} ÷ A ${T2('กระบอกสูบ', 'cylinder')}) × 1.5 bar + p ${T2('ลากท่อ', 'moving')}</text>
+  <text x="18" y="240" fill="#9aa4b2" font-size="10">1.5 bar = 0.15 N/mm² · ${T2('p ลากท่อ วัดหน้างานทุกครั้ง', 'moving pressure measured on site each time')}</text>
+  <text x="18" y="254" fill="#9aa4b2" font-size="10">${T2('ตัวอย่าง Ø125×6: อัด x+9 bar · ร้อน 62 s · เย็น 9 min', 'Example Ø125×6: x+9 bar · heat 62 s · cool 9 min')}</text>
+  <text x="18" y="270" fill="#e9eef5" font-size="10">✓ ${T2('ช่องว่าง ≤ 0.5 mm · เยื้อง ≤ 0.1 t · bead คู่ K > 0', 'gap ≤ 0.5 mm · offset ≤ 0.1 t · double bead K > 0')}</text>
+  <text x="18" y="285" fill="#e9eef5" font-size="10">✓ ${T2('เชื่อมใต้หลังคากันลมฝน · ทดสอบดัด bent-strap', 'welded in a shelter · bent-strap test (DVS 2203-5)')}</text></svg>`;
+}
+function svgAnchor(c, k, mode) {
+  const p55 = c.n > 35, rows = p55 ? SEQ55_DECK : [4, 5, 6, 7, 6, 5, 4].map((n, r, a) => Array.from({ length: n }, (_, j) => a.slice(0, r).reduce((x, y) => x + y, 0) + j + 1));
+  const d = 21, cx = 108; let cells = '';
+  rows.forEach((row, r) => row.forEach((n, j) => {
+    const x = cx + (j - (row.length - 1) / 2) * d, y = 26 + r * d * .87, inst = n <= k && n <= c.n, cur = n === k && mode !== 'S', empty = n > c.n;
+    cells += `<circle cx="${x}" cy="${y}" r="${d / 2 - 1}" fill="${cur ? '#ff8a1f' : inst ? '#40c057' : empty ? '#2b3038' : '#3a414b'}" stroke="${cur ? '#fff' : '#69707a'}" stroke-width="${cur ? 2 : .8}"/>` +
+             `<text x="${x}" y="${y + 3.5}" text-anchor="middle" font-size="9.5" fill="${inst || cur ? '#111' : '#c9d1db'}">${p55 ? n : ''}</text>`;
+  }));
+  const ex = EX_REC[Math.min(EX_REC.length, Math.max(1, k)) - 1], pbar = mode === 'S' ? 266 : ex[2], fan = mode === 'S' ? 66.0 : ex[1], ang = -120 + 240 * pbar / 400;
+  const y0 = p55 ? 222 : 196;
+  return `<svg viewBox="0 0 420 300" font-family="Segoe UI,Tahoma" font-size="11">
+  <rect x="6" y="4" width="206" height="292" rx="8" fill="#20262e"/>
+  <circle cx="${cx}" cy="${26 + 4 * d * .87}" r="${p55 ? 100 : 82}" fill="none" stroke="#69707a"/>${cells}
+  <text x="14" y="${y0 + 12}" fill="#ffd8a8" font-weight="700" font-size="10.5">${p55 ? 'DG-P55 · ' + T2('มองที่ active anchor (deck)', 'active anchor, deck side') : 'DG-P37'}</text>
+  ${p55 ? `<text x="14" y="${y0 + 27}" fill="#9aa4b2" font-size="9.5">${T2('เริ่ม 1 บนสุดกลาง → 2–9 แถวบน', 'starts at 1, top centre → 2–9 upper rows')}</text>
+  <text x="14" y="${y0 + 40}" fill="#9aa4b2" font-size="9.5">${T2('→ ทีละแถวลงล่าง (R9 #462)', '→ then row by row downwards (R9 #462)')}</text>` :
+  `<text x="14" y="${y0 + 27}" fill="#9aa4b2" font-size="9.5">${T2('⚠ ไม่มีแบบลำดับ DG-P37 ในเอกสาร', '⚠ DG-P37 sequence drawing not in files')}</text><text x="14" y="${y0 + 40}" fill="#9aa4b2" font-size="9.5">${T2('แสดงเฉพาะจำนวนลวด', 'only the count is shown')}</text>`}
+  ${p55 && c.n < 55 ? `<text x="14" y="${y0 + 53}" fill="#9aa4b2" font-size="9.5">⚠ ${c.n} ${T2('เส้นใน DG-P55: สมมติรู 1–', 'strands in DG-P55: holes 1–')}${c.n}</text>` : ''}
+  <text x="14" y="${y0 + 68}" fill="#e9eef5" font-size="10"><tspan fill="#40c057">●</tspan> ${T2('ติดตั้งแล้ว', 'in')} ${Math.min(k, c.n)} · <tspan fill="#ff8a1f">●</tspan> ${T2('กำลังทำ', 'now')} ${k && mode !== 'S' ? '#' + k : '–'} · ${T2('รวม', 'of')} ${c.n}</text>
+  <rect x="218" y="4" width="196" height="292" rx="8" fill="#20262e"/>
+  <text x="226" y="21" fill="#ffd8a8" font-weight="700">ConTen ${T2('ที่ deck', 'at the deck')}</text>
+  <rect x="228" y="30" width="44" height="13" rx="3" fill="#c62828"/><text x="278" y="41" fill="#e9eef5" font-size="9.5">${T2('working jack (เส้นที่ดึง)', 'working jack (this strand)')}</text>
+  <rect x="228" y="49" width="44" height="13" rx="3" fill="#7048e8"/><text x="278" y="60" fill="#e9eef5" font-size="9.5">${T2('control unit (เส้น ref. 1)', 'control unit (ref. strand 1)')}</text>
+  <rect x="228" y="68" width="44" height="13" rx="3" fill="#495057"/><text x="278" y="79" fill="#e9eef5" font-size="9.5">${T2('ปั๊มไฮดรอลิก + hand pump', 'hydraulic + hand pump')}</text>
+  <circle cx="316" cy="128" r="38" fill="#f8f9fa" stroke="#868e96" stroke-width="3"/>
+  ${[0, 100, 200, 300, 400].map(v => { const a = (-120 + 240 * v / 400 - 90) * Math.PI / 180; return `<text x="${316 + 27 * Math.cos(a)}" y="${131 + 27 * Math.sin(a)}" font-size="8" text-anchor="middle" fill="#343a40">${v}</text>`; }).join('')}
+  <line x1="316" y1="128" x2="316" y2="98" stroke="#c62828" stroke-width="3" transform="rotate(${ang} 316 128)"/><circle cx="316" cy="128" r="4" fill="#343a40"/>
+  <text x="316" y="156" text-anchor="middle" font-size="9" fill="#343a40">bar</text>
+  <text x="226" y="186" fill="#ff8a1f" font-weight="700">${T2('อ่านเกจ', 'Gauge')} p = ${pbar} bar</text>
+  <text x="226" y="202" fill="#e9eef5" font-size="10">F = p × A = ${pbar} × 26 cm² ÷ 100</text>
+  <text x="226" y="216" fill="#e9eef5" font-size="10">  = ${(pbar * 26 / 100).toFixed(1)} kN ${T2('ที่แม่แรง', 'in the jack')}</text>
+  <text x="226" y="230" fill="#e9eef5" font-size="10">→ ${fan.toFixed(1)} kN ${T2('ที่สมอ (หัก friction', 'at the anchor (after friction')}</text>
+  <text x="226" y="243" fill="#e9eef5" font-size="10">${T2('และ wedge seating)', 'and wedge seating)')}</text>
+  <text x="226" y="259" fill="#9aa4b2" font-size="9.5">${mode === 'S' ? T2('Lift-off ≥ 3 เส้น: ดันจน wedge ขยับ', 'Lift-off on ≥ 3 strands: until the wedge moves') : T2('ConTen หยุดเองเมื่อ wedge ref. ยก', 'ConTen stops when the ref. wedge lifts')}</text>
+  <text x="226" y="272" fill="#9aa4b2" font-size="9.5">${mode === 'S' ? T2('ยืด < 15 mm → gradient jack', 'elongation < 15 mm → gradient jack') : T2('วัดระยะยืดที่ 50 bar และความดันสุดท้าย', 'elongation at 50 bar and final pressure')}</text>
+  <text x="226" y="287" fill="#ffc078" font-size="9">⚠ ${T2('ตัวเลขตัวอย่าง (DG-P31) ไม่ใช่ค่า KK', 'example record (DG-P31), not KK values')}</text></svg>`;
+}
+function renderCabDetail() {
+  const box = document.getElementById('cabDetail'); if (!box) return;
+  const list = CAB_ACTIVE || []; let it = null;
+  if (typeof CAB_DETAIL !== 'undefined' && CAB_DETAIL) it = list.find(x => x.c.no === CAB_DETAIL.no);
+  if (!it) it = list.find(x => ['P', 'C', 'D', 'S'].includes(x.ph));
+  if (!it || it.ph === 'F' || it.ph === 'B') { box.style.display = 'none'; return; }
+  const { c, ph, k } = it, u = it.u ?? 0, i = stepIdx(u);
+  let h = '', b = '', src = '';
+  if (ph === 'P' && u >= .10 && u < .35) {
+    h = `Cable ${c.no} · ${T2('เชื่อมท่อ HDPE แบบ heated-tool butt welding', 'HDPE heated-tool butt welding')}`; b = svgWeld(c, u);
+    src = T2('ที่มา: DYWIDAG PE-Welding Manual 200601-211 §1.3–1.8, รูป 1, Enclosure 2 (ตัวอย่างโครงการ Mae Klong ระบบเดียวกัน) · จำนวนรอยเชื่อมจากความยาวจริง / 11.8 m',
+             'Source: DYWIDAG PE-Welding Manual 200601-211 §1.3–1.8, Fig. 1, Encl. 2 (Mae Klong example, same system) · welds from the real length / 11.8 m pipes');
+  } else if (ph === 'C' || ph === 'D' || ph === 'S') {
+    h = `Cable ${c.no} · ${ph === 'S' ? T2('ดึงตามขั้น + อ่านเกจ', 'stressing step + gauge') : T2('ลำดับร้อยลวด + ConTen', 'strand sequence + ConTen')}`; b = svgAnchor(c, ph === 'S' ? c.n : k, ph);
+    src = T2('ที่มา: ลำดับ DG-P55 จาก R9 #462 (Kiak Kai) · ConTen: DYWIDAG Stressing Manual 200601-212 §2.1, Encl. 1 (ตัวอย่าง: แม่แรง ConTen 180 kN, A = 26 cm²) · ค่าจริงของ Kiak Kai อยู่ใน stressing record 241102-220 (ไม่มีในไฟล์)',
+             'Source: DG-P55 sequence R9 #462 (Kiak Kai) · ConTen: DYWIDAG Stressing Manual 200601-212 §2.1, Encl. 1 (example: ConTen 180 kN jack, A = 26 cm²) · Kiak Kai values are in stressing record 241102-220 (not in the files)');
+  } else { box.style.display = 'none'; return; }
+  box.style.display = 'block'; box.querySelector('.dt-h').textContent = h; box.querySelector('.dt-b').innerHTML = b; box.querySelector('.dt-s').textContent = src;
+}
 </script>
 <style>#cabHud{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:30;display:none;background:rgba(18,22,26,.86);color:#fff;
 font:13px/1.35 'Segoe UI',Tahoma,sans-serif;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,138,31,.6);min-width:360px;max-width:560px;pointer-events:none}
