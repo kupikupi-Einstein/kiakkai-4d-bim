@@ -144,10 +144,10 @@ body.hideL #left{display:none!important} body.hideR #right{display:none!importan
     <select id="view" title="มุมกล้อง">
       <option value="overview">มุมมอง: ภาพรวม</option><option value="p2">Pylon P2</option><option value="p3">Pylon P3</option><option value="ft">Form Traveller</option><option value="cable">Stay cable – P2</option><option value="cable3">Stay cable – P3</option><option value="scaf">Pylon scaffolding – P2</option><option value="prep">Cable prep area – P2</option><option value="nav">ร่องน้ำเดินเรือ / แพลตฟอร์ม</option><option value="land">P1→P4 (รัฐสภา/วัดจุฬามณี)</option><option value="under">ใต้สะพาน</option><option value="river">ระดับแม่น้ำ</option><option value="top">มุมบน (Plan)</option>
     </select>
+    <button id="btnHud" class="on" title="เปิด/ปิดกล่องขั้นตอนงาน cable (ลากย้ายได้)">📋</button>
     <button id="btnTour">🚁<span class="lbl"> Drone Tour</span></button>
     <button id="btnFly">🎮<span class="lbl"> บินโดรนเอง</span></button>
-    <button id="btnSound">🔇<span class="lbl"> เสียง</span></button>
-    <button id="btnMusic">♪<span class="lbl"> ดนตรี</span></button>
+    <span id="sndWrap" style="position:relative;display:inline-flex"><button id="btnSound" title="เสียง / ดนตรี (ปิดอยู่)" style="width:40px">🔇</button><div id="sndMenu" style="display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:60;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;white-space:nowrap;font-size:13px"><label style="display:flex;gap:6px;align-items:center;margin:3px 0"><input type="checkbox" id="chkSfx"> <span id="lblSfx">เสียงประกอบ</span></label><label style="display:flex;gap:6px;align-items:center;margin:3px 0"><input type="checkbox" id="chkMus"> <span id="lblMus">ดนตรี</span></label></div></span><button id="btnMusic" style="display:none"></button>
     <button id="btnShot" title="บันทึกภาพหน้าจอ PNG">📷</button>
     <button id="btnGlb" title="Export โมเดล 3D เป็น GLB">⬇ GLB</button>
     <button id="btnImport" title="อัปโหลดแผนงาน (PDF / MS Project XML / CSV / JSON) เพื่ออัปเดต 4D">📂<span class="lbl"> อัปเดตแผน</span></button>
@@ -253,7 +253,7 @@ function align(s) {
   if (s > CURVE_E) { x += (s - CURVE_E) * Math.cos(th); z -= (s - CURVE_E) * Math.sin(th); }
   return { x, z, a: th };
 }
-function W(s, off, v) { const a = align(s); return new THREE.Vector3(a.x - off * Math.sin(a.a), v, a.z + off * Math.cos(a.a)); }
+function W(s, off, v) { const a = align(s); return new THREE.Vector3(a.x + off * Math.sin(a.a), v, a.z + off * Math.cos(a.a)); }
 
 // Girder depth (M-403…M-406): P2  H=3300+0.5335x² over 81 m ; P3  H=3300+0.9163x² over 49 m
 function depthH(s) {
@@ -576,7 +576,7 @@ const SKEW = THREE.MathUtils.degToRad(12);
   pileSet('P3', PIER.P3, 0, p3, 1.2, 48, '2024-02-01', '2024-04-30', SKEW);
   [['P1', 0, '2024-03-01', '2024-03-20'], ['P4', PIER.P4, '2024-03-21', '2024-04-10']].forEach(([tag, s, a, b]) => {
     const pts = []; [-8.5, 8.5].forEach(o => [[-1.95, -1.95], [1.95, -1.95], [-1.95, 1.95], [1.95, 1.95]].forEach(([dx, dz]) => pts.push([dx, o + dz])));
-    const al = align(s); pileSet(tag, al.x, al.z, pts, 0.0, 42, a, b, -al.a);
+    const al = align(s); pileSet(tag, al.x, al.z, pts, 0.0, 42, a, b, al.a);
   });
   // pile caps
   const capEl = (id, name, g, x, y, z, rot, a, b, dwg, vol) => { const m = mesh(g, M.concDark), o = new THREE.Group(); o.add(m); o.position.set(x, y, z); o.rotation.y = rot;
@@ -585,7 +585,7 @@ const SKEW = THREE.MathUtils.degToRad(12);
   capEl('CAP-P3', 'Pile cap F19 – Pier P3 (13.3 × 31.3 × 3.5 m, +1.2 → +4.7 MSL)', stadium(31.3, 13.3, 3.5), PIER.P3, 1.2, 0, SKEW, '2024-05-15', '2024-08-15', 'M-041/042/043', 1190);
   [['P1', 0, '2024-06-01', '2024-06-30'], ['P4', PIER.P4, '2024-06-15', '2024-07-15']].forEach(([tag, s, a, b]) => {
     const al = align(s), g = new THREE.Group(); [-8.5, 8.5].forEach(o => { const m = mesh(new THREE.BoxGeometry(7.8, 2.5, 7.8), M.concDark); m.position.set(0, 1.25, o); g.add(m); });
-    g.position.set(al.x, 0.1, al.z); g.rotation.y = -al.a;
+    g.position.set(al.x, 0.1, al.z); g.rotation.y = al.a;
     addEl({ id: 'CAP-' + tag, name: `Pile cap F4 x2 – End pier ${tag}`, cat: 'cap', grp: L2('ฐานราก (Pile Cap)', 'Pile caps'), obj: g, start: a, finish: b, src: L2('Assumed (ก่อนแผน R.2)', 'Assumed (before Programme R.2)'), dwg: 'M-051/052', qty: { vol: 304 } });
   });
   // scour protection (riprap) M-025
@@ -596,7 +596,7 @@ const SKEW = THREE.MathUtils.degToRad(12);
     addEl({ id: 'SCOUR-' + tag, name: `Scour protection (riprap) ${tag}`, cat: 'scour', grp: L2('ฐานราก (Pile Cap)', 'Pile caps'), obj: o, start: tag === 'P2' ? '2024-08-01' : '2024-08-20', finish: tag === 'P2' ? '2024-09-10' : '2024-09-30', src: 'Assumed', dwg: 'M-025', noShadow: true });
   });
   // piers
-  const pierEl = (tag, s, g, y, a, b, dwg, vol) => { const o = new THREE.Group(); o.add(mesh(g, M.conc)); const al = align(s); o.position.set(al.x, y, al.z); o.rotation.y = -al.a;
+  const pierEl = (tag, s, g, y, a, b, dwg, vol) => { const o = new THREE.Group(); o.add(mesh(g, M.conc)); const al = align(s); o.position.set(al.x, y, al.z); o.rotation.y = al.a;
     addEl({ id: 'PIER-' + tag, name: `Pier column ${tag}`, cat: 'pier', grp: L2('ตอม่อ (Pier)', 'Piers'), obj: o, start: a, finish: b, src: L2('Assumed (ก่อนแผน R.2)', 'Assumed (before Programme R.2)'), dwg, qty: { vol } }); };
   pierEl('P2', PIER.P2, taper(profile(120) - 6.8 - 4.7 + 0.05, 4.8, 22.5, 4.8, 15.6), 4.7, '2024-08-01', '2024-09-30', 'M-150/151', 279);   // column 22.5 → 15.6 m × H 3.04 m (279 m³)
   pierEl('P3', PIER.P3, taper(profile(285) - 5.5 - 4.7 + 0.05, 2.75, 18.5, 2.75, 16.75), 4.7, '2024-08-16', '2024-10-15', 'M-250/251', 150);   // column 18.5 → 16.75 m × H 3.09 m
@@ -604,7 +604,7 @@ const SKEW = THREE.MathUtils.degToRad(12);
     const top = profile(s) - 3.3 - 0.4, g = new THREE.Group();
     [-8.5, 8.5].forEach(o => { const c = mesh(taper(top - 2.6 - 2.2, 2.6, 3.2, 2.6, 3.2), M.conc); c.position.set(0, 2.6, o); g.add(c); });
     const cb = mesh(new THREE.BoxGeometry(2.8, 2.2, 27), M.conc); cb.position.set(0, top - 1.1, 0); g.add(cb);
-    const al = align(s); g.position.set(al.x, 0, al.z); g.rotation.y = -al.a;
+    const al = align(s); g.position.set(al.x, 0, al.z); g.rotation.y = al.a;
     addEl({ id: 'PIER-' + tag, name: `End pier ${tag} (crossbeam + seismic buffer)`, cat: 'pier', grp: L2('ตอม่อ (Pier)', 'Piers'), obj: g, start: a, finish: b, src: L2('Assumed (ก่อนแผน R.2)', 'Assumed (before Programme R.2)'), dwg, qty: { vol: 260 } });
   });
 })();
@@ -646,7 +646,7 @@ addDeckEl("SEG-M1'", "Final closure M1′ P3–P4 (2.50 m)", 'closure', 348.75, 
 ["B1'", "C1'", "D1'", "E1'", "F1'", "G1'", "H1'", "I1'", "J1'", "K1'", "L1'"].forEach((n, i) => {
   const sg = elById['SEG-' + n], s = (sg.s0 + sg.s1) / 2, H = depthH(s), HB = slabHB(s);
   const nar = hwAt(s) < 10, o = new THREE.Group(); [-1, 1].forEach(sd => { const dz = sd * (nar ? 3.0 : 4.5), m = mesh(new THREE.BoxGeometry(sg.s1 - sg.s0 - .6, .9, nar ? 2.6 : 4), M.ballast); m.position.z = dz; o.add(m); });
-  const p = W(s, 0, profile(s) - H + HB + .45); o.position.copy(p); o.rotation.y = -align(s).a;
+  const p = W(s, 0, profile(s) - H + HB + .45); o.position.copy(p); o.rotation.y = align(s).a;
   const kN = [115, 211, 250, 657, 641, 611, 711, 702, 701, 560, 525][i];
   addEl({ id: 'BAL-' + n, name: `Ballast segment ${n} (${kN} kN)`, cat: 'ballast', grp: 'Ballast P3 side span', obj: o, start: sg.finish + DAY, finish: sg.finish + 4 * DAY, dwg: 'M-406', src: 'Programme R.2 (Counter weight casting)', noShadow: true });
 });
@@ -704,7 +704,7 @@ function pylon(tag, s, n, dates) {
   const ornAll = [];
   const al = align(s), out = [], deckY = profile(s), Hs = tag === 'P2' ? [0, 4.5, 9.8, 13.5, 17.5, 21.5, 25.5, 29.8, 32.7, 35.65] : [0, 1.65, 5.5, 9.4, 13.3, 16.2, 19.38];
   for (let i = 0; i < n; i++) {
-    const o = pylonPart(tag, i, deckY); o.position.set(al.x, deckY, al.z); o.rotation.y = -al.a;
+    const o = pylonPart(tag, i, deckY); o.position.set(al.x, deckY, al.z); o.rotation.y = al.a;
     const nm = i === 0 ? (tag === 'P2' ? 'Kicker / pedestal' : 'Plinth') : i === n - 1 ? (tag === 'P2' ? '8th Portion – capital & clock (Crown)' : 'Capital') : `Portion ${i}`;
     const e = addEl({ id: `PYL-${tag}-${i}`, name: `Pylon ${tag} – ${nm} (h ${Hs[i].toFixed(2)}–${Hs[i + 1].toFixed(2)} m above deck)`, cat: 'pylon', grp: `Pylon ${tag}`, obj: o, kind: 'seg', start: dates[i][0], finish: dates[i][1],
       dwg: tag === 'P2' ? 'M-150/159 · AR PYLON-1' : 'M-250/259 · AR PYLON-2', src: dates[i][2] || 'Programme R.2', qty: { vol: (Hs[i + 1] - Hs[i]) * (tag === 'P2' ? 11 * 2.4 : 4.2 * 2.8) } });
@@ -836,7 +836,7 @@ for (const [tag, sP] of [['P2', 120], ['P3', 285]]) {
   const yA0 = Math.min(...cs.map(c => c.b.y)), yA1 = Math.max(...cs.map(c => c.b.y));
   const kick = lifts[0].y1, top = yA1 + 2.6;
   let face = 0; for (const e of lifts.slice(1)) { const b = localBoxOf(e); if (b.min.y + deckY < top) face = Math.max(face, b.max.x, -b.min.x); }
-  const g = new THREE.Group(); g.position.copy(W(sP, 0, 0)); g.rotation.y = -align(sP).a;
+  const g = new THREE.Group(); g.position.copy(W(sP, 0, 0)); g.rotation.y = align(sP).a;
   const segs = [], Zs = [-2.7, -0.9, 0.9, 2.7], dep = 1.5, H = [];
   for (let y = kick; y <= top + .01; y += 2.0) H.push(y);
   for (const sd of [-1, 1]) {
@@ -862,7 +862,7 @@ for (const [tag, sP] of [['P2', 120], ['P3', 285]]) {
 
 // ---- cable preparation and stock areas on the deck next to each pylon (Cable System deck layout: stock, cutting, HDPE welding, pre-assembled cables)
 function prepArea(sP, dir, zs) {   // dir = +1 towards higher chainage / -1 lower; zs = deck edge (+1 / -1)
-  const g = new THREE.Group(); g.position.copy(W(sP, 0, profile(sP + dir * 22) + .05)); g.rotation.y = -align(sP).a;
+  const g = new THREE.Group(); g.position.copy(W(sP, 0, profile(sP + dir * 22) + .05)); g.rotation.y = align(sP).a;
   const x0 = dir * 9, x1 = dir * 36, zc = zs * 12.4, zw = 5.0, xm = (x0 + x1) / 2, L = Math.abs(x1 - x0);
   for (const [w, d, x, z] of [[L, .12, xm, zc - zw / 2], [L, .12, xm, zc + zw / 2], [.12, zw, x0, zc], [.12, zw, x1, zc]]) bx(g, w, .03, d, mZone, x, .02, z);
   for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) {   // strand coil stock: 2 x 3 coils on pallets
@@ -995,7 +995,7 @@ function stairTower(deckY) {
 }
 [['P1', [[3.9, -19.9, -1], [3.9, 19.9, 1]]], ['P4', [[304.0, -21.5, -1], [306.1, 14.0, 1]]]].forEach(([t, list]) => {   // tower centres from federated model (STAIR TOWER_AR)
   const o = new THREE.Group();
-  list.forEach(([x, z, sd]) => { const tw = stairTower(profile(Math.max(0, Math.min(x, PIER.P4))) + .2); tw.position.set(x, 0, z); tw.rotation.y = -align(x).a + (sd > 0 ? Math.PI : 0); o.add(tw); });
+  list.forEach(([x, z, sd]) => { const tw = stairTower(profile(Math.max(0, Math.min(x, PIER.P4))) + .2); tw.position.set(x, 0, z); tw.rotation.y = align(x).a + (sd > 0 ? Math.PI : 0); o.add(tw); });
   addEl({ id: 'TOWER-' + t, name: L2(`หอบันได (Stair tower) ยอดพุ่มบัว ${t} x2 – ทางขึ้นลงคนเดินเท้า`, `Stair towers with pinnacle ${t} ×2 – pedestrian access`), cat: 'arch', grp: L2('สถาปัตยกรรม & ตกแต่ง', 'Architecture & decoration'), obj: o, start: '2026-02-15', finish: '2026-04-30', src: 'Assumed', dwg: 'AR STAIR TOWER (ST-1 … ST-4) · M-011' });
 });
 
@@ -1034,13 +1034,16 @@ function makeCrane(H, jib) {
   const apex = mesh(new THREE.ConeGeometry(1.2, 7, 4), M.latY); apex.position.y = 4.3; slew.add(apex);
   const trol = new THREE.Group(); trol.position.x = jib * .6; slew.add(trol); g.userData.trol = trol;
   const line = mesh(new THREE.CylinderGeometry(.04, .04, 1, 4), M.dark); line.geometry.translate(0, -.5, 0); line.scale.y = H * .6; trol.add(line); g.userData.line = line;
-  const hook = mesh(new THREE.BoxGeometry(.8, 1, .8), M.steel); hook.position.y = -H * .6; trol.add(hook); g.userData.hook = hook;
+  const hook = mesh(new THREE.BoxGeometry(.8, 1, .8), M.steel); hook.position.y = -H * .6; trol.add(hook); g.userData.hook = hook; g.userData.H = H;
+  const load = new THREE.Group(); [-.35, 0, .35].forEach(dz => [-.3, .05].forEach(dy => { const b = mesh(new THREE.BoxGeometry(9, .32, .32), M.dark); b.position.set(0, dy - 2.4, dz); load.add(b); }));
+  [-3.2, 3.2].forEach(dx => { const sl = mesh(new THREE.CylinderGeometry(.03, .03, 1, 4), M.dark); const a = new THREE.Vector3(0, -.5, 0), b = new THREE.Vector3(dx, -2.1, 0); sl.position.copy(a).add(b).multiplyScalar(.5); sl.scale.y = a.distanceTo(b); sl.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()); load.add(sl); });
+  load.visible = false; trol.add(load); g.userData.load = load;
   return g;
 }
 // tower cranes: [id, s, offset from CL (−left/+right), mast height above TOF +4.68, …]
 (() => { const done = iso(Math.max(D(SD.T[1]), D(SD["M1'"][1])));
   return [['TC-P2', 120, -17.3, 65.3, SCHED.tc.P2[0], addD(SCHED.tc.P2[0], 7), SCHED.tc.P2[1], addD(done, 4), addD(done, 17)], ['TC-P3', 286.5, 14.1, 43.3, SCHED.tc.P3[0], addD(SCHED.tc.P3[0], 7), SCHED.tc.P3[1], addD(done, 9), addD(done, 22)]]; })().forEach(([id, s, z, H, a, b, ext, rs, re]) => {
-  const o = makeCrane(H, 40); o.position.copy(W(s, z, 4.68)); o.rotation.y = -align(s).a;   // pad footing on the pile cap (TOF +4.68 MSL); P3 mast passes through a deck blockout
+  const o = makeCrane(H, 40); o.position.copy(W(s, z, 4.68)); o.rotation.y = align(s).a;   // pad footing on the pile cap (TOF +4.68 MSL); P3 mast passes through a deck blockout
   const pad = mesh(new THREE.BoxGeometry(2.73, .5, 2.73), M.concDark); pad.position.y = .25; o.add(pad);
   const e = addEl({ id, name: `Tower crane ${id.slice(3)} (mast ${H} m, jib 40 → 74 m)`, cat: 'crane', grp: 'Tower Crane', obj: o, temp: true, start: a, finish: b, rmS: rs, rmE: re, kind: 'crane', ext: D(ext),
     src: L2('Programme R.2 (Installation of tower crane) / รื้อถอน: สมมติฐาน', 'Programme R.2 (Installation of tower crane) / removal assumed'), dwg: 'Kiek Kai Bridge – Towercrane Location (10-10-65)' });
@@ -1116,7 +1119,7 @@ function shoring(s0, s1, offs, yBot, stepS = 3.0) {
   const g = new THREE.Group(), mats = [];
   for (let s = s0 + 1.5; s < s1; s += stepS) for (const o of offs) { if (Math.abs(o) > hwAt(s) - 3) continue;
     const top = profile(s) - depthH(s) - .1, h = top - yBot; if (h < 1) continue;
-    const p = W(s, o, yBot + h / 2), m = new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -align(s).a), new THREE.Vector3(1.5, h, 1.5)); mats.push(m);
+    const p = W(s, o, yBot + h / 2), m = new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), align(s).a), new THREE.Vector3(1.5, h, 1.5)); mats.push(m);
   }
   const box = new THREE.BoxGeometry(1, 1, 1), inst = new THREE.InstancedMesh(box, M.latY, mats.length); mats.forEach((m, i) => inst.setMatrixAt(i, m)); g.add(inst); return g;
 }
@@ -1179,11 +1182,11 @@ function updateFT(t) {
     let cur = seq[0]; for (const sg of seq) if (sg.start <= t) cur = sg;
     const a = align(cur.near), top = profile(cur.near);
     const drop = e.st === 'rm' ? clamp((t - e.rmS) / Math.max(DAY, e.rmE - e.rmS), 0, 1) * (top - WATER_Y - 4) : 0;   // lowered onto the barge while dismantling
-    e.obj.position.set(a.x, top - drop, a.z); e.obj.rotation.y = cur.dir > 0 ? -a.a : -a.a + Math.PI;
+    e.obj.position.set(a.x, top - drop, a.z); e.obj.rotation.y = cur.dir > 0 ? a.a : a.a + Math.PI;
     e.obj.scale.z = hwAt((cur.s0 + cur.s1) / 2) / 15.65;
     const H = depthH(cur.far), hang = e.obj.userData.hang, len = 7.4 + H + 1.2;
     hang.children.forEach(c => {
-      if (c.userData.hanger) { c.scale.y = len; c.position.y = 7.4 - len / 2; }
+      if (c.userData.hanger) { const l = Math.abs(c.position.z) > 10.6 ? 7.4 + 1.15 : len; c.scale.y = l; c.position.y = 7.4 - l / 2; }
       else if (c.userData.plat) c.position.set(2.8, -H - 1.2, 0);
       else if (c.userData.form) c.position.set(2.8, -1.0, 0);
       else if (c.userData.rail !== undefined) c.position.set(2.8, -H - .5, c.userData.rail);
@@ -1193,7 +1196,24 @@ function updateFT(t) {
 function updateCranes(t, dt) {
   for (const id of ['TC-P2', 'TC-P3']) { const e = elById[id]; if (!e.obj.visible) continue;
     const ext = t >= e.ext ? 74 : 40; e.obj.userData.jib.scale.x = ext; e.obj.userData.trol.position.x = ext * .55;
-    if (playing || tour.on) e.obj.userData.slew.rotation.y += dt * .05 * (id === 'TC-P2' ? 1 : -1); else if (!e.rotInit) { e.obj.userData.slew.rotation.y = id === 'TC-P2' ? .9 : 2.2; e.rotInit = true; } }
+    const ud = e.obj.userData, side = e.obj.position.z < 0 ? 1 : -1;   // crane beside the deck: deck is towards +z for TC-P2, −z for TC-P3
+    const thP = side * Math.PI / 2, thD = -side * Math.PI / 2;          // pick = over the supply barge on the river side, drop = over the deck
+    if (!ud.barge) { const b = new THREE.Group(), hull = mesh(new THREE.BoxGeometry(16, 1.6, 7), M.dark); hull.position.y = .3; b.add(hull);
+      [-1.2, 0, 1.2].forEach(z => [0, .34].forEach(y => { const r = mesh(new THREE.BoxGeometry(9, .32, .32), M.dark); r.position.set(-2, 1.3 + y, z * .5); b.add(r); }));
+      [-5.5, 5.5].forEach(x => { const bl = mesh(new THREE.BoxGeometry(.6, .5, .6), M.yellow); bl.position.set(x, 1.35, 0); b.add(bl); }); scene.add(b); ud.barge = b; }
+    const mast = e.obj.position, r = ext * .55, rot = e.obj.rotation.y, dir = th => new THREE.Vector3(Math.cos(th + rot), 0, -Math.sin(th + rot));
+    const bp = mast.clone().addScaledVector(dir(thP), r); ud.barge.position.set(bp.x, WATER_Y, bp.z); ud.barge.rotation.y = rot; ud.barge.visible = e.obj.visible;
+    const top = 4.68 + ud.H, Lp = top - (WATER_Y + 1.1 + 2.7), al0 = align(mast.x), rd = Math.hypot(mast.x - al0.x, mast.z - al0.z) - 8, dp = mast.clone().addScaledVector(dir(thD), rd), Ld = top - (profile(Math.max(0, dp.x)) + .3 + 2.7);
+    if (playing || tour.on) e.cyc = ((e.cyc || 0) + dt * .32) % (2 * Math.PI);
+    const u = (e.cyc || 0) / (2 * Math.PI), sm = x => x * x * (3 - 2 * x), seg = (a, b) => sm(clamp((u - a) / (b - a), 0, 1));
+    let th = thP, L = 3, load = false;   // cycle: lower empty to the barge → lift the rebar bundle → slew over the deck → lower → unhook → slew back
+    if (u < .2) L = 3 + (Lp - 3) * seg(0, .2); else if (u < .4) { L = Lp - (Lp - 3) * seg(.2, .4); load = true; }
+    else if (u < .55) { th = thP + (thD - thP) * seg(.4, .55); load = true; } else if (u < .75) { th = thD; L = 3 + (Ld - 3) * seg(.55, .75); load = true; }
+    else if (u < .85) { th = thD; L = Ld - (Ld - 3) * seg(.75, .85); } else th = thD + (thP - thD) * seg(.85, 1);
+    if (e.cyc === undefined && !(playing || tour.on)) { th = thD; L = 3; }   // parked: hook up under the trolley, jib over the deck
+    const tr = u < .4 ? r : u < .55 ? r + (rd - r) * seg(.4, .55) : u < .85 ? rd : rd + (r - rd) * seg(.85, 1);   // trolley runs in to the deck for the drop
+    ud.trol.position.x = (e.cyc === undefined && !(playing || tour.on)) ? rd : tr;
+    ud.slew.rotation.y = th; ud.line.scale.y = L; ud.hook.position.y = -L; ud.load.position.y = -L; ud.load.visible = load; }
 }
 function refresh() {
   for (const e of ELS) applyLook(e, NOW);
@@ -1214,6 +1234,9 @@ const water = new Water(waterGeo, { textureWidth: 1024, textureHeight: 1024, wat
 water.rotation.x = -Math.PI / 2; water.position.set(178, WATER_Y, 0); water.material.uniforms.size.value = 2.2; gCtx.add(water);
 const flatWater = mesh(new THREE.PlaneGeometry(1400, 2 * ZR), new THREE.MeshBasicMaterial({ color: 0x74c0fc, transparent: true, opacity: .22, depthWrite: false }));
 flatWater.rotation.x = -Math.PI / 2; flatWater.position.set(178, WATER_Y, 0); flatWater.visible = false; scene.add(flatWater);
+let REFL = new URLSearchParams(location.search).get('refl') !== '0';
+const plainWater = mesh(new THREE.PlaneGeometry(1400, 2 * ZR), new THREE.MeshStandardMaterial({ color: 0x4e6b5d, roughness: .95, metalness: 0, transparent: true, opacity: .93 }));
+plainWater.rotation.x = -Math.PI / 2; plainWater.position.set(178, WATER_Y, 0); plainWater.visible = false; plainWater.receiveShadow = true; gCtx.add(plainWater);
 const bed = mesh(new THREE.PlaneGeometry(1400, 2 * ZR), new THREE.MeshStandardMaterial({ color: 0x4a4436, roughness: 1 })); bed.rotation.x = -Math.PI / 2; bed.position.set(178, BED_Y, 0); gCtx.add(bed);
 const tGrass = texGround('#5f7d45', 'rgba(40,60,30,.6)'); tGrass.repeat.set(60, 60);
 const groundMat = new THREE.MeshStandardMaterial({ map: tGrass, roughness: 1 });
@@ -1249,7 +1272,7 @@ function approach(s0, s1, hw = 15.65) {
   for (let i = 0; i < n - 1; i++) for (let e = 0; e < 4; e++) { const a = i * 4 + e, b = i * 4 + (e + 1) % 4; idx.push(a, a + 4, b, b, a + 4, b + 4); }
   const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
   const m = mesh(geo, approachMat); m.material.side = THREE.DoubleSide; m.castShadow = m.receiveShadow = true; g.add(m);
-  for (let s = s0 + 20; s < s1; s += 36) { const p = W(s, 0, 0), h = yAt(s) - 2.2 - BANK_Y; const c = mesh(new THREE.BoxGeometry(2.5, h, 9), approachMat); c.position.set(p.x, BANK_Y + h / 2, p.z); c.rotation.y = -align(s).a; c.castShadow = true; g.add(c); }
+  for (let s = s0 + 20; s < s1; s += 36) { const p = W(s, 0, 0), h = yAt(s) - 2.2 - BANK_Y; const c = mesh(new THREE.BoxGeometry(2.5, h, 9), approachMat); c.position.set(p.x, BANK_Y + h / 2, p.z); c.rotation.y = align(s).a; c.castShadow = true; g.add(c); }
   return g;
 }
 const gApproach = new THREE.Group(); gApproach.add(approach(-260, -0.3), approach(PIER.P4 + 0.3, 640, 8.5)); gCtx.add(gApproach);
@@ -1305,7 +1328,7 @@ function updateCars(dt) {
     if (c.road === 'B') {
       if (NOW < OPEN) { dummy.position.set(0, -50, 0); dummy.scale.setScalar(.001); }
       else { const s = -250 + c.p * 880, off = c.dir * (s >= NARROW_S ? 2.3 + (c.lane % 2) * 3.2 : 3.0 + c.lane * 3.5), y = s < 0 ? 11.902 + .025 * s : s > PIER.P4 ? 11.661 - .0225 * (s - PIER.P4) : profile(s);
-        const p = W(s, off, y + .1); dummy.position.copy(p); dummy.rotation.set(0, -align(s).a + (c.dir > 0 ? Math.PI / 2 : -Math.PI / 2), 0); dummy.scale.setScalar(1); }
+        const p = W(s, off, y + .1); dummy.position.copy(p); dummy.rotation.set(0, align(s).a + (c.dir > 0 ? Math.PI / 2 : -Math.PI / 2), 0); dummy.scale.setScalar(1); }
     } else { const z = -1200 + c.p * 2400, x = bankW(z) - 60 + c.dir * (1.8 + c.lane * 1.6); dummy.position.set(x, BANK_Y + .05, z); dummy.rotation.set(0, c.dir > 0 ? 0 : Math.PI, 0); dummy.scale.setScalar(1); }
     dummy.updateMatrix(); cars.setMatrixAt(i, dummy.matrix);
   });
@@ -1424,7 +1447,7 @@ function applyTheme(t) {
   document.body.dataset.ui = t === 'bim' ? 'light' : 'dark';
   document.querySelectorAll('#themes button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   const real = MODE === 'real';
-  sky.visible = real && !isNight; stars.visible = isNight; water.visible = real; flatWater.visible = !real; bed.visible = !real || true;
+  sky.visible = real && !isNight; stars.visible = isNight; water.visible = real && REFL; plainWater.visible = real && !REFL; flatWater.visible = !real; bed.visible = !real || true;
   city.visible = MODE !== 'blue'; trees.visible = trunks.visible = real; gW.visible = gE.visible = MODE !== 'blue'; grid.visible = MODE === 'blue';
   boats.forEach(b => b.visible = real); cars.visible = real;
   gApproach.visible = MODE !== 'blue';
@@ -1496,23 +1519,23 @@ class Sound {
     g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.18 * v, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + 2.0); }
   set(on) { if (!this.ctx) this.init(); this.on = on; if (on) this.ctx.resume(); this.master.gain.setTargetAtTime(on ? .9 : 0, this.ctx.currentTime, .3); }
   update(dt, s) {
-    if (!this.ctx || !this.on) return; const c = this.ctx, now = c.currentTime, k = .4;
+    if (!this.ctx || !this.on) return; const c = this.ctx, now = c.currentTime, k = .4, F = this.sfx ? 1 : 0;
     const near = clamp(1 - s.dist / 900, 0, 1), alt = clamp(s.alt / 150, 0, 1);
-    this.river.g.gain.setTargetAtTime(s.real ? .55 * clamp(1 - s.alt / 260, .15, 1) : .15, now, k);
-    this.wind.g.gain.setTargetAtTime(.05 + .35 * alt + (s.drone ? .1 : 0), now, k);
-    this.city.g.gain.setTargetAtTime(.25 + (s.opened ? .25 : 0), now, k);
-    this.hiss.g.gain.setTargetAtTime(.012, now, k);
+    this.river.g.gain.setTargetAtTime(F * s.real ? .55 * clamp(1 - s.alt / 260, .15, 1) : .15, now, k);
+    this.wind.g.gain.setTargetAtTime(F * .05 + .35 * alt + (s.drone ? .1 : 0), now, k);
+    this.city.g.gain.setTargetAtTime(F * .25 + (s.opened ? .25 : 0), now, k);
+    this.hiss.g.gain.setTargetAtTime(F * .012, now, k);
     const act = s.active ? near : 0;
-    this.gen.gain.setTargetAtTime(.10 * act, now, k);
-    this.crk.gain.setTargetAtTime(s.night ? .022 : 0, now, 1);
-    this.drn.gain.setTargetAtTime(s.drone ? .16 : 0, now, .2);
+    this.gen.gain.setTargetAtTime(F * .10 * act, now, k);
+    this.crk.gain.setTargetAtTime(F * s.night ? .022 : 0, now, 1);
+    this.drn.gain.setTargetAtTime(F * s.drone ? .16 : 0, now, .2);
     this.drnOsc.forEach((o, i) => o.frequency.setTargetAtTime([168, 171, 252][i] * (1 + clamp(s.speed / 120, 0, .6)), now, .3));
     this.pad.gain.setTargetAtTime(this.music ? .05 : 0, now, 1.5);
-    if (act > .05 && now > this.next.clank) { this.clank(act); this.next.clank = now + .25 + Math.random() * 1.6 / (.4 + act); }
-    if (s.casting && act > .05 && now > this.next.pump) { this.thump(act); this.next.pump = now + .62; }
-    if (act > .05 && now > this.next.beep) { this.beep(act); this.next.beep = now + 9 + Math.random() * 14; }
-    if (!s.night && s.real && now > this.next.bird) { this.bird(.8 + Math.random() * .4); this.next.bird = now + 2 + Math.random() * 7; }
-    if (s.real && now > this.next.horn) { if (this.next.horn) this.horn(.8); this.next.horn = now + 25 + Math.random() * 40; }
+    if (F && act > .05 && now > this.next.clank) { this.clank(act); this.next.clank = now + .25 + Math.random() * 1.6 / (.4 + act); }
+    if (F && s.casting && act > .05 && now > this.next.pump) { this.thump(act); this.next.pump = now + .62; }
+    if (F && act > .05 && now > this.next.beep) { this.beep(act); this.next.beep = now + 9 + Math.random() * 14; }
+    if (F && !s.night && s.real && now > this.next.bird) { this.bird(.8 + Math.random() * .4); this.next.bird = now + 2 + Math.random() * 7; }
+    if (F && s.real && now > this.next.horn) { if (this.next.horn) this.horn(.8); this.next.horn = now + 25 + Math.random() * 40; }
     if (this.music && now > this.next.note) {   // Thai-flavoured pentatonic (C D E G A) ranat-like plucks
       const sc = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.26];
       this.mi = clamp((this.mi ?? 3) + (Math.random() * 5 | 0) - 2, 0, sc.length - 1); this.pluck(sc[this.mi], 1);
@@ -1552,9 +1575,9 @@ const TOUR = [
 const tour = { on: false, u: 0, dur: 115, posC: new THREE.CatmullRomCurve3(TOUR.map(w => new THREE.Vector3(...w[0])), false, 'centripetal'), tgtC: new THREE.CatmullRomCurve3(TOUR.map(w => new THREE.Vector3(...w[1])), false, 'centripetal'), bat: 100, last: new THREE.Vector3(), spd: 0, idx: -1 };
 const fly = { on: false, keys: {}, yaw: 0, pitch: 0, drag: null, spd: 0 };
 const capEl = document.getElementById('caption'), hud = document.getElementById('hud');
-function startTour() { stopFly(); tour.on = true; tour.u = 0; tour.idx = -1; tour.bat = 100; controls.enabled = false; hud.style.display = 'block'; document.body.classList.add('noui'); document.getElementById('btnTour').classList.add('on'); if (!snd.on) toggleSound(true); }
+function startTour() { stopFly(); tour.on = true; tour.u = 0; tour.idx = -1; tour.bat = 100; controls.enabled = false; hud.style.display = 'block'; document.body.classList.add('noui'); document.getElementById('btnTour').classList.add('on');  }
 function stopTour() { if (!tour.on) return; tour.on = false; controls.enabled = true; hud.style.display = 'none'; capEl.style.display = 'none'; document.body.classList.remove('noui'); document.getElementById('btnTour').classList.remove('on'); controls.target.copy(tour.tgtC.getPoint(Math.min(tour.u, .999))); }
-function startFly() { stopTour(); fly.on = true; controls.enabled = false; const d = new THREE.Vector3(); camera.getWorldDirection(d); fly.yaw = Math.atan2(-d.x, -d.z); fly.pitch = Math.asin(d.y); hud.style.display = 'block'; document.getElementById('flyhelp').style.display = 'block'; document.getElementById('btnFly').classList.add('on'); if (!snd.on) toggleSound(true); }
+function startFly() { stopTour(); fly.on = true; controls.enabled = false; const d = new THREE.Vector3(); camera.getWorldDirection(d); fly.yaw = Math.atan2(-d.x, -d.z); fly.pitch = Math.asin(d.y); hud.style.display = 'block'; document.getElementById('flyhelp').style.display = 'block'; document.getElementById('btnFly').classList.add('on');  }
 function stopFly() { if (!fly.on) return; fly.on = false; controls.enabled = true; hud.style.display = 'none'; document.getElementById('flyhelp').style.display = 'none'; document.getElementById('btnFly').classList.remove('on'); const d = new THREE.Vector3(); camera.getWorldDirection(d); controls.target.copy(camera.position).addScaledVector(d, 60); }
 addEventListener('keydown', e => { fly.keys[e.code] = true; if (e.code === 'Escape') { stopTour(); stopFly(); } if (e.code === 'KeyH' && !e.target.closest('input,select')) document.body.classList.toggle('noui'); if (e.code === 'Space' && !fly.on && e.target === document.body) { e.preventDefault(); togglePlay(); } });
 addEventListener('keyup', e => { fly.keys[e.code] = false; });
@@ -1639,9 +1662,12 @@ document.querySelectorAll('#themes button').forEach(b => b.onclick = () => apply
 $('view').onchange = e => goView(e.target.value);
 $('btnTour').onclick = () => tour.on ? stopTour() : startTour();
 $('btnFly').onclick = () => fly.on ? stopFly() : startFly();
-function toggleSound(force) { const on = force ?? !snd.on; snd.set(on); $('btnSound').innerHTML = (on ? '🔊' : '🔇') + '<span class="lbl"> ' + L2('เสียง', 'Sound') + '</span>'; $('btnSound').classList.toggle('on', on); }
-$('btnSound').onclick = () => toggleSound();
-$('btnMusic').onclick = () => { if (!snd.on) toggleSound(true); snd.music = !snd.music; $('btnMusic').classList.toggle('on', snd.music); };
+function toggleSound(force) { const on = force ?? !snd.on; snd.set(on); sndIcon(); }
+function sndIcon() { const on = snd.on && ($('chkSfx').checked || snd.music); $('btnSound').textContent = on ? '🔊' : '🔇'; $('btnSound').classList.toggle('on', on); $('btnSound').title = L2('เสียง / ดนตรี', 'Sound / music') + (on ? '' : L2(' (ปิดอยู่)', ' (off)')); }
+$('btnSound').onclick = e => { e.stopPropagation(); const m = $('sndMenu'); m.style.display = m.style.display === 'none' ? 'block' : 'none'; };
+document.addEventListener('click', e => { if (!$('sndWrap').contains(e.target)) $('sndMenu').style.display = 'none'; });
+$('chkSfx').onchange = () => { const sfx = $('chkSfx').checked; if (sfx || snd.music) toggleSound(true); else toggleSound(false); snd.sfx = sfx; sndIcon(); };
+$('chkMus').onchange = () => { snd.music = $('chkMus').checked; if (snd.music && !snd.on) toggleSound(true); if (!snd.music && !$('chkSfx').checked) toggleSound(false); sndIcon(); };
 $('btnUI').onclick = () => document.body.classList.toggle('noui');
 /* ===== Schedule import: PDF (MS Project print) / MS Project XML / CSV / JSON  →  task list  →  BIM element dates ===== */
 const SCHED_IO = (() => {
@@ -1738,7 +1764,7 @@ if (LANG === 'en') {
   const vo = { overview: 'View: overview', p2: 'Pylon P2', p3: 'Pylon P3', ft: 'Form traveller', nav: 'Navigation channel / platforms', land: 'P1→P4 (Parliament / Wat Chulamani)', under: 'Under the bridge', river: 'River level', top: 'Top (plan)' };
   document.querySelectorAll('#view option').forEach(o => { if (vo[o.value]) o.textContent = vo[o.value]; });
   setT('#btnTour', '🚁<span class="lbl"> Drone tour</span>', 'html'); setT('#btnFly', '🎮<span class="lbl"> Fly drone</span>', 'html');
-  setT('#btnSound', '🔇<span class="lbl"> Sound</span>', 'html'); setT('#btnMusic', '♪<span class="lbl"> Music</span>', 'html');
+  $('lblSfx').textContent = 'Sound effects'; $('lblMus').textContent = 'Music'; $('btnSound').title = 'Sound / music (off)';
   setT('#btnShot', 'Save screenshot (PNG)', 'title'); setT('#btnGlb', 'Export 3D model as GLB', 'title');
   setT('#btnImport', '📂<span class="lbl"> Update programme</span>', 'html'); setT('#btnImport', 'Upload a programme (PDF / MS Project XML / CSV / JSON) to update the 4D model', 'title');
   setT('#btnL', 'Show / hide left panel ([)', 'title'); setT('#btnR', 'Show / hide right panel (])', 'title'); setT('#btnUI', 'Hide UI (H)', 'title');
@@ -2088,7 +2114,7 @@ if (params.get('tour')) { const u = +params.get('tour'); const p = tour.posC.get
 document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
 renderTab(); refresh();
 loop();
-window.__app = { setNow, applyTheme, goView, ELS, startTour };
+window.__app = { setNow, applyTheme, goView, ELS, startTour, camera, controls, FTS, align, elById };
 // PWA: offline cache when served over http(s) with sw.js next to this page (GitHub Pages)
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => { });
 
@@ -2106,6 +2132,42 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigat
   n.addEventListener('input', apply); u.addEventListener('change', apply);
   const r = new URLSearchParams(location.search).get('rate');
   if (r) { const m = /^([\d.]+)\s*(m|min|h|d|w)$/i.exec(r); if (m) { n.value = m[1]; u.value = { m: '0.000694444', min: '0.000694444', h: '0.041666667', d: '1', w: '7' }[m[2].toLowerCase()]; c.selected = true; box.style.display = 'inline-flex'; apply(); } }
+})();
+
+/* ---------- cable step panels: drag to move (position remembered), 📋 switches them on/off ---------- */
+(() => {
+  const KEY = 'kk4d-panels';
+  let pos = {}; try { pos = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+  const place = (el, p) => { if (!p) return; Object.assign(el.style, { left: p[0] + 'px', top: p[1] + 'px', right: 'auto', bottom: 'auto', transform: 'none' }); };
+  const drag = (el, handleSel) => {
+    if (!el) return; place(el, pos[el.id]);
+    el.addEventListener('pointerdown', ev => {
+      if (handleSel && !ev.target.closest(handleSel)) return;
+      if (ev.target.closest('button,select,input,label')) return;
+      const r = el.getBoundingClientRect(), dx = ev.clientX - r.left, dy = ev.clientY - r.top; el.setPointerCapture(ev.pointerId); el.style.cursor = 'grabbing';
+      const mv = e => { const x = Math.min(Math.max(0, e.clientX - dx), innerWidth - 60), y = Math.min(Math.max(0, e.clientY - dy), innerHeight - 40); place(el, [x, y]); pos[el.id] = [x, y]; };
+      const up = () => { el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.style.cursor = 'grab'; try { localStorage.setItem(KEY, JSON.stringify(pos)); } catch (e) {} };
+      el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); ev.preventDefault();
+    });
+    el.style.cursor = 'grab'; el.style.touchAction = 'none';
+  };
+  drag(document.getElementById('cabHud')); drag(document.getElementById('cabDet'), '.cd-h');
+  const b = document.getElementById('btnHud');
+  const set = on => { document.body.classList.toggle('hudoff', !on); b.classList.toggle('on', on); try { localStorage.setItem(KEY + '-off', on ? '0' : '1'); } catch (e) {} };
+  let off = false; try { off = localStorage.getItem(KEY + '-off') === '1'; } catch (e) {}
+  set(!off); b.onclick = () => set(document.body.classList.contains('hudoff'));
+  b.ondblclick = () => { pos = {}; try { localStorage.removeItem(KEY); } catch (e) {} ['cabHud', 'cabDet'].forEach(id => { const el = document.getElementById(id); if (el) ['left', 'top', 'right', 'bottom', 'transform'].forEach(k => el.style[k] = ''); }); };
+  if (LANG === 'en') b.title = 'Cable step panels on/off (drag to move; double-click resets the position)';
+  else b.title = 'เปิด/ปิดกล่องขั้นตอนงาน cable (ลากย้ายได้ ดับเบิลคลิกเพื่อกลับตำแหน่งเดิม)';
+  const st = document.createElement('style'); st.textContent = 'body.hudoff #cabHud,body.hudoff #cabDet{display:none!important}#cabDet .cd-h{cursor:grab}'; document.head.appendChild(st);
+})();
+/* ---------- water reflection on/off ---------- */
+(() => {
+  const b = document.createElement('button'); b.id = 'btnRefl'; b.textContent = '💧';
+  const upd = () => { b.classList.toggle('on', REFL); b.title = L2('น้ำสะท้อนแสง: ', 'Water reflection: ') + (REFL ? L2('เปิด', 'on') : L2('ปิด', 'off')); };
+  b.onclick = () => { REFL = !REFL; applyTheme(theme); upd(); }; upd();
+  const t = document.getElementById('btnTour'); t.parentNode.insertBefore(b, t);
+  if (!REFL) applyTheme(theme);
 })();
 </script>
 <style>#cabHud{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:30;display:none;background:rgba(18,22,26,.86);color:#fff;
