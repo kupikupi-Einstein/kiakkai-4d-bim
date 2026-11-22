@@ -906,8 +906,9 @@ for (const c of CABW) {
 }
 const smooth = u => u * u * (3 - 2 * u);
 let CAB_ACTIVE = []; window.__CAB = () => CABW.map(c => [c.no, iso(c.e.start), iso(c.e.finish)]);
+const CRANE_PIPE = { 'TC-P2': null, 'TC-P3': null }, craneOf = c => c.no < 300 ? 'TC-P2' : 'TC-P3';
 function updateCables(t) {
-  CAB_ACTIVE = [];
+  CAB_ACTIVE = []; CRANE_PIPE['TC-P2'] = CRANE_PIPE['TC-P3'] = null;
   const act = { 1: null, 2: null, 3: null, 4: null };
   for (const c of CABW) {
     const st = c.e.st, vis = c.e.obj.visible;
@@ -919,10 +920,11 @@ function updateCables(t) {
     c.pipe.material = mPipeWip; c.rope.material = mRope;
     if (ph === 'A') c.trol.visible = MODE === 'real';
     if (ph === 'A') between(c.pipe, c.lay0.clone().setY(c.a.y + .25), c.lay1.clone().setY(c.a.y + .25));
+    else if (ph === 'B' && CRANE_PIPE[craneOf(c)]) { c.trol.visible = MODE === 'real'; between(c.pipe, c.lay0.clone().setY(c.a.y + .25), c.lay1.clone().setY(c.a.y + .25)); }   // crane busy with another pipe: this one waits on the deck
     else if (ph === 'B') {   // upper end hooked to the tower crane and lifted to the DYNA Link; lower end drawn to the recess pipe
       const k = smooth(pu), lo = new THREE.Vector3().lerpVectors(c.lay0, c.a, k).setY(c.a.y + .25 * (1 - k));
       const hi = new THREE.Vector3().lerpVectors(c.lay1, c.b, k); hi.y = lerp(c.a.y + .25, c.b.y, k) + Math.sin(Math.PI * k) * 6;
-      between(c.pipe, lo, hi); c.rope.visible = true; between(c.rope, hi, hi.clone().setY(hi.y + 26));
+      between(c.pipe, lo, hi); c.rope.visible = false; CRANE_PIPE[craneOf(c)] = hi.clone();   // the tower crane's own hook holds the pipe end
     } else between(c.pipe, c.a, c.b);
     const k = ph === 'D' ? Math.max(1, Math.ceil(c.n * pu)) : ph === 'C' ? 1 : 0;
     CAB_ACTIVE.push({ c, ph, k }); const g4 = String(c.no)[0]; if (!act[g4] || c.e.start < act[g4].e.start) act[g4] = c;
@@ -1212,6 +1214,9 @@ function updateCranes(t, dt) {
     const mast = e.obj.position, r = ext * .55, rot = e.obj.rotation.y, dir = th => new THREE.Vector3(Math.cos(th + rot), 0, -Math.sin(th + rot));
     const bp = mast.clone().addScaledVector(dir(thP), r); ud.barge.position.set(bp.x, WATER_Y, bp.z); ud.barge.rotation.y = rot; ud.barge.visible = e.obj.visible;
     const top = 4.68 + ud.H, Lp = top - (WATER_Y + 1.1 + 2.7), al0 = align(mast.x), rd = Math.hypot(mast.x - al0.x, mast.z - al0.z) - 8, dp = mast.clone().addScaledVector(dir(thD), rd), Ld = top - (profile(Math.max(0, dp.x)) + .3 + 2.7);
+    const pp = CRANE_PIPE[id]; if (pp && e.obj.visible) {   // busy: hook on the HDPE pipe end, nothing else on the hook
+      const v = pp.clone().sub(mast); ud.slew.rotation.y = Math.atan2(-v.z, v.x) - rot; ud.trol.position.x = Math.hypot(v.x, v.z);
+      const Lh = Math.max(1, top - pp.y - .6); ud.line.scale.y = Lh; ud.hook.position.y = -Lh; ud.load.visible = false; e.cyc = undefined; continue; }
     if (playing || tour.on) e.cyc = ((e.cyc || 0) + dt * .32) % (2 * Math.PI);
     const u = (e.cyc || 0) / (2 * Math.PI), sm = x => x * x * (3 - 2 * x), seg = (a, b) => sm(clamp((u - a) / (b - a), 0, 1));
     let th = thP, L = 3, load = false;   // cycle: lower empty to the barge → lift the rebar bundle → slew over the deck → lower → unhook → slew back
