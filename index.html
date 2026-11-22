@@ -883,10 +883,18 @@ function prepArea(sP, dir, zs) {   // dir = +1 towards higher chainage / -1 lowe
   for (let i = 0; i < 4; i++) bx(g, 1.2, .9, 1.0, mTimber, x0 + dir * (28.4 + (i % 2) * 1.4), .45 + Math.floor(i / 2) * .9, zc - zs * 1.3);   // anchorage crates
   bx(g, 4.0, 2.6, 2.2, mWhite, x0 + dir * 31.6, 1.3, zc + zs * 1.0); bx(g, .05, 2.2, 1.0, M.steel, x0 + dir * 29.58, 1.1, zc + zs * 1.0);   // tool container
   bx(g, 1.8, 1.2, 1.0, M.yellow, x0 + dir * 32.0, .6, zc - zs * 1.3);   // generator
-  g.visible = false; scene.add(g);
+  g.visible = false; g.userData.prep = { sP, dir }; scene.add(g);
   const at = W(sP + dir * 23, zs * 12.4, profile(sP + dir * 23) + 5);
   addLbl(L2('พื้นที่เตรียม Cable: stock ลวด · stock ท่อ HDPE · เชื่อมท่อ HDPE · อุปกรณ์สมอ', 'Cable prep area: strand stock · HDPE stock · HDPE welding · anchor parts'), at, 'cab-prep-' + sP + '_' + dir, g, .5);
   return g;
+}
+function prepClip(g, t) {   // hide prep items that would stand beyond the cast deck (cantilever tip at time t)
+  const { sP, dir } = g.userData.prep;
+  const mine = sP < 200 ? ['FT1', 'FT2'] : ['FT3', 'FT4']; let tip = 7.5;
+  for (const e of SEGS) { if (!mine.includes(e.ft) || e.dir !== dir || t < (e.cast || e.finish)) continue; tip = Math.max(tip, Math.abs(e.far - sP)); }
+  if (!g.userData.xr) { g.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(g.matrixWorld).invert(), bb = new THREE.Box3();
+    g.userData.xr = g.children.map(c => { bb.setFromObject(c); const xs = []; for (const x of [bb.min.x, bb.max.x]) for (const z of [bb.min.z, bb.max.z]) xs.push(Math.abs(new THREE.Vector3(x, bb.min.y, z).applyMatrix4(inv).x)); return Math.max(...xs); }); }
+  g.children.forEach((c, i) => c.visible = g.userData.xr[i] <= tip - .5);
 }
 const PREP = { P2: [prepArea(120, 1, 1), prepArea(120, -1, -1)], P3: [prepArea(285, -1, 1), prepArea(285, 1, -1)] };
 
@@ -925,7 +933,7 @@ function updateCables(t) {
       g.rotation.y = Math.atan2(-h.z, h.x) + Math.PI; }
   }
   for (const tag in SCAF) SCAF[tag].g.visible = t >= SCAF[tag].t0 && t < SCAF[tag].t1 && MODE !== 'blue';
-  for (const tag in PREP) PREP[tag].forEach(g => g.visible = t >= SCAF[tag].t0 && t < SCAF[tag].t1 && MODE === 'real');
+  for (const tag in PREP) PREP[tag].forEach(g => { g.visible = t >= SCAF[tag].t0 && t < SCAF[tag].t1 && MODE === 'real'; if (g.visible) prepClip(g, t); });
   const hud = document.getElementById('cabHud'); if (!hud) return;
   if (!CAB_ACTIVE.length) { hud.style.display = 'none'; return; }
   hud.style.display = 'block';
@@ -2159,7 +2167,7 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigat
   b.ondblclick = () => { pos = {}; try { localStorage.removeItem(KEY); } catch (e) {} ['cabHud', 'cabDet'].forEach(id => { const el = document.getElementById(id); if (el) ['left', 'top', 'right', 'bottom', 'transform'].forEach(k => el.style[k] = ''); }); };
   if (LANG === 'en') b.title = 'Cable step panels on/off (drag to move; double-click resets the position)';
   else b.title = 'เปิด/ปิดกล่องขั้นตอนงาน cable (ลากย้ายได้ ดับเบิลคลิกเพื่อกลับตำแหน่งเดิม)';
-  const st = document.createElement('style'); st.textContent = 'body.hudoff #cabHud,body.hudoff #cabDet{display:none!important}#cabDet .cd-h{cursor:grab}'; document.head.appendChild(st);
+  const st = document.createElement('style'); st.textContent = 'body.hudoff #cabHud,body.hudoff #cabDet{display:none!important}#cabHud{pointer-events:auto!important;user-select:none}#cabDet .cd-h{cursor:grab;user-select:none}'; document.head.appendChild(st);
 })();
 /* ---------- water reflection on/off ---------- */
 (() => {
