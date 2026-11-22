@@ -1158,9 +1158,10 @@ function deckPoly(P, y = 3.9, t = .6) {   // steel deck plate from a plan polygo
     }
   });
   const [p0, p1] = MARINE.arrow.map(([x, z]) => new THREE.Vector3(x, yW + 1.2, z));
-  o.add(member(p0, p1, .25, M.yellow));
-  [[p0, p1], [p1, p0]].forEach(([a, b]) => { const c = mesh(new THREE.ConeGeometry(.9, 3, 10), M.yellow); c.position.copy(a).lerp(b, 3 / a.distanceTo(b) / 2); c.lookAt(a); c.rotateX(Math.PI / 2); o.add(c); });
-  const lbl = label(L2('ร่องน้ำเดินเรือ ≥ 100 m', 'Navigation channel ≥ 100 m'), new THREE.Vector3((p0.x + p1.x) / 2, yW + 9, (p0.z + p1.z) / 2), '#2fd37a', 'nav', 'temp'); o.userData.navLabel = lbl; lbl.scale.multiplyScalar(1.4); gLabels.add(lbl);
+  const dimG = new THREE.Group(); o.add(dimG);   // dimension line = annotation, follows the label layer
+  dimG.add(member(p0, p1, .12, M.yellow));
+  [[p0, p1], [p1, p0]].forEach(([a, b]) => { const c = mesh(new THREE.ConeGeometry(.6, 2.4, 10), M.yellow); c.position.copy(a).lerp(b, 2.4 / a.distanceTo(b) / 2); c.lookAt(a); c.rotateX(Math.PI / 2); dimG.add(c); });
+  const lbl = label(L2('ร่องน้ำเดินเรือ ≥ 100 m', 'Navigation channel ≥ 100 m'), new THREE.Vector3((p0.x + p1.x) / 2, yW + 9, (p0.z + p1.z) / 2), '#2fd37a', 'nav', 'temp'); o.userData.navLabel = lbl; lbl.scale.multiplyScalar(1.4); gLabels.add(lbl); (function sync() { let v = lbl.visible, q = lbl.parent; while (q) { if (!q.visible) v = false; q = q.parent; } dimG.visible = v; requestAnimationFrame(sync); })();
   const navEl = addEl({ id: 'NAV-CH', name: L2('ร่องน้ำเดินเรือปลอดภัยระหว่างก่อสร้าง (กว้างขั้นต่ำ 100 m) + ทุ่นไฟ/ทุ่นกั้นเขตงาน', 'Construction-stage safety navigation channel (min. 100 m) + lit buoys / work-zone booms'), cat: 'nav', grp: L2('ร่องน้ำเดินเรือ (ระหว่างก่อสร้าง)', 'Navigation channel (construction)'), obj: o, temp: true, noShadow: true,
     start: '2023-12-15', finish: '2023-12-31', rmS: '2026-04-30', rmE: '2026-05-05', src: L2('ตามแผนผังร่องน้ำเดินเรือ (กรมเจ้าท่า) – ช่วงเวลาโดยประมาณ', 'Per the navigation channel plan (Marine Department) – period assumed'), dwg: 'Navigation Channel Plan (Presentation KK-C2 R9 p.124)' });
   LABELS.find(l => l.key === 'nav').el = navEl;
