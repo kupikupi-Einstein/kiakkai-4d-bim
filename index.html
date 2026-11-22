@@ -770,11 +770,18 @@ for (let k = 1; k <= 6; k++) { const H1 = [14.749, 19.749, 24.747, 29.745, 34.74
 // strands / nominal length per stay: "stay cable BP.xlsx" (re-design) + node table "KKB Nodes from NF_1.xlsx"
 const CAB = {"101": [35, 34.871], "102": [35, 39.607], "103": [35, 44.427], "104": [35, 49.306], "105": [35, 54.228], "106": [35, 59.183], "107": [45, 64.163], "108": [45, 69.162], "109": [45, 74.174], "110": [45, 79.199], "111": [45, 84.233], "112": [45, 89.275], "201": [35, 34.495], "202": [35, 39.201], "203": [35, 43.991], "204": [35, 48.843], "205": [35, 53.739], "206": [35, 58.669], "207": [45, 63.624], "208": [45, 68.6], "209": [45, 73.594], "210": [45, 78.6], "211": [45, 83.619], "212": [45, 88.646], "301": [55, 17.211], "302": [55, 21.984], "303": [55, 26.863], "304": [55, 31.803], "305": [55, 36.777], "306": [55, 41.774], "401": [55, 17.562], "402": [55, 22.388], "403": [55, 27.315], "404": [55, 32.296], "405": [55, 37.31], "406": [55, 42.344]};
 // phase split of each stay's 4-day window (Programme R.2: preparation → installation → stressing steps 1–3)
-const CAB_PH = [['A', 0, .25], ['B', .25, .45], ['C', .45, .55], ['D', .55, 1]];
-const PH_T = { A: ['A · เตรียมท่อ HDPE บน deck + ใส่ strand เส้นแรก (ขั้น 1–4)', 'A · Prepare HDPE pipe on deck + first strand (steps 1–4)'],
-               B: ['B · Tower crane ยกท่อ – ยึด strand แรกที่ DYNA Link บน pylon (ขั้น 5–9)', 'B · Tower crane lifts pipe – first strand wedged in DYNA Link at pylon (steps 5–9)'],
-               C: ['C · Tirfor winch ดึงท่อลง – ร้อยและดึง strand แรกด้วย ConTen (ขั้น 10–13)', 'C · Tirfor winch pulls pipe down – strand 1 threaded and stressed (steps 10–13)'],
-               D: ['D · Strand pusher ดันทีละเส้น – ดึงด้วย ConTen ให้แรงเท่ากัน (ขั้น 14–20)', 'D · Strand pusher, one strand at a time – ConTen equal force (steps 14–20)'] };
+// phase split of each stay's programme window, after the cycle-time plan (Dec 2024): preparation 2 d → installation 1 d → stressing steps
+const CAB_PH = [['P', 0, .50], ['B', .50, .56], ['C', .56, .60], ['D', .60, .75], ['S', .75, 1.0001]];
+const FIN_D = 4;   // finishing works (post-wedging, corrosion protection, caps) – days after the window; ASSUMED (manual §6: after all stressing)
+const PH_T = { P: ['P · เตรียมท่อ HDPE: เชื่อมท่อ ประกอบอุปกรณ์ ใส่ strand เส้นแรก', 'P · Prepare the sheathing: HDPE welding, components, first strand'],
+               B: ['B · Tower crane ยกท่อ – ยึด strand แรกที่ dead anchor (DYNA Link)', 'B · Tower crane lifts the pipe – first strand wedged in the DYNA Link'],
+               C: ['C · Tirfor ดึงท่อลง – ร้อย strand แรก + ConTen → reference strand', 'C · Tirfor pulls the pipe down – strand 1 threaded, ConTen → reference strand'],
+               D: ['D · ดันลวดทีละเส้น (steel bullet) – ConTen ให้แรงเท่ากับ reference', 'D · Strands pushed one by one (steel bullet) – ConTen equal force'],
+               S: ['S · ดึงตามลำดับ: Step#1 side 50 % → Step#2 main 100 % → Step#3 side 100 %', 'S · Stressing steps: #1 side 50 % → #2 main 100 % → #3 side 100 %'],
+               F: ['F · งานเก็บงาน: post-wedging · อัดสารกันสนิม · ฝาครอบ', 'F · Finishing: post-wedging · corrosion protection · caps'] };
+const isSide = c => c.no < 200 || c.no >= 400;   // 1xx = P2 side span, 4xx = P3 side span; 2xx / 3xx = main span
+const nWeld = c => Math.max(1, Math.ceil(c.L / 11.8) - 1);   // HDPE supplied in pieces up to 11.8 m (manual §3.7)
+const ssg = (u, a, b) => { const x = clamp((u - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const UPV = new THREE.Vector3(0, 1, 0);
 function between(m, p, q) { const d = q.clone().sub(p), L = Math.max(d.length(), .01); m.position.copy(p).add(q).multiplyScalar(.5); m.scale.set(1, L, 1); m.quaternion.setFromUnitVectors(UPV, d.normalize()); }
 const mPipe = new THREE.MeshStandardMaterial({ color: 0xf2b632, roughness: .5 });
@@ -783,6 +790,16 @@ const mRope = new THREE.MeshBasicMaterial({ color: 0x1f2328 }); const cyl0 = nul
 const mScaf = new THREE.MeshBasicMaterial({ color: 0x2bb3b3, wireframe: true, transparent: true, opacity: .75 });
 const cyl = r => new THREE.CylinderGeometry(r, r, 1, 10);
 const CABW = [];
+const mStrand = new THREE.MeshStandardMaterial({ color: 0x30343a, metalness: .6, roughness: .4 }), mCap = new THREE.MeshStandardMaterial({ color: 0x5c6370, metalness: .5 });
+const m50 = new THREE.MeshStandardMaterial({ color: 0xffc107, emissive: 0x6b4e00, roughness: .4 }), m100 = new THREE.MeshStandardMaterial({ color: 0x40c057, emissive: 0x0b3d17, roughness: .4 });
+function cabX(c) {
+  if (c.x) return c.x;
+  const box = (w, h, d, m) => { const o = mesh(new THREE.BoxGeometry(w, h, d), m); o.visible = false; scene.add(o); return o; };
+  const cy = (r, m) => { const o = mesh(new THREE.CylinderGeometry(r, r, 1, 12), m); o.visible = false; scene.add(o); return o; };
+  c.x = { weld: box(1.4, .9, 1.0, M.yellow), strand: cy(.035, mStrand), av: cy(.34, mCap), sleeve: cy(.3, mCap), clamp: box(.7, .5, .7, M.steel),
+          jack: box(.5, .5, 1.1, new THREE.MeshStandardMaterial({ color: 0xc62828 })), capA: cy(.42, mCap), capB: cy(.42, mCap) };
+  return c.x;
+}
 for (const no in STAYLINE) {
   const e = elById['STAY-' + no]; if (!e) continue;
   const [a, b] = STAYLINE[no], [n, L] = CAB[no] || [35, a.distanceTo(b)];
@@ -913,25 +930,50 @@ function updateCables(t) {
   for (const c of CABW) {
     const st = c.e.st, vis = c.e.obj.visible;
     c.trol.visible = false;
+    const X = cabX(c); for (const k in X) X[k].visible = false;
+    const fin = vis && st === 'done' && t < c.e.finish + FIN_D * DAY, uf = fin ? (t - c.e.finish) / (FIN_D * DAY) : 0;
+    if (vis && st === 'done' && MODE === 'real' && t >= c.e.finish + .75 * FIN_D * DAY) {   // caps at deck (Cap A) and pylon (Cap BS)
+      const d = c.b.clone().sub(c.a).normalize(); X.capA.visible = X.capB.visible = true;
+      between(X.capA, c.a.clone().addScaledVector(d, -.9), c.a.clone().addScaledVector(d, -.2)); between(X.capB, c.b.clone().addScaledVector(d, .2), c.b.clone().addScaledVector(d, .9)); }
+    if (fin) { c.pipe.visible = c.rope.visible = false; c.tube.visible = true; CAB_ACTIVE.push({ c, ph: 'F', k: c.n, u: 1 + uf }); continue; }
     if (!vis || st !== 'wip') { c.pipe.visible = c.rope.visible = false; c.tube.visible = vis; continue; }
-    const u = clamp((t - c.e.start) / (c.e.finish - c.e.start), 0, 1); let ph = 'D', pu = 1;
+    const u = clamp((t - c.e.start) / (c.e.finish - c.e.start), 0, 1); let ph = 'S', pu = 1;
     for (const [k, u0, u1] of CAB_PH) if (u >= u0 && u < u1) { ph = k; pu = (u - u0) / (u1 - u0); break; }
     c.tube.visible = false; c.pipe.visible = true; c.rope.visible = false;
     c.pipe.material = mPipeWip; c.rope.material = mRope;
-    if (ph === 'A') c.trol.visible = MODE === 'real';
-    if (ph === 'A') between(c.pipe, c.lay0.clone().setY(c.a.y + .25), c.lay1.clone().setY(c.a.y + .25));
-    else if (ph === 'B' && CRANE_PIPE[craneOf(c)]) { c.trol.visible = MODE === 'real'; between(c.pipe, c.lay0.clone().setY(c.a.y + .25), c.lay1.clone().setY(c.a.y + .25)); }   // crane busy with another pipe: this one waits on the deck
+    const lay0 = c.lay0.clone().setY(c.a.y + .25), lay1 = c.lay1.clone().setY(c.a.y + .25), real = MODE === 'real';
+    if (ph === 'P') {
+      c.trol.visible = real;
+      const g = ssg(u, .10, .34), tip = new THREE.Vector3().lerpVectors(lay0, lay1, Math.max(.02, g));   // HDPE welded piece by piece along the deck
+      if (u < .10) c.pipe.visible = false; else between(c.pipe, lay0, tip);
+      if (u >= .10 && u < .35) { X.weld.visible = real; X.weld.position.copy(tip).setY(tip.y + .2); X.weld.rotation.y = Math.atan2(-(lay1.z - lay0.z), lay1.x - lay0.x); }
+      const d = lay1.clone().sub(lay0).normalize();
+      if (u >= .36) { X.av.visible = real; between(X.av, lay0.clone().addScaledVector(d, -.2), lay0.clone().addScaledVector(d, 1.6)); }
+      if (u >= .40) { X.sleeve.visible = real; between(X.sleeve, lay1.clone().addScaledVector(d, -1.4), lay1.clone().addScaledVector(d, .3)); }
+      if (u >= .44) { X.clamp.visible = real; X.clamp.position.copy(lay1).addScaledVector(d, -.8).setY(lay1.y + .45); }
+      if (u >= .46) { X.strand.visible = real; between(X.strand, lay0.clone().addScaledVector(d, -1.1).setY(lay0.y + .05), lay1.clone().addScaledVector(d, 1.2).setY(lay1.y + .05)); }
+    }
+    else if (ph === 'B' && CRANE_PIPE[craneOf(c)]) { c.trol.visible = real; between(c.pipe, lay0, lay1); }   // crane busy with another pipe: this one waits on the deck
     else if (ph === 'B') {   // upper end hooked to the tower crane and lifted to the DYNA Link; lower end drawn to the recess pipe
       const k = smooth(pu), lo = new THREE.Vector3().lerpVectors(c.lay0, c.a, k).setY(c.a.y + .25 * (1 - k));
       const hi = new THREE.Vector3().lerpVectors(c.lay1, c.b, k); hi.y = lerp(c.a.y + .25, c.b.y, k) + Math.sin(Math.PI * k) * 6;
       between(c.pipe, lo, hi); c.rope.visible = false; CRANE_PIPE[craneOf(c)] = hi.clone();   // the tower crane's own hook holds the pipe end
     } else between(c.pipe, c.a, c.b);
-    const k = ph === 'D' ? Math.max(1, Math.ceil(c.n * pu)) : ph === 'C' ? 1 : 0;
-    CAB_ACTIVE.push({ c, ph, k }); const g4 = String(c.no)[0]; if (!act[g4] || c.e.start < act[g4].e.start) act[g4] = c;
+    if (ph === 'S') {   // force state after the cycle-time stressing steps
+      const side = isSide(c), f = side ? (u >= .917 ? 100 : u >= .75 ? 50 : 0) : (u >= .833 ? 100 : 0);
+      c.pipe.material = f === 100 ? m100 : f === 50 ? m50 : mPipeWip;
+      const own = side ? (u < .833 || u >= .917) : (u >= .833 && u < .917);   // this stay is being stressed now
+      if (own && real) { X.jack.visible = true; const d = c.b.clone().sub(c.a).normalize(); X.jack.position.copy(c.a).addScaledVector(d, -.9); X.jack.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d); }
+      c.force = f;
+    } else c.force = 0;
+    if (ph === 'C' && pu > .6 && real) { X.jack.visible = true; const d = c.b.clone().sub(c.a).normalize(); X.jack.position.copy(c.a).addScaledVector(d, -.9); X.jack.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d); }
+    if (ph === 'D' && real) { X.jack.visible = true; const d = c.b.clone().sub(c.a).normalize(); X.jack.position.copy(c.a).addScaledVector(d, -.9); X.jack.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d); }
+    const k = ph === 'S' ? c.n : ph === 'D' ? Math.max(1, Math.ceil(c.n * pu)) : ph === 'C' ? (pu > .6 ? 1 : 0) : 0;
+    CAB_ACTIVE.push({ c, ph, k, u }); const g4 = String(c.no)[0]; if (!act[g4] || c.e.start < act[g4].e.start) act[g4] = c;
   }
   for (const tag in EQUIP) {
     const c = act[tag], g = EQUIP[tag]; g.visible = !!c && MODE === 'real';
-    if (c) { const h = new THREE.Vector3(c.b.x - c.a.x, 0, c.b.z - c.a.z).normalize(); g.position.copy(c.a).addScaledVector(new THREE.Vector3(-h.z, 0, h.x), 0); g.position.addScaledVector(h, -2); g.position.y = c.a.y - .1;
+    if (c) { const h = new THREE.Vector3(c.b.x - c.a.x, 0, c.b.z - c.a.z).normalize(); g.position.copy(c.a).addScaledVector(new THREE.Vector3(-h.z, 0, h.x), -4.2);   // 4.2 m beside the stay, opposite the laid-out pipe g.position.addScaledVector(h, -2); g.position.y = c.a.y - .1;
       g.rotation.y = Math.atan2(-h.z, h.x) + Math.PI; }
   }
   for (const tag in SCAF) SCAF[tag].g.visible = t >= SCAF[tag].t0 && t < SCAF[tag].t1 && MODE !== 'blue';
@@ -940,9 +982,12 @@ function updateCables(t) {
   if (!CAB_ACTIVE.length) { hud.style.display = 'none'; return; }
   hud.style.display = 'block';
   if (typeof CAB_DETAIL !== 'undefined' && CAB_DETAIL) { const d = CAB_DETAIL; CAB_ACTIVE.sort((x, y) => (y.c.no === d.no) - (x.c.no === d.no)); }
-  hud.innerHTML = `<div class="ch-t">${L2('งานติดตั้ง Stay cable – ขั้นตอน Cable System', 'Stay-cable installation – Cable System procedure')}</div>` + CAB_ACTIVE.sort((x, y) => x.c.no - y.c.no).map(({ c, ph, k }) =>
-    `<div class="ch-r"><b>Cable ${c.no}</b> <span>${c.n} strands · ${c.L.toFixed(1)} m</span><div class="ch-p">${L2(...PH_T[ph])}</div>` +
-    `<div class="ch-bar"><i style="width:${(100 * k / c.n).toFixed(0)}%"></i></div><div class="ch-k">${L2('strand ที่ติดตั้งแล้ว', 'strands installed')} ${k}/${c.n}</div></div>`).join('');
+  hud.innerHTML = `<div class="ch-t">${L2('งานติดตั้ง Stay cable – ขั้นตอน Cable System', 'Stay-cable installation – Cable System procedure')}</div>` + CAB_ACTIVE.sort((x, y) => x.c.no - y.c.no).map(({ c, ph, k, u }) =>
+    `<div class="ch-r"><b>Cable ${c.no}</b> <span>${c.n} strands · ${c.L.toFixed(1)} m · ${isSide(c) ? L2('ฝั่ง side span', 'side span') : L2('ฝั่ง main span', 'main span')}</span><div class="ch-p">${L2(...PH_T[ph])}</div>` +
+    `<div class="ch-s">▸ ${cabSub(c, u)}</div>` +
+    (ph === 'P' ? `<div class="ch-k">${L2('รอยเชื่อม HDPE', 'HDPE welds')} ${Math.min(nWeld(c), Math.round(nWeld(c) * ssg(u, .10, .34)))}/${nWeld(c)} · ${L2('ท่อยาวไม่เกิน 11.8 m ต่อท่อน', 'pipes up to 11.8 m each')}</div>` : '') +
+    `<div class="ch-bar"><i style="width:${(100 * k / c.n).toFixed(0)}%;background:${c.force === 100 ? '#40c057' : c.force === 50 ? '#ffc107' : '#f2b632'}"></i></div>` +
+    `<div class="ch-k">${L2('strand ที่ติดตั้งแล้ว', 'strands installed')} ${k}/${c.n}${ph === 'S' || ph === 'F' ? ' · ' + L2('แรงดึง', 'force') + ' ' + (ph === 'F' ? '100' : c.force || L2('ติดตั้ง (ConTen)', 'installation (ConTen)')) + (c.force || ph === 'F' ? ' %' : '') : ''}</div></div>`).join('');
 }
 
 /* ---------- 3d. FINISHES, MEP, ARCHITECTURE ---------- */
@@ -2050,28 +2095,38 @@ addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; cam
 
 /* ---------- stay cable: ONE CABLE, STEP BY STEP (Cable System Installation Procedure Rev.01, steps 1–20) ---------- */
 const CAB_STEPS = [
-  ['A', 'ติดตั้ง lifting clamp ที่ท่อ HDPE', 'Install the lifting clamp on the HDPE pipe'],
-  ['A', 'ใส่ strand เส้นแรกในท่อ HDPE', 'Install the first strand inside the HDPE pipe'],
-  ['A', 'ติดตั้ง clamp holder ของ strand แรก', 'Install the first-strand clamp holder'],
-  ['A', 'ติดตั้ง level block 1.5 t ที่ pylon', 'Set the 1.5 t level block at the pylon'],
-  ['B', 'เกี่ยว level block เข้ากับ sling – tower crane ยกท่อ', 'Hook the level block to the sling – tower crane lifts the pipe'],
-  ['B', 'ดึง strand แรกเข้า pylon anchor (DYNA Link)', 'Pull the first strand into the pylon anchor (DYNA Link)'],
-  ['B', 'ใส่ wedge ที่ strand แรก', 'Insert the wedges on the first strand'],
-  ['B', 'เกี่ยว Tirfor winch เข้ากับ AV-clamp holder', 'Hook the Tirfor winch to the anti-vandalism clamp holder'],
-  ['B', 'สอด PE guide tube จาก recess pipe ผ่าน active anchor', 'From the recess pipe, insert the PE guide tube through the active anchor'],
-  ['C', 'ใช้ Tirfor winch ดึงท่อ HDPE ลง', 'Pull the HDPE pipe down with the Tirfor winch'],
-  ['C', 'ร้อย strand แรกผ่าน active anchor แล้วถอด guide tube', 'Thread the first strand through the active anchor, remove the guide tube'],
-  ['C', 'ติดตั้ง compression tube, wedge และ ConTen jack', 'Install the compression tube, wedges and the ConTen jack'],
-  ['C', 'ดึง strand แรก – ท่อยกพ้น deck', 'Stress the first strand – the pipe lifts off the deck'],
-  ['D', 'ป้อน strand ที่ตัดแล้วเข้า pusher + PE bullet', 'Feed a pre-cut strand into the pusher with a PE bullet'],
-  ['D', 'ดัน strand ขึ้นไปตามท่อ HDPE ถึง pylon', 'Push the strand up the HDPE pipe to the pylon'],
-  ['D', 'ถอด PE bullet ที่ฝั่ง pylon', 'Remove the PE bullet at the pylon'],
-  ['D', 'สอด strand เข้า pylon anchor และใส่ wedge', 'Insert the strand in the pylon anchor and seat the wedges'],
-  ['D', 'ร้อยที่ deck และดึง (ทำซ้ำขั้น 9, 11, 12)', 'Thread at the deck and stress (repeat steps 9, 11, 12)'],
-  ['D', 'ทำตามลำดับ strand – ตั้งค่า control unit', 'Follow the strand sequence – set the control unit'],
-  ['D', 'ทำซ้ำจนครบทุก strand – ตรวจ lift-off', 'Repeat until all strands are in – lift-off check'],
+  ['P', 'เคลือบ wedge ด้วย DENSO-Jet (แช่ 100–110 °C อย่างน้อย 15 นาที)', 'Coat the wedges in DENSO-Jet (100–110 °C bath, at least 15 min)', 0.02],
+  ['P', 'ประกอบ active anchor เข้าใน recess pipe ที่ deck – dead anchor อยู่ใน DYNA Link แล้ว', 'Pre-assemble the active anchor in the recess pipe at the deck – dead anchor already in the DYNA Link', 0.06],
+  ['P', 'ตัดท่อ HDPE (ท่อนละไม่เกิน 11.8 m) แล้วจับท่อสองท่อนเข้าเครื่องเชื่อม butt-welding', 'Cut the HDPE pipes (up to 11.8 m each) and clamp two pieces in the butt-welding machine', 0.11],
+  ['P', 'ให้ความร้อนแล้วเชื่อมหลอมต่อท่อ – {w} รอยเชื่อม จนได้ความยาว cable {L} m', 'Heat and fuse the joints – {w} welds to the cable length of {L} m', 0.27],
+  ['P', 'สวม flange ring AV บน flange tube และใส่ anti-vandalism pipe + O-ring ที่ปลายฝั่ง deck', 'Flange ring AV over the flange tube; anti-vandalism pipe + O-ring at the deck end', 0.36],
+  ['P', 'ลบมุมปลายฝั่ง pylon – สวม PE sleeve พร้อม flange ring sleeve, flange tube, rubber ring (สลัก M16)', 'Chamfer the pylon end; fit the PE sleeve with flange ring sleeve, flange tube and rubber ring (M16 bolts)', 0.4],
+  ['P', 'ติด lifting clamp ที่ปลายท่อ ผูก PE sleeve กับ clamp ด้วยเชือก', 'Attach the lifting clamp; tie the PE sleeve to the clamp with a rope', 0.44],
+  ['P', 'ดัน strand เส้นแรกเข้าในท่อ แล้วยึดด้วย first-strand holder', 'Push the first strand through the sheathing; fix it in the first-strand holder', 0.47],
+  ['P', 'ท่อวางบน trolley บน deck – ติดตั้ง level block 1.5 t ที่ pylon', 'Pipe rests on mobile trolleys on the deck; set the 1.5 t level block at the pylon', 0.49],
+  ['B', 'Tower crane เกี่ยว lifting clamp ยกปลายท่อขึ้นไปที่ DYNA Link', 'Tower crane hooks the lifting clamp and lifts the pipe end to the DYNA Link', 0.515],
+  ['B', 'Chain block 1.5 t รับน้ำหนักแทนเครน – ดัน strand แรกเข้า dead anchor ให้โผล่ 70 mm', 'The 1.5 t chain block takes the weight; first strand pushed into the dead anchor, 70 mm protrusion', 0.54],
+  ['B', 'ใส่ wedge strand แรก (ตอก 3 ครั้ง) และถอด strand holder', 'Seat the wedge on the first strand (three hammer strokes); remove the strand holder', 0.555],
+  ['C', 'เกี่ยว Tirfor winch กับ AV-clamp holder – สอด PE guide tube ผ่าน active anchor จาก recess pipe', 'Hook the Tirfor winch to the AV-clamp holder; insert the PE guide tube through the active anchor', 0.565],
+  ['C', 'Tirfor winch ดึงท่อ HDPE ลงเข้าหา recess pipe', 'The Tirfor winch pulls the HDPE pipe down to the recess pipe', 0.575],
+  ['C', 'ร้อย strand แรกผ่าน active anchor (เหลือโผล่อย่างน้อย 1,100 mm) แล้วถอด guide tube', 'Thread the first strand through the active anchor (at least 1,100 mm protrusion); remove the guide tube', 0.585],
+  ['C', 'ใส่ compression tube, wedge และ ConTen jack – ดึง strand แรก = reference strand แล้วปลดเครน', 'Compression tube, wedges, ConTen jack – stress strand 1 as the reference strand; release the crane', 0.595],
+  ['D', 'คลาย strand จาก uncoiler ตัดตามความยาว ปอก PE ที่ปลายและลบคม', 'Uncoil, cut the strand to length, peel the PE at the ends and deburr', 0.62],
+  ['D', 'Strand pusher + steel bullet (+ PE sleeve ช่วงแรก) ดันลวดขึ้นท่อถึง pylon แล้วถอด bullet', 'Pusher with steel bullet (plus PE sleeve at first) drives the strand up to the pylon; remove the bullet', 0.65],
+  ['D', 'สอด strand เข้า pylon anchor ใส่ wedge – ร้อยเข้า active anchor ที่ deck', 'Insert the strand in the pylon anchor and wedge it; thread it into the active anchor at the deck', 0.68],
+  ['D', 'ConTen: working jack + control unit บน reference strand – หยุดที่แรงเท่ากันอัตโนมัติ', 'ConTen: working jack with the control unit on the reference strand – stops automatically at equal force', 0.71],
+  ['D', 'ทำซ้ำตามลำดับ strand จนครบ {n} เส้น', 'Repeat in the strand sequence until all {n} strands are in', 0.745],
+  ['S', 'Step#1 – ดึง cable ฝั่ง side span ถึง 50 %', 'Step #1 – side-span stay stressed to 50 %', 0.79],
+  ['S', 'Step#2 – ดึง cable ฝั่ง main span ถึง 100 %', 'Step #2 – main-span stay stressed to 100 %', 0.875],
+  ['S', 'Step#3 – ดึง cable ฝั่ง side span ถึง 100 % – ตรวจ lift-off (ใช้ gradient jack ถ้ายืด < 15 mm)', 'Step #3 – side-span stay to 100 %; lift-off check (gradient jack if elongation < 15 mm)', 0.96],
+  ['F', 'Post-wedging ทุก wedge (dummy strand ที่ 55 % GUTS) – ตัดปลาย strand ตามความยาวที่กำหนด', 'Post-wedging of all wedges (dummy strands at 55 % GUTS); cut the strand protrusions', 1.15],
+  ['F', 'อัด UNIGEL เข้ารูกรวยของ anchor – activate sealing และติด wedge keeper plate', 'Inject UNIGEL into the cone holes; activate the sealing; fix the wedge keeper plate', 1.4],
+  ['F', 'สวม PE protection tube – ติดฝาครอบ Cap A ที่ deck และ Cap BS ที่ pylon แล้วอัดสารกันสนิม', 'PE protection tubes; Cap A at the deck and Cap BS at the pylon, filled with corrosion protection', 1.8],
+  ['F', 'ติดตั้ง steel bearing clamp / pipe ปิดท่อ และเก็บผิวท่อ HDPE', 'Steel bearing clamp / pipe, close the sheathing and touch up the HDPE', 1.95]
 ];
-const stepU = s => { if (s <= 4) return (s - .5) / 4 * .25; if (s <= 9) return .25 + (s - 4.5) / 5 * .2; if (s <= 13) return .45 + (s - 9.5) / 4 * .1; return .55 + (s - 13.5) / 7 * .45; };
+const NSTEP = CAB_STEPS.length, stepU = s => CAB_STEPS[clamp(s, 1, NSTEP) - 1][3];
+const stepTxt = (c, i) => (LANG === 'th' ? CAB_STEPS[i][1] : CAB_STEPS[i][2]).replace('{w}', nWeld(c)).replace('{n}', c.n).replace('{L}', c.L.toFixed(1));
+function cabSub(c, u) { let i = 0; for (let j = 0; j < NSTEP; j++) if (CAB_STEPS[j][3] - .012 <= u) i = j; return `${i + 1}/${NSTEP} ` + stepTxt(c, i); }
 let CAB_DETAIL = null;
 function cabCam(no, dur = 1.2) {
   const c = CABW.find(x => x.no === no); if (!c) return;
@@ -2081,12 +2136,12 @@ function cabCam(no, dur = 1.2) {
 }
 function cabStep(no, step, cam = false) {
   const c = CABW.find(x => x.no === no); if (!c) return;
-  step = clamp(step, 1, 20); CAB_DETAIL = { no, step };
-  setNow(c.e.start + stepU(step) * (c.e.finish - c.e.start));
+  step = clamp(step, 1, NSTEP); CAB_DETAIL = { no, step };
+  const su = stepU(step); setNow(su <= 1 ? c.e.start + su * (c.e.finish - c.e.start) : c.e.finish + (su - 1) * FIN_D * DAY);
   if (cam) cabCam(no);
   const p = document.getElementById('cabDet');
-  p.querySelector('.cd-s').textContent = `${L2('ขั้นที่', 'Step')} ${step}/20 · Phase ${CAB_STEPS[step - 1][0]}`;
-  p.querySelector('.cd-t').textContent = LANG === 'th' ? CAB_STEPS[step - 1][1] : CAB_STEPS[step - 1][2];
+  p.querySelector('.cd-s').textContent = `${L2('ขั้นที่', 'Step')} ${step}/${NSTEP} · Phase ${CAB_STEPS[step - 1][0]}${CAB_STEPS[step - 1][0] === 'F' ? L2(' (วันที่สมมติ)', ' (date assumed)') : ''}`;
+  p.querySelector('.cd-t').textContent = stepTxt(c, step - 1);
   p.querySelector('.cd-c').value = no;
 }
 (() => {
@@ -2105,8 +2160,8 @@ function cabStep(no, step, cam = false) {
     if (a === 'next') cabStep(d.no, d.step + 1, d.step === 0);
     if (a === 'cam') cabCam(d.no);
     if (a === 'off') { CAB_DETAIL = null; p.classList.remove('open'); clearInterval(timer); timer = null; return; }
-    if (a === 'play') { if (timer) { clearInterval(timer); timer = null; return; } cabStep(d.no, d.step >= 20 || d.step === 0 ? 1 : d.step, true);
-      timer = setInterval(() => { const q = cur(); if (q.step >= 20) { clearInterval(timer); timer = null; return; } cabStep(q.no, q.step + 1); }, 2200); }
+    if (a === 'play') { if (timer) { clearInterval(timer); timer = null; return; } cabStep(d.no, d.step >= NSTEP || d.step === 0 ? 1 : d.step, true);
+      timer = setInterval(() => { const q = cur(); if (q.step >= NSTEP) { clearInterval(timer); timer = null; return; } cabStep(q.no, q.step + 1); }, 2200); }
     p.classList.add('open');
   });
   const bt = document.createElement('button'); bt.id = 'btnCabDet'; bt.innerHTML = '🧵<span class="lbl"> ' + L2('Cable ทีละขั้น', 'Cable step-by-step') + '</span>';
@@ -2187,7 +2242,7 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigat
 font:13px/1.35 'Segoe UI',Tahoma,sans-serif;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,138,31,.6);min-width:360px;max-width:560px;pointer-events:none}
 #cabHud .ch-t{color:#ff8a1f;font-weight:700;margin-bottom:4px}#cabHud .ch-r{margin:4px 0 6px}#cabHud .ch-r span{color:#bbb;font-size:12px}
 #cabHud .ch-p{font-size:12.5px;margin:2px 0}#cabHud .ch-bar{height:6px;background:#3a3f45;border-radius:3px;overflow:hidden}#cabHud .ch-bar i{display:block;height:100%;background:#f2b632}
-#cabHud .ch-k{font-size:11px;color:#ccc}body.noui #cabHud{top:auto;bottom:118px;left:16px;transform:none}</style><div id="cabHud"></div>
+#cabHud .ch-k{font-size:11px;color:#ccc}#cabHud .ch-s{font-size:12px;color:#ffd8a8;margin:1px 0 3px}body.noui #cabHud{top:auto;bottom:118px;left:16px;transform:none}</style><div id="cabHud"></div>
 <style>#cabDet{position:fixed;right:330px;top:74px;z-index:31;display:none;background:rgba(18,22,26,.9);color:#fff;font:13px/1.35 'Segoe UI',Tahoma,sans-serif;
 padding:10px 12px;border-radius:10px;border:1px solid #ff8a1f;width:300px}#cabDet.open{display:block}#cabDet .cd-h{color:#ff8a1f;font-weight:700;margin-bottom:6px}
 #cabDet .cd-r{margin:4px 0;display:flex;gap:4px}#cabDet select{flex:1;background:#2a3036;color:#fff;border:1px solid #555;border-radius:6px;padding:3px}
