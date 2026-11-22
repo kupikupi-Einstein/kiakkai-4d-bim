@@ -142,7 +142,7 @@ body.hideL #left{display:none!important} body.hideR #right{display:none!importan
       <button data-t="day">☀ Day</button><button data-t="sunset">🌇 Sunset</button><button data-t="night">🌙 Night</button><button data-t="bim">▦ BIM 4D</button><button data-t="blue">⌗ Blueprint</button>
     </div>
     <select id="view" title="มุมกล้อง">
-      <option value="overview">มุมมอง: ภาพรวม</option><option value="p2">Pylon P2</option><option value="p3">Pylon P3</option><option value="ft">Form Traveller</option><option value="nav">ร่องน้ำเดินเรือ / แพลตฟอร์ม</option><option value="land">P1→P4 (รัฐสภา/วัดจุฬามณี)</option><option value="under">ใต้สะพาน</option><option value="river">ระดับแม่น้ำ</option><option value="top">มุมบน (Plan)</option>
+      <option value="overview">มุมมอง: ภาพรวม</option><option value="p2">Pylon P2</option><option value="p3">Pylon P3</option><option value="ft">Form Traveller</option><option value="cable">Stay cable – P2</option><option value="cable3">Stay cable – P3</option><option value="scaf">Pylon scaffolding – P2</option><option value="prep">Cable prep area – P2</option><option value="nav">ร่องน้ำเดินเรือ / แพลตฟอร์ม</option><option value="land">P1→P4 (รัฐสภา/วัดจุฬามณี)</option><option value="under">ใต้สะพาน</option><option value="river">ระดับแม่น้ำ</option><option value="top">มุมบน (Plan)</option>
     </select>
     <button id="btnTour">🚁<span class="lbl"> Drone Tour</span></button>
     <button id="btnFly">🎮<span class="lbl"> บินโดรนเอง</span></button>
@@ -196,9 +196,9 @@ body.hideL #left{display:none!important} body.hideR #right{display:none!importan
 <div id="bottom" class="glass">
   <div id="tlrow">
     <button id="btnPlay">▶ เล่น 4D</button>
-    <select id="speed"><option value="2">2 วัน/วินาที</option><option value="7" selected>1 สัปดาห์/วินาที</option><option value="15">15 วัน/วินาที</option><option value="30">1 เดือน/วินาที</option></select>
+    <select id="speed" title="ความเร็วการเล่น 4D: เวลาตามแผนต่อ 1 วินาทีจริง"><option value="0.020833" data-en="30 min/second">30 นาที/วินาที</option><option value="0.041667" data-en="1 hour/second">1 ชม./วินาที</option><option value="0.125000" data-en="3 hours/second">3 ชม./วินาที</option><option value="0.250000" data-en="6 hours/second">6 ชม./วินาที</option><option value="0.500000" data-en="12 hours/second">12 ชม./วินาที</option><option value="1.000000" data-en="1 day/second">1 วัน/วินาที</option><option value="2.000000" data-en="2 days/second">2 วัน/วินาที</option><option value="7.000000" data-en="1 week/second" selected>1 สัปดาห์/วินาที</option><option value="15.000000" data-en="15 days/second">15 วัน/วินาที</option><option value="30.000000" data-en="1 month/second">1 เดือน/วินาที</option><option value="7" id="spdC" data-en="Custom…">กำหนดเอง…</option></select><span id="spdBox" style="display:none;align-items:center;gap:4px;white-space:nowrap"><input id="spdN" type="number" min="0.5" step="0.5" value="1" style="width:58px"><select id="spdU"><option value="0.000694444">นาที</option><option value="0.041666667" selected>ชม.</option><option value="1">วัน</option><option value="7">สัปดาห์</option></select><span id="spdPer">/วินาที</span></span>
     <div id="tlwrap"><input type="range" id="slider" min="0" max="1000" value="0"></div>
-    <b id="dateSmall" style="min-width:96px;text-align:right"></b>
+    <b id="dateSmall" style="min-width:132px;text-align:right"></b>
   </div>
   <div id="ticks"></div>
 </div>
@@ -765,6 +765,176 @@ for (let k = 1; k <= 6; k++) { const H1 = [14.749, 19.749, 24.747, 29.745, 34.74
   addEl({ id: 'DECO-' + n, name: `Decoration cable ${n} (sag ${sag.toFixed(3)} m)`, cat: 'deco', grp: L2('สถาปัตยกรรม & ตกแต่ง', 'Architecture & decoration'), obj: o, start: '2026-03-01', finish: '2026-03-31', src: 'Assumed', dwg: 'M-303 / M-416 / M-472 · Presentation p.162–166' });
 });
 
+
+/* ---------- 3c+. STAY CABLE INSTALLATION 4D – Cable System Installation Procedure Rev.01 (12-Feb-2025) ---------- */
+// strands / nominal length per stay: "stay cable BP.xlsx" (re-design) + node table "KKB Nodes from NF_1.xlsx"
+const CAB = {"101": [35, 34.871], "102": [35, 39.607], "103": [35, 44.427], "104": [35, 49.306], "105": [35, 54.228], "106": [35, 59.183], "107": [45, 64.163], "108": [45, 69.162], "109": [45, 74.174], "110": [45, 79.199], "111": [45, 84.233], "112": [45, 89.275], "201": [35, 34.495], "202": [35, 39.201], "203": [35, 43.991], "204": [35, 48.843], "205": [35, 53.739], "206": [35, 58.669], "207": [45, 63.624], "208": [45, 68.6], "209": [45, 73.594], "210": [45, 78.6], "211": [45, 83.619], "212": [45, 88.646], "301": [55, 17.211], "302": [55, 21.984], "303": [55, 26.863], "304": [55, 31.803], "305": [55, 36.777], "306": [55, 41.774], "401": [55, 17.562], "402": [55, 22.388], "403": [55, 27.315], "404": [55, 32.296], "405": [55, 37.31], "406": [55, 42.344]};
+// phase split of each stay's 4-day window (Programme R.2: preparation → installation → stressing steps 1–3)
+const CAB_PH = [['A', 0, .25], ['B', .25, .45], ['C', .45, .55], ['D', .55, 1]];
+const PH_T = { A: ['A · เตรียมท่อ HDPE บน deck + ใส่ strand เส้นแรก (ขั้น 1–4)', 'A · Prepare HDPE pipe on deck + first strand (steps 1–4)'],
+               B: ['B · Tower crane ยกท่อ – ยึด strand แรกที่ DYNA Link บน pylon (ขั้น 5–9)', 'B · Tower crane lifts pipe – first strand wedged in DYNA Link at pylon (steps 5–9)'],
+               C: ['C · Tirfor winch ดึงท่อลง – ร้อยและดึง strand แรกด้วย ConTen (ขั้น 10–13)', 'C · Tirfor winch pulls pipe down – strand 1 threaded and stressed (steps 10–13)'],
+               D: ['D · Strand pusher ดันทีละเส้น – ดึงด้วย ConTen ให้แรงเท่ากัน (ขั้น 14–20)', 'D · Strand pusher, one strand at a time – ConTen equal force (steps 14–20)'] };
+const UPV = new THREE.Vector3(0, 1, 0);
+function between(m, p, q) { const d = q.clone().sub(p), L = Math.max(d.length(), .01); m.position.copy(p).add(q).multiplyScalar(.5); m.scale.set(1, L, 1); m.quaternion.setFromUnitVectors(UPV, d.normalize()); }
+const mPipe = new THREE.MeshStandardMaterial({ color: 0xf2b632, roughness: .5 });
+const mPipeWip = new THREE.MeshStandardMaterial({ color: 0xff7a00, emissive: 0x7a2c00, roughness: .4 });
+const mRope = new THREE.MeshBasicMaterial({ color: 0x1f2328 }); const cyl0 = null;
+const mScaf = new THREE.MeshBasicMaterial({ color: 0x2bb3b3, wireframe: true, transparent: true, opacity: .75 });
+const cyl = r => new THREE.CylinderGeometry(r, r, 1, 10);
+const CABW = [];
+for (const no in STAYLINE) {
+  const e = elById['STAY-' + no]; if (!e) continue;
+  const [a, b] = STAYLINE[no], [n, L] = CAB[no] || [35, a.distanceTo(b)];
+  const h = new THREE.Vector3(b.x - a.x, 0, b.z - a.z).normalize(), side = new THREE.Vector3(-h.z, 0, h.x);
+  const lay0 = a.clone().addScaledVector(side, 8.6), lay1 = lay0.clone().addScaledVector(h, Math.min(L, a.distanceTo(new THREE.Vector3(b.x, a.y, b.z)) - 2));
+  const r = n <= 35 ? .2 : n <= 45 ? .23 : .26;
+  const pipe = mesh(cyl(r), mPipe), rope = mesh(cyl(.035), mRope);
+  [pipe, rope].forEach(m => { m.userData.base = m.material; m.userData.el = e; m.visible = false; e.obj.add(m); });
+  CABW.push({ no: +no, e, a, b, n, L, lay0, lay1, pipe, rope, tube: e.obj.children[0], tag: +no < 300 ? 'P2' : 'P3' });
+}
+// deck equipment set per pylon (Cable System sheets 2, 4, 5): uncoiler, cutting & peeling table, strand pusher, pump, Tirfor winch
+function equipSet() {
+  const g = new THREE.Group(), add = (geo, mat, x, y, z) => { const m = mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
+  add(new THREE.CylinderGeometry(1.1, 1.1, 1.1, 20), new THREE.MeshStandardMaterial({ color: 0x3f51b5, metalness: .4 }), -16, .75, 0);
+  add(new THREE.BoxGeometry(2.6, .25, 2.6), M.steel, -16, .12, 0);
+  add(new THREE.BoxGeometry(4.6, .8, .9), M.steel, -11, .5, 0);
+  add(new THREE.BoxGeometry(1.3, 1.2, 1.1), new THREE.MeshStandardMaterial({ color: 0xb5651d }), -2.2, .6, 0);
+  add(new THREE.BoxGeometry(.9, .9, .7), M.yellow, -6.5, .45, -1.4);
+  add(new THREE.BoxGeometry(.7, .6, .5), M.dark, -4.2, .3, 1.2);
+  return g;
+}
+const EQUIP = {}; for (const tag of ['1', '2', '3', '4']) { EQUIP[tag] = equipSet(); EQUIP[tag].scale.setScalar(1.25); EQUIP[tag].visible = false; scene.add(EQUIP[tag]); }
+// ---- shared builders: instanced steel tubes, boxes
+const mTube = new THREE.MeshStandardMaterial({ color: 0x1f9e9e, metalness: .5, roughness: .45 });
+const mDeckPl = new THREE.MeshStandardMaterial({ color: 0x5f6b73, metalness: .4, roughness: .7 });
+const mToe = new THREE.MeshStandardMaterial({ color: 0xf2b632, roughness: .6 });
+const mTimber = new THREE.MeshStandardMaterial({ color: 0x8a6a4a, roughness: .9 });
+const mCoil = new THREE.MeshStandardMaterial({ color: 0x8c96a0, metalness: .75, roughness: .35 });
+const mWrap = new THREE.MeshStandardMaterial({ color: 0x2c5aa0, roughness: .6 });
+const mZone = new THREE.MeshBasicMaterial({ color: 0xff7a00 });
+const mWhite = new THREE.MeshStandardMaterial({ color: 0xe8ecef, roughness: .7 });
+function tubes(segs, r = .03, mat = mTube) {   // segs: [[Vector3, Vector3], ...] in the group's local frame
+  const g = new THREE.CylinderGeometry(r, r, 1, 6), im = new THREE.InstancedMesh(g, mat, segs.length), o = new THREE.Object3D();
+  segs.forEach(([p, q], i) => { between(o, p, q); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
+  im.castShadow = true; im.userData.noPick = true; return im;
+}
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+function bx(g, w, h, d, mat, x, y, z) { const m = mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; g.add(m); return m; }
+function localBoxOf(e) {   // pylon lift bounding box in the lift's own frame (x along bridge, z across, y from deck)
+  const o = e.obj; o.updateMatrixWorld(true); const inv = o.matrixWorld.clone().invert(), b = new THREE.Box3();
+  o.traverse(m => { if (m.isMesh && m.geometry) { m.geometry.computeBoundingBox(); b.union(m.geometry.boundingBox.clone().applyMatrix4(inv.clone().multiply(m.matrixWorld))); } });
+  return b;
+}
+function addLbl(txt, pos, key, holder, k = .55) { const l = label(txt, pos, '#ff8a1f', key, 'temp'); l.scale.multiplyScalar(k); gLabels.add(l); LABELS.at(-1).el = { obj: holder }; return l; }
+
+// ---- pylon access scaffolding (Cable System sheets 2-3): frame scaffold on both cable faces, 1.8 m bays x 1.5 m deep x 2.0 m lifts,
+//      X-bracing on the outer face, decked working platforms with guardrails + toe boards at the DYNA Link windows, ladder bay
+const SCAF = {};
+for (const [tag, sP] of [['P2', 120], ['P3', 285]]) {
+  const cs = CABW.filter(c => c.tag === tag), deckY = profile(sP), lifts = pylonTopReady[tag];
+  const yA0 = Math.min(...cs.map(c => c.b.y)), yA1 = Math.max(...cs.map(c => c.b.y));
+  const kick = lifts[0].y1, top = yA1 + 2.6;
+  let face = 0; for (const e of lifts.slice(1)) { const b = localBoxOf(e); if (b.min.y + deckY < top) face = Math.max(face, b.max.x, -b.min.x); }
+  const g = new THREE.Group(); g.position.copy(W(sP, 0, 0)); g.rotation.y = -align(sP).a;
+  const segs = [], Zs = [-2.7, -0.9, 0.9, 2.7], dep = 1.5, H = [];
+  for (let y = kick; y <= top + .01; y += 2.0) H.push(y);
+  for (const sd of [-1, 1]) {
+    const xi = sd * (face + .35), xo = sd * (face + .35 + dep);
+    for (const z of Zs) for (const x of [xi, xo]) segs.push([V(x, kick, z), V(x, H.at(-1) + 1.1, z)]);
+    H.forEach((y, k) => {
+      for (const x of [xi, xo]) segs.push([V(x, y, Zs[0]), V(x, y, Zs[3])]);
+      for (const z of Zs) segs.push([V(xi, y, z), V(xo, y, z)]);
+      if (k < H.length - 1) for (let j = 0; j < 3; j++) { const [z0, z1] = (k + j) % 2 ? [Zs[j], Zs[j + 1]] : [Zs[j + 1], Zs[j]]; segs.push([V(xo, y, z0), V(xo, H[k + 1], z1)]); }
+    });
+    for (let y = kick + .4; y < H.at(-1); y += .4) segs.push([V(xi + sd * .3, y, Zs[0] + .25), V(xi + sd * 1.2, y, Zs[0] + .25)]);   // ladder rungs in the end bay
+    H.filter(y => y >= yA0 - 2.2 && y <= yA1 + .6).forEach(y => {   // working platforms at the anchor windows
+      bx(g, dep + .35, .06, Zs[3] - Zs[0], mDeckPl, sd * (face + .35 + dep / 2 - .17), y + .03, 0);
+      bx(g, .03, .15, Zs[3] - Zs[0], mToe, xo, y + .12, 0);
+      for (const yy of [.5, 1.0]) { segs.push([V(xo, y + yy, Zs[0]), V(xo, y + yy, Zs[3])]); for (const z of [Zs[0], Zs[3]]) segs.push([V(xi, y + yy, z), V(xo, y + yy, z)]); }
+    });
+    bx(g, dep + .6, .3, Zs[3] - Zs[0] + .6, mTimber, sd * (face + .35 + dep / 2), kick + .15, 0);   // sole plates
+  }
+  g.add(tubes(segs)); g.visible = false; scene.add(g);
+  addLbl(L2('นั่งร้าน + Working platform ที่ช่อง DYNA Link', 'Pylon scaffolding + working platforms at DYNA Link windows'), W(sP, 0, top + 4), 'cab-scaf-' + tag, g);
+  SCAF[tag] = { g, t0: Math.min(...cs.map(c => c.e.start)) - 10 * DAY, t1: Math.max(...cs.map(c => c.e.finish)) + 5 * DAY };
+}
+
+// ---- cable preparation and stock areas on the deck next to each pylon (Cable System deck layout: stock, cutting, HDPE welding, pre-assembled cables)
+function prepArea(sP, dir, zs) {   // dir = +1 towards higher chainage / -1 lower; zs = deck edge (+1 / -1)
+  const g = new THREE.Group(); g.position.copy(W(sP, 0, profile(sP + dir * 22) + .05)); g.rotation.y = -align(sP).a;
+  const x0 = dir * 9, x1 = dir * 36, zc = zs * 12.4, zw = 5.0, xm = (x0 + x1) / 2, L = Math.abs(x1 - x0);
+  for (const [w, d, x, z] of [[L, .12, xm, zc - zw / 2], [L, .12, xm, zc + zw / 2], [.12, zw, x0, zc], [.12, zw, x1, zc]]) bx(g, w, .03, d, mZone, x, .02, z);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) {   // strand coil stock: 2 x 3 coils on pallets
+    const x = x0 + dir * (2.2 + i * 2.4), z = zc - zs * (1.4 - j * 2.4);
+    bx(g, 2.0, .15, 2.0, mTimber, x, .08, z);
+    const c = mesh(new THREE.CylinderGeometry(.85, .85, .75, 24), mCoil); c.position.set(x, .53, z); c.castShadow = true; g.add(c);
+    const w = mesh(new THREE.CylinderGeometry(.87, .87, .3, 24), mWrap); w.position.set(x, .53, z); g.add(w);
+  }
+  const hx = x0 + dir * 14.5;   // HDPE pipe stock: 3 layers of 12 m pipes on timber sleepers
+  for (const dx of [-5, 0, 5]) bx(g, .25, .15, 2.4, mTimber, hx + dx, .08, zc);
+  for (let l = 0; l < 3; l++) for (let k = 0; k < 6 - l; k++) { const p = mesh(new THREE.CylinderGeometry(.13, .13, 12, 10), mPipe); p.rotation.z = Math.PI / 2; p.position.set(hx, .3 + l * .24, zc - 1.0 + k * .27 + l * .13); p.castShadow = true; g.add(p); }
+  const wx = x0 + dir * 24.5;   // HDPE butt-welding shelter: posts + roof, welding machine with two clamps, pipe in the clamps
+  for (const [dx, dz] of [[-3, -1.6], [3, -1.6], [-3, 1.6], [3, 1.6]]) bx(g, .1, 2.6, .1, mTube, wx + dx, 1.3, zc + dz);
+  bx(g, 6.4, .08, 3.6, new THREE.MeshStandardMaterial({ color: 0x2f6fa8, transparent: true, opacity: .85 }), wx, 2.65, zc);
+  bx(g, 1.4, .8, .9, M.yellow, wx, .4, zc + .9);
+  for (const dx of [-.5, .5]) { const r = mesh(new THREE.TorusGeometry(.28, .06, 8, 16), M.steel); r.position.set(wx + dx, .9, zc); r.rotation.y = Math.PI / 2; g.add(r); }
+  const wp = mesh(new THREE.CylinderGeometry(.13, .13, 5.5, 10), mPipe); wp.rotation.z = Math.PI / 2; wp.position.set(wx, .9, zc); g.add(wp);
+  for (let i = 0; i < 4; i++) bx(g, 1.2, .9, 1.0, mTimber, x0 + dir * (28.4 + (i % 2) * 1.4), .45 + Math.floor(i / 2) * .9, zc - zs * 1.3);   // anchorage crates
+  bx(g, 4.0, 2.6, 2.2, mWhite, x0 + dir * 31.6, 1.3, zc + zs * 1.0); bx(g, .05, 2.2, 1.0, M.steel, x0 + dir * 29.58, 1.1, zc + zs * 1.0);   // tool container
+  bx(g, 1.8, 1.2, 1.0, M.yellow, x0 + dir * 32.0, .6, zc - zs * 1.3);   // generator
+  g.visible = false; scene.add(g);
+  const at = W(sP + dir * 23, zs * 12.4, profile(sP + dir * 23) + 5);
+  addLbl(L2('พื้นที่เตรียม Cable: stock ลวด · stock ท่อ HDPE · เชื่อมท่อ HDPE · อุปกรณ์สมอ', 'Cable prep area: strand stock · HDPE stock · HDPE welding · anchor parts'), at, 'cab-prep-' + sP + '_' + dir, g, .5);
+  return g;
+}
+const PREP = { P2: [prepArea(120, 1, 1), prepArea(120, -1, -1)], P3: [prepArea(285, -1, 1), prepArea(285, 1, -1)] };
+
+// ---- pipe trolleys under the pre-assembled cable while it lies on the deck (phase A)
+for (const c of CABW) {
+  const n = Math.max(3, Math.floor(c.lay0.distanceTo(c.lay1) / 6)), tg = new THREE.Group();
+  for (let i = 0; i <= n; i++) { const p = new THREE.Vector3().lerpVectors(c.lay0, c.lay1, i / n); const t = mesh(new THREE.BoxGeometry(.6, .22, .5), M.steel); t.position.set(p.x, c.a.y + .11, p.z); tg.add(t); }
+  tg.visible = false; scene.add(tg); c.trol = tg;
+}
+const smooth = u => u * u * (3 - 2 * u);
+let CAB_ACTIVE = []; window.__CAB = () => CABW.map(c => [c.no, iso(c.e.start), iso(c.e.finish)]);
+function updateCables(t) {
+  CAB_ACTIVE = [];
+  const act = { 1: null, 2: null, 3: null, 4: null };
+  for (const c of CABW) {
+    const st = c.e.st, vis = c.e.obj.visible;
+    c.trol.visible = false;
+    if (!vis || st !== 'wip') { c.pipe.visible = c.rope.visible = false; c.tube.visible = vis; continue; }
+    const u = clamp((t - c.e.start) / (c.e.finish - c.e.start), 0, 1); let ph = 'D', pu = 1;
+    for (const [k, u0, u1] of CAB_PH) if (u >= u0 && u < u1) { ph = k; pu = (u - u0) / (u1 - u0); break; }
+    c.tube.visible = false; c.pipe.visible = true; c.rope.visible = false;
+    c.pipe.material = mPipeWip; c.rope.material = mRope;
+    if (ph === 'A') c.trol.visible = MODE === 'real';
+    if (ph === 'A') between(c.pipe, c.lay0.clone().setY(c.a.y + .25), c.lay1.clone().setY(c.a.y + .25));
+    else if (ph === 'B') {   // upper end hooked to the tower crane and lifted to the DYNA Link; lower end drawn to the recess pipe
+      const k = smooth(pu), lo = new THREE.Vector3().lerpVectors(c.lay0, c.a, k).setY(c.a.y + .25 * (1 - k));
+      const hi = new THREE.Vector3().lerpVectors(c.lay1, c.b, k); hi.y = lerp(c.a.y + .25, c.b.y, k) + Math.sin(Math.PI * k) * 6;
+      between(c.pipe, lo, hi); c.rope.visible = true; between(c.rope, hi, hi.clone().setY(hi.y + 26));
+    } else between(c.pipe, c.a, c.b);
+    const k = ph === 'D' ? Math.max(1, Math.ceil(c.n * pu)) : ph === 'C' ? 1 : 0;
+    CAB_ACTIVE.push({ c, ph, k }); const g4 = String(c.no)[0]; if (!act[g4] || c.e.start < act[g4].e.start) act[g4] = c;
+  }
+  for (const tag in EQUIP) {
+    const c = act[tag], g = EQUIP[tag]; g.visible = !!c && MODE === 'real';
+    if (c) { const h = new THREE.Vector3(c.b.x - c.a.x, 0, c.b.z - c.a.z).normalize(); g.position.copy(c.a).addScaledVector(new THREE.Vector3(-h.z, 0, h.x), 0); g.position.addScaledVector(h, -2); g.position.y = c.a.y - .1;
+      g.rotation.y = Math.atan2(-h.z, h.x) + Math.PI; }
+  }
+  for (const tag in SCAF) SCAF[tag].g.visible = t >= SCAF[tag].t0 && t < SCAF[tag].t1 && MODE !== 'blue';
+  for (const tag in PREP) PREP[tag].forEach(g => g.visible = t >= SCAF[tag].t0 && t < SCAF[tag].t1 && MODE === 'real');
+  const hud = document.getElementById('cabHud'); if (!hud) return;
+  if (!CAB_ACTIVE.length) { hud.style.display = 'none'; return; }
+  hud.style.display = 'block';
+  if (typeof CAB_DETAIL !== 'undefined' && CAB_DETAIL) { const d = CAB_DETAIL; CAB_ACTIVE.sort((x, y) => (y.c.no === d.no) - (x.c.no === d.no)); }
+  hud.innerHTML = `<div class="ch-t">${L2('งานติดตั้ง Stay cable – ขั้นตอน Cable System', 'Stay-cable installation – Cable System procedure')}</div>` + CAB_ACTIVE.sort((x, y) => x.c.no - y.c.no).map(({ c, ph, k }) =>
+    `<div class="ch-r"><b>Cable ${c.no}</b> <span>${c.n} strands · ${c.L.toFixed(1)} m</span><div class="ch-p">${L2(...PH_T[ph])}</div>` +
+    `<div class="ch-bar"><i style="width:${(100 * k / c.n).toFixed(0)}%"></i></div><div class="ch-k">${L2('strand ที่ติดตั้งแล้ว', 'strands installed')} ${k}/${c.n}</div></div>`).join('');
+}
+
 /* ---------- 3d. FINISHES, MEP, ARCHITECTURE ---------- */
 const SPANS = [['P1–P2', 0, 120, '2025-12-01', '2026-03-31'], ['P2–P3', 120, 285, '2026-01-05', '2026-04-15'], ['P3–E1′', 285, NARROW_S, '2025-12-15', '2026-03-31'], ['F1′–P4', NARROW_S, 356.766, '2025-12-15', '2026-03-31']];
 function thaiLamp(s, sd, hw) {   // AR sheet "แบบขยายเสาไฟฟ้าแสงสว่าง" – curved swan-neck single arm
@@ -1027,7 +1197,7 @@ function updateCranes(t, dt) {
 }
 function refresh() {
   for (const e of ELS) applyLook(e, NOW);
-  updateFT(NOW); applyLabels(); updateUI();
+  updateFT(NOW); updateCables(NOW); applyLabels(); updateUI();
 }
 
 /* =====================================================================
@@ -1359,7 +1529,7 @@ const snd = new Sound();
    ===================================================================== */
 const VIEWS = {
   overview: [[-70, 92, 215], [182, 8, -10]], p2: [[58, 42, 78], [120, 26, 0]], p3: [[338, 32, 62], [285, 19, 0]],
-  ft: [[188, 26, -46], [214, 12, 0]], nav: [[200, 230, 150], [190, 0, -5]], land: [[-110, 70, 10], [420, 20, 30]], under: [[205, 4, 44], [190, 9, 0]], river: [[150, 2.4, 260], [180, 12, 0]], top: [[178, 520, 1], [178, 0, 0]],
+  ft: [[188, 26, -46], [214, 12, 0]], cable: [[146, 62, 64], [162, 15, 2]], scaf: [[100, 36, 22], [119, 31, 0]], prep: [[142, 30, 44], [146, 14, 10]], cable3: [[268, 46, 52], [286, 13, 0]], nav: [[200, 230, 150], [190, 0, -5]], land: [[-110, 70, 10], [420, 20, 30]], under: [[205, 4, 44], [190, 9, 0]], river: [[150, 2.4, 260], [180, 12, 0]], top: [[178, 520, 1], [178, 0, 0]],
 };
 let camAnim = null;
 function goView(name, dur = 1.6) { const v = VIEWS[name]; if (!v) return; camAnim = { p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(...v[0]), t1: new THREE.Vector3(...v[1]), u: 0, dur }; }
@@ -1442,6 +1612,16 @@ const STEPS = [
   { d: '2026-05-15', dw: '—', t: ['Load test · ตรวจรับ · เปิดใช้งาน', 'Load test · acceptance · opening'],
     b: [['Static/Dynamic load test, ตรวจ Bearing/Expansion joint', 'Static/dynamic load test, bearing and expansion-joint inspection'], ['เปิดการจราจร (สมมติ 15/06/2026)', 'Open to traffic (assumed 15/06/2026)']] },
 ].map(s => ({ d: s.d, dw: s.dw, t: L2(...s.t), b: s.b.map(x => L2(...x)), t0: D(s.d) })).sort((a, b) => a.t0 - b.t0);
+
+{ const st = ELS.filter(e => e.cat === 'stay'), t0 = Math.min(...st.map(e => e.start));
+  STEPS.push({ d: iso(t0), dw: 'Cable System Installation Procedure of Stay Cable Rev.01 (12-Feb-2025)', t0,
+    t: L2('ติดตั้ง Stay cable ตามขั้นตอน Cable System – Phase A–D (20 ขั้นตอน)', 'Stay-cable installation – Cable System procedure, phases A–D (20 steps)'),
+    b: [['A: เชื่อมท่อ HDPE บน deck ใส่ strand แรก ติด lifting clamp / level block 1.5 t', 'A: weld the HDPE pipe on deck, insert the first strand, lifting clamp, 1.5 t level block'],
+        ['B: Tower crane ยกท่อ – ยึด strand แรกด้วย wedge ที่ DYNA Link (pylon)', 'B: tower crane lifts the pipe – first strand wedged in the DYNA Link anchor box'],
+        ['C: Tirfor winch ดึงท่อเข้า recess pipe – ร้อยและดึง strand แรกด้วย ConTen jack', 'C: Tirfor winch pulls the pipe to the recess pipe – strand 1 stressed with the ConTen jack'],
+        ['D: Strand pusher ดันทีละเส้น (PE bullet) – ดึงด้วย ConTen ให้แรงเท่ากับ strand อ้างอิง', 'D: strand pusher with PE bullet, one strand at a time – ConTen matches the reference strand'],
+        ['ลำดับดึงต่อ segment: Side span 50% → Main span 100% → Side span 100% · ตรวจ lift-off', 'Per segment: side span 50 % → main span 100 % → side span 100 % · lift-off check']].map(x => L2(...x)) });
+  STEPS.sort((a, b) => a.t0 - b.t0); }
 const CYCLE = [['Launching Form Traveller & set up', 1, 'D1'], ['Rebar bottom slab', 2, 'D2–D3'], ['Rebar outer web', 1, 'D3 (FF)'], ['Rebar inner web', 1, 'D4'], ['Inner form', 1, 'D5'], ['Rebar top slab', 4, 'D6–D9'], ['Tendon duct (Trans. & Long.)', 1, 'D7 (SS+1)'], ['Formwork front joint', 1, 'D9 (FF)'], ['Placing concrete segment', 1, 'D10'], ['Installation PC strand', 1, 'D12 (FS+1)'], ['Stressing & grouting tendon', 1, 'D13']].map(([a, n, c]) => [a, n + L2(' วัน', n > 1 ? ' days' : ' day'), c]);
 
 const $ = id => document.getElementById(id);
@@ -1568,7 +1748,7 @@ if (LANG === 'en') {
   const kp = ['Planned progress', 'Segments cast', 'Stay cables installed', 'Structural concrete (m³)']; document.querySelectorAll('#right .kpi > span').forEach((e, i) => { if (kp[i]) e.textContent = kp[i]; });
   const h3 = ['Programme S-curve', 'Activities in progress']; document.querySelectorAll('#right > h3').forEach((e, i) => { if (h3[i]) e.textContent = h3[i]; });
   setT('#btnPlay', '▶ Play 4D');
-  const sp = { 2: '2 days/second', 7: '1 week/second', 15: '15 days/second', 30: '1 month/second' }; document.querySelectorAll('#speed option').forEach(o => { if (sp[o.value]) o.textContent = sp[o.value]; });
+  document.querySelectorAll('#speed option').forEach(o => { if (o.dataset.en) o.textContent = o.dataset.en; }); { const u = ['min', 'h', 'day', 'week']; document.querySelectorAll('#spdU option').forEach((o, i) => o.textContent = u[i]); $('spdPer').textContent = '/second'; $('speed').title = '4D playback: programme time per real second'; }
   setT('#flyhelp', 'Drone mode: W/A/S/D move · R/F up/down · drag to look · Shift = faster · Esc = exit');
   setT('#modal > div:first-child b', '📂 Update the 4D programme from a file');
   setT('#modal > div.mut', 'Supported: <b>PDF</b> printed from MS Project (columns ID / Task Name / Duration / Start / Finish) · <b>MS Project XML</b> (File ▸ Save As ▸ XML) · <b>CSV</b> (ID, Task Name, Start, Finish) · <b>JSON</b> (schedule.json from this app or tools/mpp2json.py)<br>.mpp files must be converted to XML/PDF first (browsers cannot read the MS Project database directly)', 'html');
@@ -1747,7 +1927,7 @@ function drawSC() { const c = $('scurve'), g = c.getContext('2d'), w = c.width, 
 const totalVol = ELS.filter(e => e.qty?.vol && ['seg', 'closure', 'ptable', 'pylon', 'pier', 'cap'].includes(e.cat)).reduce((a, e) => a + e.qty.vol, 0);
 let uiTimer = 0;
 function updateUI() {
-  $('dateBig').textContent = fmtTH(NOW); $('dateSmall').textContent = fmtISO(NOW);
+  $('dateBig').textContent = fmtTH(NOW); $('dateSmall').textContent = fmtISO(NOW) + (+$('speed').value < 1 ? ' ' + new Date(NOW).toTimeString().slice(0, 5) : '');
   let cur = STEPS[0]; for (const s of STEPS) if (s.t0 <= NOW) cur = s; $('stepName').textContent = cur.t;
   const deck = SEGS, cast = deck.filter(e => NOW >= (e.cast || e.finish)).length;
   $('kSeg').textContent = `${cast}/${deck.length}`;
@@ -1823,13 +2003,82 @@ function loop() {
   snd.update(dt, { dist, alt: camera.position.y, real: MODE === 'real', night: isNight, active: active.length > 0, casting: active.some(e => e.kind === 'seg' && NOW >= e.cast - DAY && NOW < e.cast + DAY), drone: tour.on || fly.on, speed: spd, opened: NOW >= OPEN });
   composer.render();
   if (++frames === 3) { $('loading').style.opacity = 0; setTimeout(() => $('loading').remove(), 700); }
-  if (frames === 30) document.title = 'Kiak Kai 4D BIM';
+  if (frames === 30) document.title = 'Kiak Kai – Stay Cable 4D';
   if (frames === 45) window.__READY = true;
 }
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); });
 
+
+/* ---------- stay cable: ONE CABLE, STEP BY STEP (Cable System Installation Procedure Rev.01, steps 1–20) ---------- */
+const CAB_STEPS = [
+  ['A', 'ติดตั้ง lifting clamp ที่ท่อ HDPE', 'Install the lifting clamp on the HDPE pipe'],
+  ['A', 'ใส่ strand เส้นแรกในท่อ HDPE', 'Install the first strand inside the HDPE pipe'],
+  ['A', 'ติดตั้ง clamp holder ของ strand แรก', 'Install the first-strand clamp holder'],
+  ['A', 'ติดตั้ง level block 1.5 t ที่ pylon', 'Set the 1.5 t level block at the pylon'],
+  ['B', 'เกี่ยว level block เข้ากับ sling – tower crane ยกท่อ', 'Hook the level block to the sling – tower crane lifts the pipe'],
+  ['B', 'ดึง strand แรกเข้า pylon anchor (DYNA Link)', 'Pull the first strand into the pylon anchor (DYNA Link)'],
+  ['B', 'ใส่ wedge ที่ strand แรก', 'Insert the wedges on the first strand'],
+  ['B', 'เกี่ยว Tirfor winch เข้ากับ AV-clamp holder', 'Hook the Tirfor winch to the anti-vandalism clamp holder'],
+  ['B', 'สอด PE guide tube จาก recess pipe ผ่าน active anchor', 'From the recess pipe, insert the PE guide tube through the active anchor'],
+  ['C', 'ใช้ Tirfor winch ดึงท่อ HDPE ลง', 'Pull the HDPE pipe down with the Tirfor winch'],
+  ['C', 'ร้อย strand แรกผ่าน active anchor แล้วถอด guide tube', 'Thread the first strand through the active anchor, remove the guide tube'],
+  ['C', 'ติดตั้ง compression tube, wedge และ ConTen jack', 'Install the compression tube, wedges and the ConTen jack'],
+  ['C', 'ดึง strand แรก – ท่อยกพ้น deck', 'Stress the first strand – the pipe lifts off the deck'],
+  ['D', 'ป้อน strand ที่ตัดแล้วเข้า pusher + PE bullet', 'Feed a pre-cut strand into the pusher with a PE bullet'],
+  ['D', 'ดัน strand ขึ้นไปตามท่อ HDPE ถึง pylon', 'Push the strand up the HDPE pipe to the pylon'],
+  ['D', 'ถอด PE bullet ที่ฝั่ง pylon', 'Remove the PE bullet at the pylon'],
+  ['D', 'สอด strand เข้า pylon anchor และใส่ wedge', 'Insert the strand in the pylon anchor and seat the wedges'],
+  ['D', 'ร้อยที่ deck และดึง (ทำซ้ำขั้น 9, 11, 12)', 'Thread at the deck and stress (repeat steps 9, 11, 12)'],
+  ['D', 'ทำตามลำดับ strand – ตั้งค่า control unit', 'Follow the strand sequence – set the control unit'],
+  ['D', 'ทำซ้ำจนครบทุก strand – ตรวจ lift-off', 'Repeat until all strands are in – lift-off check'],
+];
+const stepU = s => { if (s <= 4) return (s - .5) / 4 * .25; if (s <= 9) return .25 + (s - 4.5) / 5 * .2; if (s <= 13) return .45 + (s - 9.5) / 4 * .1; return .55 + (s - 13.5) / 7 * .45; };
+let CAB_DETAIL = null;
+function cabCam(no, dur = 1.2) {
+  const c = CABW.find(x => x.no === no); if (!c) return;
+  const m = new THREE.Vector3().lerpVectors(c.a, c.b, .42), h = new THREE.Vector3(c.b.x - c.a.x, 0, c.b.z - c.a.z).normalize(), sd = new THREE.Vector3(-h.z, 0, h.x);
+  VIEWS.cabd = [m.clone().addScaledVector(sd, 34 + c.L * .35).addScaledVector(h, -c.L * .15).setY(m.y + 14).toArray(), m.clone().setY(m.y - 3).toArray()];
+  goView('cabd', dur);
+}
+function cabStep(no, step, cam = false) {
+  const c = CABW.find(x => x.no === no); if (!c) return;
+  step = clamp(step, 1, 20); CAB_DETAIL = { no, step };
+  setNow(c.e.start + stepU(step) * (c.e.finish - c.e.start));
+  if (cam) cabCam(no);
+  const p = document.getElementById('cabDet');
+  p.querySelector('.cd-s').textContent = `${L2('ขั้นที่', 'Step')} ${step}/20 · Phase ${CAB_STEPS[step - 1][0]}`;
+  p.querySelector('.cd-t').textContent = LANG === 'th' ? CAB_STEPS[step - 1][1] : CAB_STEPS[step - 1][2];
+  p.querySelector('.cd-c').value = no;
+}
+(() => {
+  const p = document.createElement('div'); p.id = 'cabDet';
+  p.innerHTML = `<div class="cd-h">${L2('ติดตั้ง Cable 1 เส้น – ทีละขั้น (Cable System)', 'One cable, step by step (Cable System)')}</div>
+    <div class="cd-r"><select class="cd-c">${CABW.slice().sort((a, b) => a.no - b.no).map(c => `<option value="${c.no}">Cable ${c.no} · ${c.n} strands · ${c.L.toFixed(1)} m</option>`).join('')}</select></div>
+    <div class="cd-r"><button data-a="prev">◀</button><button data-a="play">▶ ${L2('เล่น', 'Play')}</button><button data-a="next">▶|</button><button data-a="cam">🎥</button><button data-a="off">✕</button></div>
+    <div class="cd-s"></div><div class="cd-t"></div>`;
+  document.body.appendChild(p);
+  let timer = null;
+  const cur = () => CAB_DETAIL || { no: +p.querySelector('.cd-c').value, step: 0 };
+  p.querySelector('.cd-c').onchange = e => cabStep(+e.target.value, 1, true);
+  p.querySelectorAll('button').forEach(b => b.onclick = () => {
+    const a = b.dataset.a, d = cur();
+    if (a === 'prev') cabStep(d.no, d.step - 1);
+    if (a === 'next') cabStep(d.no, d.step + 1, d.step === 0);
+    if (a === 'cam') cabCam(d.no);
+    if (a === 'off') { CAB_DETAIL = null; p.classList.remove('open'); clearInterval(timer); timer = null; return; }
+    if (a === 'play') { if (timer) { clearInterval(timer); timer = null; return; } cabStep(d.no, d.step >= 20 || d.step === 0 ? 1 : d.step, true);
+      timer = setInterval(() => { const q = cur(); if (q.step >= 20) { clearInterval(timer); timer = null; return; } cabStep(q.no, q.step + 1); }, 2200); }
+    p.classList.add('open');
+  });
+  const bt = document.createElement('button'); bt.id = 'btnCabDet'; bt.innerHTML = '🧵<span class="lbl"> ' + L2('Cable ทีละขั้น', 'Cable step-by-step') + '</span>';
+  bt.onclick = () => { p.classList.toggle('open'); if (p.classList.contains('open') && !CAB_DETAIL) cabStep(207, 1, true); };
+  const anchorBtn = document.getElementById('btnTour'); if (anchorBtn) anchorBtn.parentNode.insertBefore(bt, anchorBtn);
+  const q = new URLSearchParams(location.search);
+  if (q.get('cable')) { p.classList.add('open'); setTimeout(() => cabStep(+q.get('cable'), +(q.get('step') || 1), false), 50); if (q.get('cam') !== '0') { setTimeout(() => cabCam(+q.get('cable'), .05), 600); setTimeout(() => cabCam(+q.get('cable'), .05), 2500); } }
+})();
+
 // init from URL (?date=2025-08-20&theme=sunset&view=p2&ui=0&tour=0.35)
-if (params.get('date')) NOW = D(params.get('date'));
+if (params.get('date')) NOW = params.get('date').includes('T') ? new Date(params.get('date')).getTime() : D(params.get('date'));
 slider.value = t2v(NOW);
 applyTheme(params.get('theme') || 'day');
 const v0 = params.get('view'); if (v0 && VIEWS[v0]) { camera.position.set(...VIEWS[v0][0]); controls.target.set(...VIEWS[v0][1]); $('view').value = v0; } else { camera.position.set(...VIEWS.overview[0]); }
@@ -1842,6 +2091,31 @@ loop();
 window.__app = { setNow, applyTheme, goView, ELS, startTour };
 // PWA: offline cache when served over http(s) with sw.js next to this page (GitHub Pages)
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => { });
+
+/* ---------- custom 4D playback rate (programme time per real second; minimum 30 min/s) ---------- */
+(() => {
+  const MIN = 1 / 48, sel = $('speed'), box = $('spdBox'), n = $('spdN'), u = $('spdU'), c = $('spdC');
+  const label = d => { const m = d * 1440; if (m < 60) return `${+m.toFixed(1)} ${L2('นาที', 'min')}`; if (d < 1) return `${+(m / 60).toFixed(2)} ${L2('ชม.', 'h')}`; if (d < 7) return `${+d.toFixed(2)} ${L2('วัน', 'days')}`; return `${+(d / 7).toFixed(2)} ${L2('สัปดาห์', 'weeks')}`; };
+  const apply = () => {
+    let d = (+n.value || 0) * (+u.value);
+    if (d < MIN) { d = MIN; n.value = +(MIN / (+u.value)).toFixed(3); }
+    c.value = d.toFixed(6); c.textContent = `${L2('กำหนดเอง', 'Custom')}: ${label(d)}/${L2('วินาที', 's')}`; c.selected = true;
+    if (typeof setNow === 'function') setNow(NOW);
+  };
+  sel.addEventListener('change', () => { const on = sel.selectedOptions[0] === c; box.style.display = on ? 'inline-flex' : 'none'; if (on) apply(); else if (typeof setNow === 'function') setNow(NOW); });
+  n.addEventListener('input', apply); u.addEventListener('change', apply);
+  const r = new URLSearchParams(location.search).get('rate');
+  if (r) { const m = /^([\d.]+)\s*(m|min|h|d|w)$/i.exec(r); if (m) { n.value = m[1]; u.value = { m: '0.000694444', min: '0.000694444', h: '0.041666667', d: '1', w: '7' }[m[2].toLowerCase()]; c.selected = true; box.style.display = 'inline-flex'; apply(); } }
+})();
 </script>
-</body>
+<style>#cabHud{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:30;display:none;background:rgba(18,22,26,.86);color:#fff;
+font:13px/1.35 'Segoe UI',Tahoma,sans-serif;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,138,31,.6);min-width:360px;max-width:560px;pointer-events:none}
+#cabHud .ch-t{color:#ff8a1f;font-weight:700;margin-bottom:4px}#cabHud .ch-r{margin:4px 0 6px}#cabHud .ch-r span{color:#bbb;font-size:12px}
+#cabHud .ch-p{font-size:12.5px;margin:2px 0}#cabHud .ch-bar{height:6px;background:#3a3f45;border-radius:3px;overflow:hidden}#cabHud .ch-bar i{display:block;height:100%;background:#f2b632}
+#cabHud .ch-k{font-size:11px;color:#ccc}body.noui #cabHud{top:auto;bottom:118px;left:16px;transform:none}</style><div id="cabHud"></div>
+<style>#cabDet{position:fixed;right:330px;top:74px;z-index:31;display:none;background:rgba(18,22,26,.9);color:#fff;font:13px/1.35 'Segoe UI',Tahoma,sans-serif;
+padding:10px 12px;border-radius:10px;border:1px solid #ff8a1f;width:300px}#cabDet.open{display:block}#cabDet .cd-h{color:#ff8a1f;font-weight:700;margin-bottom:6px}
+#cabDet .cd-r{margin:4px 0;display:flex;gap:4px}#cabDet select{flex:1;background:#2a3036;color:#fff;border:1px solid #555;border-radius:6px;padding:3px}
+#cabDet button{flex:1;background:#2a3036;color:#fff;border:1px solid #555;border-radius:6px;padding:4px;cursor:pointer}#cabDet button:hover{border-color:#ff8a1f}
+#cabDet .cd-s{color:#f2b632;font-weight:700;margin-top:6px}#cabDet .cd-t{font-size:14px;margin-top:2px}body.noui #cabDet{right:16px}</style></body>
 </html>
